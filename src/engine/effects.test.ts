@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { applyEffects, useConsumable } from "./effects";
+import { applyConsumable, applyEffects } from "./effects";
 import { EngineError } from "./errors";
 import { makeHero, makeRun, TEST_CONTENT } from "./testContent";
 import type { Effect } from "./types";
@@ -33,7 +33,9 @@ describe("hp and sanity", () => {
 
   test("sanity loss modifiers never turn a loss into a gain, and gains are untouched", () => {
     const miser = makeRun({ character: makeHero({ trait: "miser", sanity: 20 }) });
-    expect(apply([{ kind: "sanity", delta: -1 }], miser).run.character.sanity).toBe(20);
+    const absorbed = apply([{ kind: "sanity", delta: -1 }], miser);
+    expect(absorbed.run).toEqual(miser);
+    expect(absorbed.log).toEqual([]);
     expect(apply([{ kind: "sanity", delta: 5 }], miser).run.character.sanity).toBe(25);
     const hard = makeRun({ character: makeHero({ sanity: 20 }), hardMode: true });
     expect(apply([{ kind: "sanity", delta: 5 }], hard).run.character.sanity).toBe(25);
@@ -116,6 +118,22 @@ describe("items", () => {
     expect(log).toEqual(["가방이 가득 차 아이템을 놓쳤다: 치유 연고"]);
   });
 
+  test("a str drop below the bag's needs removes nothing, but refuses new items", () => {
+    const full = makeRun({
+      character: makeHero({ inventory: Array.from({ length: 7 }, () => "bread_loaf" as const) }),
+    });
+    const { run, log } = apply(
+      [
+        { kind: "stat", stat: "str", delta: -6 },
+        { kind: "item", item: "healing_salve" },
+      ],
+      full,
+    );
+    expect(run.character.stats.str).toBe(4);
+    expect(run.character.inventory).toHaveLength(7);
+    expect(log).toEqual(["힘 -6", "가방이 가득 차 아이템을 놓쳤다: 치유 연고"]);
+  });
+
   test("removeItem removes one copy and is a silent no-op when absent", () => {
     const { run, log } = apply([{ kind: "removeItem", item: "rusty_sword" }]);
     expect(run.character.inventory).toEqual([]);
@@ -151,17 +169,17 @@ describe("flags, queue, endings", () => {
   });
 });
 
-describe("useConsumable", () => {
+describe("applyConsumable", () => {
   test("removes the item and applies its effects", () => {
     const run = makeRun({ character: makeHero({ hp: 20, inventory: ["healing_salve"] }) });
-    const used = useConsumable(run, "healing_salve", TEST_CONTENT);
+    const used = applyConsumable(run, "healing_salve", TEST_CONTENT);
     expect(used.run.character.inventory).toEqual([]);
     expect(used.run.character.hp).toBe(25);
     expect(used.log).toEqual(["치유 연고 사용", "체력 +5"]);
   });
 
   test("rejects an item not carried or not consumable", () => {
-    expect(() => useConsumable(makeRun(), "healing_salve", TEST_CONTENT)).toThrow(EngineError);
-    expect(() => useConsumable(makeRun(), "rusty_sword", TEST_CONTENT)).toThrow(EngineError);
+    expect(() => applyConsumable(makeRun(), "healing_salve", TEST_CONTENT)).toThrow(EngineError);
+    expect(() => applyConsumable(makeRun(), "rusty_sword", TEST_CONTENT)).toThrow(EngineError);
   });
 });

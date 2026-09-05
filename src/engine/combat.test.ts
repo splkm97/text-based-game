@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { attemptFlee, combatRound, startCombat, useItemInCombat } from "./combat";
+import { attemptFlee, combatRound, consumeItemInCombat, startCombat } from "./combat";
 import { EngineError } from "./errors";
 import { fixedRolls, makeHero, makeRun, TEST_CONTENT } from "./testContent";
 import type { CombatState, MonsterId, RunState } from "./types";
@@ -80,10 +80,12 @@ describe("combatRound", () => {
     expect(next.kills).toBe(1);
   });
 
-  test("fumble: natural 1 deals nothing; player takes double attack ignoring defense plus the retaliation", () => {
+  test("fumble: natural 1 deals nothing; double attack ignoring defense replaces the retaliation", () => {
     const next = combatRound(fight("wild_boar"), TEST_CONTENT, fixedRolls(1));
-    expect(combatOf(next).monsterHp).toBe(8);
-    expect(next.character.hp).toBe(23);
+    const combat = combatOf(next);
+    expect(combat.monsterHp).toBe(8);
+    expect(next.character.hp).toBe(24);
+    expect(combat.log.slice(1)).toEqual(["실수! 허점을 찔려 6 피해를 입었다."]);
   });
 
   test("win applies xp, gold, drop, kill count, and the win outcome; phase becomes resolution", () => {
@@ -152,7 +154,7 @@ describe("attemptFlee", () => {
   });
 });
 
-describe("useItemInCombat", () => {
+describe("consumeItemInCombat", () => {
   test("applies the consumable, then the monster attacks once", () => {
     const hurt = armed({
       character: makeHero({
@@ -161,7 +163,7 @@ describe("useItemInCombat", () => {
         equipment: { mainHand: "rusty_sword", offHand: null, armor: null, relic: null },
       }),
     });
-    const next = useItemInCombat(fight("dragon_of_ash", hurt), "healing_salve", TEST_CONTENT);
+    const next = consumeItemInCombat(fight("dragon_of_ash", hurt), "healing_salve", TEST_CONTENT);
     expect(next.character.inventory).toEqual(["rusty_sword"]);
     expect(next.character.hp).toBe(17);
     expect(combatOf(next).log).toContain("치유 연고 사용");
@@ -175,7 +177,7 @@ describe("useItemInCombat", () => {
         equipment: { mainHand: "rusty_sword", offHand: null, armor: null, relic: null },
       }),
     });
-    const next = useItemInCombat(fight("dragon_of_ash", dying), "strong_wine", TEST_CONTENT);
+    const next = consumeItemInCombat(fight("dragon_of_ash", dying), "strong_wine", TEST_CONTENT);
     expect(next.phase).toMatchObject({ kind: "ended", ending: "death" });
   });
 });

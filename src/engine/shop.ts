@@ -7,18 +7,17 @@ import { enterResolution, requirePhase } from "./phase";
 import type { ContentRegistry, Item, ItemId, RunState } from "./types";
 
 const CHA_STEP = 10;
-const DISCOUNT_PER_STEP = 0.1;
-const SELL_RATIO = 0.5;
 
+/** Integer arithmetic: 10% per step as tenths, so float factors never drift below the formula. */
 const chaSteps = (cha: number): number => Math.floor(cha / CHA_STEP);
 
 /** `floor(basePrice * (1 - 0.1 * floor(cha/10)))`, never below 1. */
 export const buyPrice = (item: Item, cha: number): number =>
-  Math.max(1, Math.floor(item.price * (1 - DISCOUNT_PER_STEP * chaSteps(cha))));
+  Math.max(1, Math.floor((item.price * (10 - chaSteps(cha))) / 10));
 
 /** `floor(basePrice * 0.5 * (1 + 0.1 * floor(cha/10)))`. */
 export const sellPrice = (item: Item, cha: number): number =>
-  Math.floor(item.price * SELL_RATIO * (1 + DISCOUNT_PER_STEP * chaSteps(cha)));
+  Math.floor((item.price * (10 + chaSteps(cha))) / 20);
 
 export const buyItem = (run: RunState, itemId: ItemId, content: ContentRegistry): RunState => {
   const { shop } = requirePhase(run, "shop");

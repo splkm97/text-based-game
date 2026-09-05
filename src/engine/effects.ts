@@ -43,12 +43,14 @@ const changeSanity = (
   trait: Trait,
   content: ContentRegistry,
 ): Step => {
-  if (delta === 0) {
+  const effective =
+    delta >= 0
+      ? delta
+      : -(Math.max(0, -delta - trait.sanityLossReduction) + (run.hardMode ? 1 : 0));
+  if (effective === 0) {
     return { run, lines: [] };
   }
   const { maxSanity } = deriveStats(run.character, content);
-  const effective =
-    delta > 0 ? delta : -(Math.max(0, -delta - trait.sanityLossReduction) + (run.hardMode ? 1 : 0));
   const sanity = Math.max(0, Math.min(maxSanity, run.character.sanity + effective));
   return {
     run: withCharacter(run, { ...run.character, sanity }),
@@ -172,7 +174,7 @@ export const applyEffects = (
   );
 
 /** Removes the consumable from the inventory, then applies its effects. */
-export const useConsumable = (
+export const applyConsumable = (
   run: RunState,
   item: ItemId,
   content: ContentRegistry,

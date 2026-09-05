@@ -21,7 +21,7 @@ export const requireOneOfPhases = (run: RunState, kinds: readonly PhaseKind[]): 
   }
 };
 
-const journal = (day: number, lines: readonly string[]): readonly LogEntry[] =>
+export const journal = (day: number, lines: readonly string[]): readonly LogEntry[] =>
   lines.map((text) => ({ day, text }));
 
 /** Shows `text` and the effect lines; the player taps 계속 to `continueRun`. */

@@ -2,7 +2,7 @@
 
 import { deriveStats, effectiveStats } from "./character";
 import { resolveCheck } from "./checks";
-import { applyEffects, useConsumable } from "./effects";
+import { applyConsumable, applyEffects } from "./effects";
 import { finishRun } from "./endings";
 import { enterResolution, requirePhase } from "./phase";
 import { rollD20 } from "./rng";
@@ -143,11 +143,12 @@ export const combatRound = (run: RunState, content: ContentRegistry, rng: Rng): 
   const monsterAttackValue = monsterAttack(run, monster);
   const roll = rollD20(rng);
   const action = playerAction(roll, attack, monster, monsterAttackValue, combat.monsterHp);
-  const retaliation = action.monsterHp > 0 ? Math.max(0, monsterAttackValue - defense) : 0;
-  const lines =
-    action.monsterHp > 0
-      ? [action.line, `${monster.name}의 공격: ${retaliation} 피해`]
-      : [action.line];
+  // A fumble replaces the monster's normal strike: the fumble line alone carries the damage.
+  const retaliates = action.monsterHp > 0 && roll !== 1;
+  const retaliation = retaliates ? Math.max(0, monsterAttackValue - defense) : 0;
+  const lines = retaliates
+    ? [action.line, `${monster.name}의 공격: ${retaliation} 피해`]
+    : [action.line];
   return settleRound(
     run,
     combat,
@@ -191,14 +192,14 @@ export const attemptFlee = (run: RunState, content: ContentRegistry, rng: Rng): 
 };
 
 /** Using an item consumes the player's action: the monster strikes once afterwards. */
-export const useItemInCombat = (
+export const consumeItemInCombat = (
   run: RunState,
   item: ItemId,
   content: ContentRegistry,
 ): RunState => {
   const { combat } = requirePhase(run, "combat");
   const monster = content.monsters[combat.monster];
-  const used = useConsumable(run, item, content);
+  const used = applyConsumable(run, item, content);
   const damage = Math.max(
     0,
     monsterAttack(run, monster) - deriveStats(used.run.character, content).defense,

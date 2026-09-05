@@ -30,11 +30,17 @@ describe("prices", () => {
     expect(buyPrice(SHIELD, 4)).toBe(30);
     expect(buyPrice(SHIELD, 10)).toBe(27);
     expect(buyPrice(TEST_CONTENT.items.bread_loaf, 100)).toBe(1);
+    expect(buyPrice({ ...SHIELD, price: 1 }, 90)).toBe(1);
   });
 
   test("sell price is half, rising 10% per 10 cha, floored", () => {
     expect(sellPrice(SHIELD, 4)).toBe(15);
     expect(sellPrice(SHIELD, 10)).toBe(16);
+  });
+
+  test("prices follow the formula exactly where float factors would drift", () => {
+    expect(buyPrice({ ...SHIELD, price: 90 }, 30)).toBe(63);
+    expect(sellPrice({ ...SHIELD, price: 90 }, 40)).toBe(63);
   });
 });
 

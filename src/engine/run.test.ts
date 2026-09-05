@@ -2,12 +2,12 @@ import { describe, expect, test } from "vitest";
 import { EngineError } from "./errors";
 import {
   chooseOption,
+  consumeItem,
   continueRun,
   equipItem,
   spendStatPoint,
   startRun,
   unequipItem,
-  useItem,
 } from "./run";
 import { constantRng, fixedRolls, makeHero, makeRun, TEST_CONTENT } from "./testContent";
 import type { RunState } from "./types";
@@ -185,17 +185,21 @@ describe("character actions", () => {
     expect(codeOf(() => equipItem(ended, "rusty_sword", TEST_CONTENT))).toBe("INVALID_PHASE");
   });
 
-  test("useItem outside combat applies the consumable and keeps the phase", () => {
-    const run = makeRun({ character: makeHero({ hp: 20, inventory: ["healing_salve"] }) });
-    const used = useItem(run, "healing_salve", TEST_CONTENT);
+  test("consumeItem outside combat applies the consumable, keeps the phase, and journals it", () => {
+    const run = makeRun({ character: makeHero({ hp: 20, inventory: ["healing_salve"] }), day: 3 });
+    const used = consumeItem(run, "healing_salve", TEST_CONTENT);
     expect(used.character.hp).toBe(25);
     expect(used.phase).toEqual(run.phase);
+    expect(used.log).toEqual([
+      { day: 3, text: "치유 연고 사용" },
+      { day: 3, text: "체력 +5" },
+    ]);
   });
 
-  test("useItem in combat costs the action: the monster attacks once", () => {
+  test("consumeItem in combat costs the action: the monster attacks once", () => {
     const run = makeRun({ character: makeHero({ hp: 20, inventory: ["healing_salve"] }) });
     const combat = chooseOption(run, 2, TEST_CONTENT, constantRng(0));
-    const used = useItem(combat, "healing_salve", TEST_CONTENT);
+    const used = consumeItem(combat, "healing_salve", TEST_CONTENT);
     expect(used.character.hp).toBe(24);
     expect(used.phase.kind).toBe("combat");
   });

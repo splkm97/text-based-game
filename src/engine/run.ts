@@ -2,12 +2,12 @@
 
 import { allocateStatPoint, effectiveStats, equip, unequip } from "./character";
 import { resolveCheck } from "./checks";
-import { startCombat, useItemInCombat } from "./combat";
-import { applyEffects, useConsumable } from "./effects";
+import { consumeItemInCombat, startCombat } from "./combat";
+import { applyConsumable, applyEffects } from "./effects";
 import { determineEnding, finishRun } from "./endings";
 import { EngineError } from "./errors";
 import { choiceAvailable, pickNextEvent } from "./events";
-import { enterResolution, requireOneOfPhases, requirePhase } from "./phase";
+import { enterResolution, journal, requireOneOfPhases, requirePhase } from "./phase";
 import {
   type Character,
   type ContentRegistry,
@@ -152,13 +152,13 @@ export const spendStatPoint = (run: RunState, stat: StatId): RunState => {
   return withCharacter(run, allocateStatPoint(run.character, stat));
 };
 
-/** In combat, using an item is the player's action and the monster strikes back once. */
-// biome-ignore-start lint/correctness/useHookAtTopLevel: engine functions named use* are not React hooks
-export const useItem = (run: RunState, item: ItemId, content: ContentRegistry): RunState => {
+/** In combat, using an item is the player's action and the monster strikes back once.
+ * Outside combat, the item's log lines go to the run journal. */
+export const consumeItem = (run: RunState, item: ItemId, content: ContentRegistry): RunState => {
   if (run.phase.kind === "combat") {
-    return useItemInCombat(run, item, content);
+    return consumeItemInCombat(run, item, content);
   }
   requireOneOfPhases(run, ACTION_PHASES);
-  return useConsumable(run, item, content).run;
+  const used = applyConsumable(run, item, content);
+  return { ...used.run, log: [...used.run.log, ...journal(run.day, used.log)] };
 };
-// biome-ignore-end lint/correctness/useHookAtTopLevel: engine functions named use* are not React hooks
