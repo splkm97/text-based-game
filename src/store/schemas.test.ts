@@ -64,6 +64,14 @@ describe("parseRun", () => {
     expect(parseRun("{not json")).toBeNull();
     expect(parseRun("null")).toBeNull();
   });
+
+  test("rejects a fractional gold value", () => {
+    const withFractionalGold = {
+      ...combatRun,
+      character: { ...combatRun.character, gold: combatRun.character.gold + 0.5 },
+    };
+    expect(parseRun(JSON.stringify(withFractionalGold))).toBeNull();
+  });
 });
 
 describe("parseMeta", () => {

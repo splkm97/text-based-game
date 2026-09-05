@@ -22,6 +22,7 @@ import type {
 } from "../engine/types";
 import { type MetaStoreApi, metaStore } from "./metaStore";
 import { type Persistence, persistence } from "./persistence";
+import { uuid } from "./uuid";
 
 export type NewRunInput = CreateCharacterInput & {
   readonly hardMode: boolean;
@@ -63,7 +64,7 @@ export type RunStore = {
 type Ended = Extract<RunPhase, { kind: "ended" }>;
 
 const rankingEntry = (run: RunState, phase: Ended, now: number): RankingEntry => ({
-  id: crypto.randomUUID(),
+  id: uuid(),
   name: run.character.name,
   origin: run.character.origin,
   ending: phase.ending,

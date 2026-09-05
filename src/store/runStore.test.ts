@@ -245,6 +245,27 @@ describe("errors", () => {
     expect(() => state().choose(0)).not.toThrow();
     expect(state().lastError).toBe("INVALID_PHASE");
   });
+
+  test("a non-EngineError from a dependency propagates and leaves run and lastError untouched", () => {
+    const persistence = createPersistence(memoryStorage());
+    persistence.saveRun(makeRun());
+    const meta = createMetaStore(persistence);
+    const store = createRunStore({
+      content: TEST_CONTENT,
+      now: () => NOW,
+      makeRng: () => () => {
+        throw new Error("boom");
+      },
+      persistence,
+      meta,
+    });
+    store.getState().load();
+    store.getState().choose(2); // deterministic: enters combat without touching the rng
+    const before = store.getState().run;
+    expect(() => store.getState().fight()).toThrow("boom");
+    expect(store.getState().run).toBe(before);
+    expect(store.getState().lastError).toBeNull();
+  });
 });
 
 describe("save and abandon", () => {

@@ -26,9 +26,10 @@ export type MetaStoreApi = StoreApi<MetaStore>;
 const append = <T>(list: readonly T[], value: T): readonly T[] =>
   list.includes(value) ? list : [...list, value];
 
-/** Score descending, earlier finish first among equals. */
+/** Score descending, earlier finish first among equals. `finishedAt` is ISO 8601, so plain
+ * ordering compares chronologically without a locale-dependent collation. */
 const byRank = (a: RankingEntry, b: RankingEntry): number =>
-  b.score - a.score || a.finishedAt.localeCompare(b.finishedAt);
+  b.score - a.score || (a.finishedAt < b.finishedAt ? -1 : a.finishedAt > b.finishedAt ? 1 : 0);
 
 export const createMetaStore = (store: Persistence): MetaStoreApi =>
   createStore<MetaStore>((set, get) => {
