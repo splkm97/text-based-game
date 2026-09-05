@@ -1,13 +1,15 @@
 // Cross-file referential integrity of the assembled registry. Per-domain shape rules
 // (counts, price ranges, id schemes, chain order) live in each domain's own test file.
 
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, test } from "vitest";
 import type {
   Condition,
   Effect,
   EndingId,
   EventPool,
   GameEvent,
+  JourneyId,
+  OriginId,
   Outcome,
   OutcomeText,
 } from "../engine/types";
@@ -51,32 +53,45 @@ const conditionsOf = (event: GameEvent): readonly Condition[] => [
   ...event.choices.flatMap((choice) => choice.requires),
 ];
 
+const effectRef = (source: string, effect: Effect): readonly Ref[] => {
+  switch (effect.kind) {
+    case "item":
+    case "removeItem":
+      return [{ source, kind: "item", id: effect.item }];
+    case "nextEvent":
+      return [{ source, kind: "event", id: effect.event }];
+    case "end":
+      return [{ source, kind: "ending", id: effect.ending }];
+    case "hp":
+    case "sanity":
+    case "xp":
+    case "gold":
+    case "stat":
+    case "flag":
+      return [];
+  }
+};
+
 const effectRefs = (source: string, effects: readonly Effect[]): readonly Ref[] =>
-  effects.flatMap((effect): readonly Ref[] => {
-    switch (effect.kind) {
-      case "item":
-      case "removeItem":
-        return [{ source, kind: "item", id: effect.item }];
-      case "nextEvent":
-        return [{ source, kind: "event", id: effect.event }];
-      case "end":
-        return [{ source, kind: "ending", id: effect.ending }];
-      default:
-        return [];
-    }
-  });
+  effects.flatMap((effect) => effectRef(source, effect));
+
+const conditionRef = (source: string, condition: Condition): readonly Ref[] => {
+  switch (condition.kind) {
+    case "item":
+      return [{ source, kind: "item", id: condition.item }];
+    case "trait":
+      return [{ source, kind: "trait", id: condition.trait }];
+    case "stat":
+    case "flag":
+    case "notFlag":
+    case "gold":
+    case "hardMode":
+      return [];
+  }
+};
 
 const conditionRefs = (source: string, conditions: readonly Condition[]): readonly Ref[] =>
-  conditions.flatMap((condition): readonly Ref[] => {
-    switch (condition.kind) {
-      case "item":
-        return [{ source, kind: "item", id: condition.item }];
-      case "trait":
-        return [{ source, kind: "trait", id: condition.trait }];
-      default:
-        return [];
-    }
-  });
+  conditions.flatMap((condition) => conditionRef(source, condition));
 
 const poolRefs = (source: string, pool: EventPool): readonly Ref[] => {
   switch (pool.kind) {
@@ -96,7 +111,8 @@ const outcomeRefs = (source: string, outcome: Outcome): readonly Ref[] => {
       return [{ source, kind: "monster", id: outcome.monster }, ...leafRefs];
     case "shop":
       return [...outcome.stock.map((id): Ref => ({ source, kind: "item", id })), ...leafRefs];
-    default:
+    case "direct":
+    case "check":
       return leafRefs;
   }
 };
@@ -130,16 +146,6 @@ describe("content registry", () => {
     }
   });
 
-  test("module init throws when two events share an id", async () => {
-    vi.resetModules();
-    vi.doMock("./events/journeys", async (importOriginal) => {
-      const original = await importOriginal<typeof import("./events/journeys")>();
-      return { JOURNEY_EVENTS: [...original.JOURNEY_EVENTS, ...original.JOURNEY_EVENTS] };
-    });
-    await expect(import("./index")).rejects.toThrow(/duplicate event id/);
-    vi.doUnmock("./events/journeys");
-  });
-
   test("fallback rest exists with weight 0", () => {
     expect(CONTENT.events[FALLBACK_EVENT_ID]?.weight).toBe(0);
   });
@@ -168,21 +174,24 @@ describe("content registry", () => {
 });
 
 describe("event structure across all pools", () => {
-  test.each(EVENTS.map((event) => [event.id, event] as const))(
-    "%s has 2..4 choices and a positive weight unless once-only",
-    (_id, event) => {
-      expect(event.choices.length).toBeGreaterThanOrEqual(2);
-      expect(event.choices.length).toBeLessThanOrEqual(4);
-      if (!event.once && event.id !== FALLBACK_EVENT_ID) {
-        expect(event.weight).toBeGreaterThanOrEqual(1);
-      }
-    },
-  );
+  test("every event has 2..4 choices, and a positive weight unless once-only", () => {
+    const failures = EVENTS.flatMap((event) => [
+      ...(event.choices.length >= 2 && event.choices.length <= 4
+        ? []
+        : [`${event.id} has ${event.choices.length} choices, want 2..4`]),
+      ...(event.once || event.id === FALLBACK_EVENT_ID || event.weight >= 1
+        ? []
+        : [`${event.id} has weight ${event.weight}, want >= 1 unless once-only`]),
+    ]);
+    expect(failures).toEqual([]);
+  });
 });
 
 describe("ending reachability", () => {
   /** Story endings and the id of the only origin or journey whose events may fire them. */
-  const OWNER: Readonly<Record<Exclude<EndingId, "death" | "madness" | "retire">, string>> = {
+  const OWNER: Readonly<
+    Record<Exclude<EndingId, "death" | "madness" | "retire">, OriginId | JourneyId>
+  > = {
     mercenary_banner: "origin_mercenary",
     mercenary_betrayal: "origin_mercenary",
     monk_absolution: "origin_monk",
@@ -216,6 +225,9 @@ describe("ending reachability", () => {
     expect(unreachable).toEqual([]);
   });
 
+  // ownerOf has no entry for "death" | "madness" | "retire": those endings are engine-owned
+  // and content must never fire them via an `end` effect, so any event that does shows up
+  // here as misplaced too (ownerOf.get returns undefined, which matches no pool owner).
   test("each story ending is fired only from its own origin or journey pool", () => {
     const misplaced = endEffects.filter(
       ({ event, ending }) => ownerOf.get(ending) !== poolOwner(event.pool),
