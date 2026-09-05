@@ -1,7 +1,6 @@
 // The run store: every action wraps one engine call, autosaves the result, and feeds the meta
 // store. Engine errors never reach React; they land in `lastError` for the UI to display.
 
-import { useStore } from "zustand";
 import { createStore, type StoreApi } from "zustand/vanilla";
 import { CONTENT } from "../content";
 import { type CreateCharacterInput, createCharacter } from "../engine/character";
@@ -187,5 +186,3 @@ export const runStore: StoreApi<RunStore> = createRunStore({
   persistence,
   meta: metaStore,
 });
-
-export const useRunStore = <T>(selector: (state: RunStore) => T): T => useStore(runStore, selector);

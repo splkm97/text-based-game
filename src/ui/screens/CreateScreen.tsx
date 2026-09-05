@@ -1,11 +1,12 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, use, useState } from "react";
 import { CONTENT } from "../../content";
 import { JOURNEY_IDS } from "../../content/ids";
 import { Button } from "../components/Button";
 import { Panel } from "../components/Panel";
 import { Toggle } from "../components/Toggle";
 import { TopBar } from "../components/TopBar";
-import { useRun } from "../runStoreContext";
+import { WarningGlyph } from "../components/WarningGlyph";
+import { RunStoreContext, useRun } from "../runStoreContext";
 import { useScreenStore } from "../screenStore";
 import {
   canStart,
@@ -26,6 +27,7 @@ const HARD_MODE_WARNING = "주의: 적이 더 강해지고 금화는 줄어요. 
 
 export function CreateScreen() {
   const go = useScreenStore((state) => state.go);
+  const store = use(RunStoreContext);
   const startRun = useRun((state) => state.startRun);
   const lastError = useRun((state) => state.lastError);
   const [draft, setDraft] = useState<Draft>(INITIAL_DRAFT);
@@ -39,7 +41,9 @@ export function CreateScreen() {
       return;
     }
     startRun(toRunInput(draft));
-    go("adventure");
+    if (store.getState().run !== null) {
+      go("adventure");
+    }
   };
 
   return (
@@ -56,7 +60,7 @@ export function CreateScreen() {
             maxLength={NAME_MAX}
             autoComplete="off"
             onChange={(event) => patch({ name: event.target.value })}
-            className="w-full min-h-11 border-2 border-slate bg-ink-deep px-3 text-base text-parchment transition-[border-color] duration-120 ease-ink focus:border-ember focus-visible:outline-none"
+            className="w-full min-h-11 border-2 border-slate bg-ink-deep px-3 text-base text-parchment"
           />
           <p id="name-hint" className="mt-1 text-xs text-dusk">
             최대 {NAME_MAX}자
@@ -83,7 +87,12 @@ export function CreateScreen() {
         <Panel title="난이도">
           <Toggle
             label="어려움"
-            description={HARD_MODE_WARNING}
+            description={
+              <>
+                <WarningGlyph />
+                {HARD_MODE_WARNING}
+              </>
+            }
             checked={draft.hardMode}
             onChange={(hardMode) => patch({ hardMode })}
           />
@@ -101,7 +110,7 @@ export function CreateScreen() {
         <Panel title="요약">
           <Summary draft={draft} />
         </Panel>
-        <div className="sticky bottom-0 -mx-3 -mb-3 mt-auto flex flex-col gap-2 border-t-2 border-slate bg-ink p-3">
+        <div className="safe-bottom sticky bottom-0 -mx-3 -mb-3 mt-auto flex flex-col gap-2 border-t-2 border-slate bg-ink px-3 pt-3">
           <p className="text-xs text-ash" aria-live="polite">
             {lastError !== null
               ? "시작하지 못했어요. 능력치를 다시 확인해 주세요."

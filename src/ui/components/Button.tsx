@@ -9,7 +9,7 @@ type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className"> & 
 
 const BASE =
   "inline-flex min-h-11 items-center justify-center gap-2 border-2 px-4 text-base " +
-  "transition-[background-color,border-color,color] duration-120 ease-ink " +
+  "transition-[background-color,border-color] duration-120 ease-ink " +
   "disabled:pointer-events-none disabled:border-slate disabled:bg-transparent disabled:text-dusk";
 
 const VARIANT: Readonly<Record<ButtonVariant, string>> = {

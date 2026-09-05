@@ -8,8 +8,8 @@ type StepperProps = {
 };
 
 const STEP =
-  "flex size-11 items-center justify-center border-2 border-slate text-xl text-parchment " +
-  "transition-[border-color,color] duration-120 ease-ink " +
+  "flex size-11 items-center justify-center border-2 border-slate text-2xl text-parchment " +
+  "transition-[border-color] duration-120 ease-ink " +
   "disabled:pointer-events-none disabled:text-dusk";
 
 export function Stepper({
@@ -33,7 +33,7 @@ export function Stepper({
         >
           −
         </button>
-        <span className="w-8 text-center text-xl tabular-nums">{value}</span>
+        <span className="w-8 text-center text-2xl tabular-nums">{value}</span>
         <button
           type="button"
           className={STEP}

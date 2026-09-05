@@ -24,6 +24,23 @@ const makeStore = () => {
   });
 };
 
+const START_INPUT = {
+  name: "테스트",
+  origin: "origin_mercenary",
+  trait: "strong_arms",
+  allocation: { str: 10, agi: 10, int: 10, cha: 4, con: 4, wis: 4 },
+  hardMode: false,
+  journeys: [],
+} as const;
+
+// jsdom 29 ships <dialog> without showModal/close; the tests only need the open flag.
+HTMLDialogElement.prototype.showModal ??= function showModal(this: HTMLDialogElement) {
+  this.setAttribute("open", "");
+};
+HTMLDialogElement.prototype.close ??= function close(this: HTMLDialogElement) {
+  this.removeAttribute("open");
+};
+
 beforeEach(() => {
   useScreenStore.setState({ screen: "title" });
 });
@@ -43,18 +60,42 @@ test("title offers a new adventure and leads to character creation", async () =>
 
 test("title offers to continue when a run is saved", () => {
   const store = makeStore();
-  store.getState().startRun({
-    name: "테스트",
-    origin: "origin_mercenary",
-    trait: "strong_arms",
-    allocation: { str: 10, agi: 10, int: 10, cha: 4, con: 4, wis: 4 },
-    hardMode: false,
-    journeys: [],
-  });
+  store.getState().startRun(START_INPUT);
   render(
     <RunStoreContext value={store}>
       <App />
     </RunStoreContext>,
   );
   expect(screen.getByRole("button", { name: "이어하기" })).toBeDefined();
+});
+
+test("continuing a run that is still in memory does not count as a load", async () => {
+  const store = makeStore();
+  store.getState().startRun(START_INPUT);
+  render(
+    <RunStoreContext value={store}>
+      <App />
+    </RunStoreContext>,
+  );
+  await userEvent.click(screen.getByRole("button", { name: "이어하기" }));
+  expect(store.getState().run?.loadCount).toBe(0);
+  expect(useScreenStore.getState().screen).toBe("adventure");
+});
+
+test("a new adventure over a saved run asks first, then clears the save", async () => {
+  const store = makeStore();
+  store.getState().startRun(START_INPUT);
+  render(
+    <RunStoreContext value={store}>
+      <App />
+    </RunStoreContext>,
+  );
+  await userEvent.click(screen.getByRole("button", { name: "새 모험" }));
+  const dialog = screen.getByRole("dialog", { hidden: true });
+  expect(dialog.hasAttribute("open")).toBe(true);
+  expect(useScreenStore.getState().screen).toBe("title");
+  await userEvent.click(screen.getByRole("button", { name: "새로 시작", hidden: true }));
+  expect(store.getState().run).toBeNull();
+  expect(store.getState().hasSave()).toBe(false);
+  expect(useScreenStore.getState().screen).toBe("create");
 });

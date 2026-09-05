@@ -1,8 +1,8 @@
-import { useId } from "react";
+import { type ReactNode, useId } from "react";
 
 type ToggleProps = {
   readonly label: string;
-  readonly description?: string;
+  readonly description?: ReactNode;
   readonly checked: boolean;
   readonly onChange: (checked: boolean) => void;
 };
@@ -29,9 +29,9 @@ export function Toggle({ label, description, checked, onChange }: ToggleProps) {
       />
       <span
         aria-hidden="true"
-        className="relative h-6 w-11 shrink-0 border-2 border-slate bg-ink-deep transition-[border-color] duration-120 ease-ink peer-checked:border-ember peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ember"
+        className="relative h-6 w-11 shrink-0 border-2 border-slate bg-ink-deep transition-[border-color] duration-120 ease-ink peer-checked:border-ember peer-checked:*:translate-x-5 peer-checked:*:bg-ember peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ember"
       >
-        <span className="absolute top-0.5 left-0.5 size-4 bg-dusk transition-transform duration-120 ease-ink peer-checked:translate-x-5 peer-checked:bg-ember motion-reduce:transition-none" />
+        <span className="absolute top-0.5 left-0.5 size-4 bg-dusk transition-transform duration-120 ease-ink motion-reduce:transition-none" />
       </span>
     </label>
   );
