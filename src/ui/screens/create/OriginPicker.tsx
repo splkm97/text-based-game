@@ -30,7 +30,7 @@ export function OriginPicker({ value, onChange }: OriginPickerProps) {
               <span className="mt-1 block text-xs leading-prose text-ash">
                 {origin.description}
               </span>
-              <span className="mt-1 block text-xs text-dusk">시작 금화 {origin.startingGold}</span>
+              <span className="mt-1 block text-xs text-dusk">시작 골드 {origin.startingGold}</span>
             </span>
           </ChoiceCard>
         );

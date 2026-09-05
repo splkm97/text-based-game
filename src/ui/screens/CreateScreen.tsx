@@ -23,7 +23,7 @@ import { StatAllocation } from "./create/StatAllocation";
 import { Summary } from "./create/Summary";
 import { TraitPicker } from "./create/TraitPicker";
 
-const HARD_MODE_WARNING = "주의: 적이 더 강해지고 금화는 줄어요. 점수는 1.5배예요.";
+const HARD_MODE_WARNING = "주의: 적이 더 강해지고 골드는 줄어요. 점수는 1.5배예요.";
 
 export function CreateScreen() {
   const go = useScreenStore((state) => state.go);

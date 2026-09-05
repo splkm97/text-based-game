@@ -34,6 +34,9 @@ export type StartRunInput = {
 /** Phases in which the player may manage the character without spending a turn. */
 const ACTION_PHASES: readonly RunPhase["kind"][] = ["event", "resolution", "shop"];
 
+/** Whether equip, unequip, use-item, and spend-stat-point are allowed right now. */
+export const isActionPhase = (run: RunState): boolean => ACTION_PHASES.includes(run.phase.kind);
+
 const advanceToEvent = (
   run: Omit<RunState, "phase">,
   content: ContentRegistry,

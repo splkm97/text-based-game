@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { PixelSprite } from "../../../art/PixelSprite";
 import { MONSTER_SPRITES } from "../../../art/sprites/monsters";
 import { CONTENT } from "../../../content";
@@ -20,6 +21,7 @@ type CombatViewProps = {
 export function CombatView({ run, phase, onOpenInventory }: CombatViewProps) {
   const fight = useRun((state) => state.fight);
   const flee = useRun((state) => state.flee);
+  const reasonId = useId();
   const { combat } = phase;
   const monster = CONTENT.monsters[combat.monster];
   const hasConsumable = run.character.inventory.some(
@@ -58,10 +60,19 @@ export function CombatView({ run, phase, onOpenInventory }: CombatViewProps) {
             공격
           </Button>
           <Button onClick={flee}>도주</Button>
-          <Button onClick={onOpenInventory} disabled={!hasConsumable}>
+          <Button
+            onClick={onOpenInventory}
+            disabled={!hasConsumable}
+            aria-describedby={hasConsumable ? undefined : reasonId}
+          >
             아이템
           </Button>
         </div>
+        {!hasConsumable && (
+          <p id={reasonId} className="text-right text-xs text-dusk">
+            소모품 없음
+          </p>
+        )}
       </ActionRow>
     </>
   );

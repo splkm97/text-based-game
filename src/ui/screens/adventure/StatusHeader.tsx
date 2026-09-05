@@ -3,13 +3,14 @@ import { ICONS } from "../../../art/sprites/icons";
 import { ORIGIN_PORTRAITS } from "../../../art/sprites/portraits";
 import { CONTENT } from "../../../content";
 import { deriveStats } from "../../../engine/character";
+import { isActionPhase } from "../../../engine/run";
 import type { RunState } from "../../../engine/types";
 import { StatBar } from "../../components/StatBar";
 
 const XP_MAX = 100;
 
 const CHIP =
-  "flex min-h-11 items-center gap-1 border-2 px-2 text-sm text-parchment " +
+  "flex min-h-11 min-w-11 items-center justify-center gap-1 border-2 px-2 text-sm text-parchment " +
   "transition-[border-color] duration-120 ease-ink";
 
 type StatusHeaderProps = {
@@ -24,7 +25,7 @@ export function StatusHeader({ run, onOpenInventory, onOpenLevelUp }: StatusHead
   const origin = CONTENT.origins[character.origin];
   const derived = deriveStats(character, CONTENT);
   const pending = character.pendingStatPoints;
-  const canSpend = pending > 0 && run.phase.kind !== "combat";
+  const canSpend = pending > 0 && isActionPhase(run);
   return (
     <header className="sticky top-0 z-10 flex flex-col gap-2 border-b-2 border-slate bg-ink px-3 py-2">
       <div className="flex items-center gap-2">
@@ -33,7 +34,7 @@ export function StatusHeader({ run, onOpenInventory, onOpenLevelUp }: StatusHead
           <p className="truncate text-base">{character.name}</p>
           <p className="flex items-center gap-2 text-xs text-ash">
             <span>{run.day}일째</span>
-            {run.hardMode && <span className="border border-slate px-1 text-gold">어려움</span>}
+            {run.hardMode && <span className="border-2 border-slate px-1 text-ash">어려움</span>}
           </p>
         </div>
         <p className="flex items-center gap-1 text-sm tabular-nums">
@@ -59,10 +60,9 @@ export function StatusHeader({ run, onOpenInventory, onOpenLevelUp }: StatusHead
           </button>
         )}
       </div>
-      {/* Two-character labels: the shared bar reserves a 32px label column. */}
       <StatBar label="체력" value={character.hp} max={derived.maxHp} color="blood" />
-      <StatBar label="정신" value={character.sanity} max={derived.maxSanity} color="sky" />
-      <StatBar label="경험" value={character.xp} max={XP_MAX} color="gold" />
+      <StatBar label="정신력" value={character.sanity} max={derived.maxSanity} color="sky" />
+      <StatBar label="경험치" value={character.xp} max={XP_MAX} color="gold" />
     </header>
   );
 }

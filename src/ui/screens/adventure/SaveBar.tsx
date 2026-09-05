@@ -1,4 +1,4 @@
-import { type ReactNode, use, useRef, useState } from "react";
+import { type ReactNode, use, useState } from "react";
 import { isRanked } from "../../../engine/score";
 import type { RunState } from "../../../engine/types";
 import { Button } from "../../components/Button";
@@ -6,6 +6,7 @@ import { WarningGlyph } from "../../components/WarningGlyph";
 import { RunStoreContext, useRun } from "../../runStoreContext";
 import { useScreenStore } from "../../screenStore";
 import { ActionRow } from "./ActionRow";
+import { Sheet } from "./Sheet";
 
 const LOAD_NOTE = "불러오기 3회 이상이면 랭킹에 오르지 않아요.";
 const UNRANKED_NOTE = "불러오기 3회 이상이라 랭킹에 오르지 않아요.";
@@ -26,7 +27,7 @@ export function SaveBar({ run, children }: SaveBarProps) {
   const load = useRun((state) => state.load);
   const abandon = useRun((state) => state.abandon);
   const go = useScreenStore((state) => state.go);
-  const confirm = useRef<HTMLDialogElement>(null);
+  const [confirming, setConfirming] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
   const unranked = !isRanked(run);
 
@@ -41,7 +42,6 @@ export function SaveBar({ run, children }: SaveBarProps) {
     }
   };
   const onAbandon = () => {
-    confirm.current?.close();
     abandon();
     go("title");
   };
@@ -52,14 +52,12 @@ export function SaveBar({ run, children }: SaveBarProps) {
       <div className="grid grid-cols-[auto_1fr_auto] gap-2">
         <Button onClick={onSave}>저장</Button>
         <Button onClick={onLoad}>불러오기 ({run.loadCount}회)</Button>
-        <Button variant="danger" onClick={() => confirm.current?.showModal()}>
+        <Button variant="danger" onClick={() => setConfirming(true)}>
           포기하기
         </Button>
       </div>
-      <p className="text-xs text-dusk" aria-live="polite">
-        {notice !== null && notice.run === run ? (
-          <span className="text-ash">{notice.text}</span>
-        ) : unranked ? (
+      <p className="text-xs text-dusk">
+        {unranked ? (
           <>
             <WarningGlyph />
             {UNRANKED_NOTE}
@@ -68,24 +66,24 @@ export function SaveBar({ run, children }: SaveBarProps) {
           LOAD_NOTE
         )}
       </p>
-      <dialog
-        ref={confirm}
-        aria-labelledby="abandon-warning"
-        className="m-auto w-80 max-w-full border-2 border-slate bg-ink-deep p-4 text-parchment backdrop:bg-ink-deep/60"
-      >
-        <p id="abandon-warning" className="text-base leading-prose">
+      {/* Always mounted so the live region exists before the notice text lands in it. */}
+      <p className="min-h-4 text-xs text-ash" aria-live="polite">
+        {notice !== null && notice.run === run ? notice.text : null}
+      </p>
+      <Sheet open={confirming} title="포기하기" onClose={() => setConfirming(false)}>
+        <p className="text-base leading-prose">
           <WarningGlyph />
           {ABANDON_WARNING}
         </p>
-        <div className="mt-4 flex gap-2">
-          <Button block onClick={() => confirm.current?.close()}>
+        <div className="flex gap-2">
+          <Button block onClick={() => setConfirming(false)}>
             취소
           </Button>
           <Button variant="danger" block onClick={onAbandon}>
             포기하기
           </Button>
         </div>
-      </dialog>
+      </Sheet>
     </ActionRow>
   );
 }

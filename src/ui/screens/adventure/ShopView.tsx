@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { CONTENT } from "../../../content";
 import { deriveStats, effectiveStats, hasRoom } from "../../../engine/character";
 import { buyPrice, sellPrice } from "../../../engine/shop";
@@ -20,6 +21,7 @@ export function ShopView({ run, phase }: ShopViewProps) {
   const cha = effectiveStats(character, CONTENT).cha;
   const room = hasRoom(character, CONTENT);
   const slots = deriveStats(character, CONTENT).inventorySlots;
+  const reasonBase = useId();
   return (
     <>
       <section className="flex flex-col gap-3 p-3">
@@ -34,15 +36,25 @@ export function ShopView({ run, phase }: ShopViewProps) {
             {phase.shop.stock.map((id) => {
               const item = CONTENT.items[id];
               const price = buyPrice(item, cha);
+              const reason = character.gold < price ? "골드 부족" : room ? null : "가방 가득";
+              const reasonId = `${reasonBase}${id}`;
               return (
                 <ItemRow key={id} item={item} meta={`${price} 골드 · ${itemMeta(item)}`}>
-                  <Button
-                    onClick={() => buy(id)}
-                    disabled={character.gold < price || !room}
-                    aria-label={`${item.name} 구매`}
-                  >
-                    구매
-                  </Button>
+                  <span className="flex flex-col items-end gap-1">
+                    <Button
+                      onClick={() => buy(id)}
+                      disabled={reason !== null}
+                      aria-describedby={reason === null ? undefined : reasonId}
+                      aria-label={`${item.name} 구매`}
+                    >
+                      구매
+                    </Button>
+                    {reason !== null && (
+                      <span id={reasonId} className="text-xs text-dusk">
+                        {reason}
+                      </span>
+                    )}
+                  </span>
                 </ItemRow>
               );
             })}

@@ -15,22 +15,6 @@ const SLOT_NAME: Readonly<Record<EquipSlot, string>> = {
 
 const SLOTS: readonly EquipSlot[] = ["mainHand", "offHand", "armor", "relic"];
 
-/** Where a wearable goes; consumables have no slot. */
-const slotOf = (item: Item): EquipSlot | null => {
-  switch (item.kind) {
-    case "weapon":
-      return "mainHand";
-    case "shield":
-      return "offHand";
-    case "armor":
-      return "armor";
-    case "relic":
-      return "relic";
-    case "consumable":
-      return null;
-  }
-};
-
 type InventorySheetProps = {
   readonly run: RunState;
   readonly open: boolean;
@@ -65,17 +49,16 @@ export function InventorySheet({ run, open, consumableOnly, onClose }: Inventory
         </Button>
       );
     }
-    const slot = slotOf(item);
-    if (slot === null) {
-      return null;
-    }
+    const wornSlot = SLOTS.find((slot) => character.equipment[slot] === id);
     // With duplicates, the first copy is the worn one.
-    const worn = character.equipment[slot] === id && character.inventory.indexOf(id) === index;
-    return worn ? (
-      <Button aria-label={`${item.name} 해제`} onClick={() => unequip(slot)}>
-        해제
-      </Button>
-    ) : (
+    if (wornSlot !== undefined && character.inventory.indexOf(id) === index) {
+      return (
+        <Button aria-label={`${item.name} 해제`} onClick={() => unequip(wornSlot)}>
+          해제
+        </Button>
+      );
+    }
+    return (
       <Button aria-label={`${item.name} 장착`} onClick={() => equip(id)}>
         장착
       </Button>
