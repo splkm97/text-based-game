@@ -13,8 +13,8 @@ import { App } from "./App";
 import { RunStoreContext } from "./runStoreContext";
 import { useScreenStore } from "./screenStore";
 
-const makeStore = () => {
-  const persistence = createPersistence(memoryStorage());
+const makeStore = (storage = memoryStorage()) => {
+  const persistence = createPersistence(storage);
   return createRunStore({
     content: CONTENT,
     now: Date.now,
@@ -79,6 +79,21 @@ test("continuing a run that is still in memory does not count as a load", async 
   );
   await userEvent.click(screen.getByRole("button", { name: "이어하기" }));
   expect(store.getState().run?.loadCount).toBe(0);
+  expect(useScreenStore.getState().screen).toBe("adventure");
+});
+
+test("continuing a saved run after a reload does not count as a load", async () => {
+  const storage = memoryStorage();
+  makeStore(storage).getState().startRun(START_INPUT);
+  const fresh = makeStore(storage);
+  expect(fresh.getState().run).toBeNull();
+  render(
+    <RunStoreContext value={fresh}>
+      <App />
+    </RunStoreContext>,
+  );
+  await userEvent.click(screen.getByRole("button", { name: "이어하기" }));
+  expect(fresh.getState().run?.loadCount).toBe(0);
   expect(useScreenStore.getState().screen).toBe("adventure");
 });
 

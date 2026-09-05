@@ -163,6 +163,23 @@ describe("load", () => {
   });
 });
 
+describe("resume", () => {
+  test("restores the save and reseeds the rng without counting a load", () => {
+    const saved = makeRun({ loadCount: 2 });
+    const { state, persistence, seeds } = setup({ saved });
+    expect(state().resume()).toBe(true);
+    expect(state().run).toEqual(saved);
+    expect(persistence.loadRun()?.loadCount).toBe(2);
+    expect(seeds).toEqual([NOW, NOW]);
+  });
+
+  test("without a save it returns false", () => {
+    const { state } = setup();
+    expect(state().resume()).toBe(false);
+    expect(state().run).toBeNull();
+  });
+});
+
 describe("combat", () => {
   test("encountering a monster records it in the codex", () => {
     const { state, meta } = setup({ saved: makeRun() });

@@ -13,12 +13,12 @@ export function TitleScreen() {
   const go = useScreenStore((state) => state.go);
   const hasSave = useRun((state) => state.hasSave)();
   const inMemory = useRun((state) => state.run) !== null;
-  const load = useRun((state) => state.load);
+  const resumeSaved = useRun((state) => state.resume);
   const abandon = useRun((state) => state.abandon);
   const dialog = useRef<HTMLDialogElement>(null);
 
   const resume = () => {
-    if (inMemory || load()) {
+    if (inMemory || resumeSaved()) {
       go("adventure");
     }
   };

@@ -58,6 +58,8 @@ export type RunStore = {
   readonly hasSave: () => boolean;
   /** Manual 불러오기: increments `loadCount` and reseeds the rng. False when nothing is saved. */
   readonly load: () => boolean;
+  /** 이어하기 after a reload: restores the save and reseeds the rng without counting a load. */
+  readonly resume: () => boolean;
   /** Drops the run and its save. No ranking entry is written. */
   readonly abandon: () => void;
 };
@@ -170,6 +172,14 @@ export const createRunStore = (deps: RunStoreDeps): StoreApi<RunStore> =>
         const run = { ...saved, loadCount: saved.loadCount + 1 };
         deps.persistence.saveRun(run);
         set({ run, rng: deps.makeRng(deps.now()), lastError: null });
+        return true;
+      },
+      resume: () => {
+        const saved = deps.persistence.loadRun();
+        if (saved === null) {
+          return false;
+        }
+        set({ run: saved, rng: deps.makeRng(deps.now()), lastError: null });
         return true;
       },
       abandon: () => {
