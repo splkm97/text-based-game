@@ -254,6 +254,8 @@ export type RunState = {
   readonly flags: readonly string[];
   readonly seenEvents: readonly EventId[];
   readonly queuedEvent: EventId | null;
+  /** Set by an `end` effect; `continueRun` finalizes it with the ending priority rule. */
+  readonly pendingEnding: EndingId | null;
   readonly phase: RunPhase;
   readonly log: readonly LogEntry[];
 };
