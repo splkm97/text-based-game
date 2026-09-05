@@ -16,9 +16,8 @@ const ID_PATTERN = /^journey_(circus|lighthouse|debt)_([1-5])_[a-z_]+$/;
 
 const parseId = (id: string): { name: JourneyName; step: number } => {
   const match = ID_PATTERN.exec(id);
-  expect(match, `id ${id} does not match journey_<name>_<k>_<slug>`).not.toBeNull();
-  const name = match?.[1] as JourneyName;
-  return { name, step: Number(match?.[2]) };
+  if (!match) throw new Error(`id ${id} does not match journey_<name>_<k>_<slug>`);
+  return { name: match[1] as JourneyName, step: Number(match[2]) };
 };
 
 const leaves = (outcome: Outcome): readonly OutcomeText[] => {
@@ -69,6 +68,7 @@ describe("JOURNEY_EVENTS", () => {
       expect(event.once).toBe(true);
       expect(event.choices.length).toBeGreaterThanOrEqual(2);
       expect(event.choices.length).toBeLessThanOrEqual(4);
+      expect(event.choices.some((c) => c.requires.length === 0)).toBe(true);
     }
   });
 
@@ -104,10 +104,11 @@ describe("JOURNEY_EVENTS", () => {
     });
 
     test("event 1 is unconditional; event k>1 requires step k-1", () => {
-      expect(chain[0]?.requires).toEqual([]);
-      for (const event of chain.slice(1)) {
+      for (const event of chain) {
         const { step } = parseId(event.id);
-        expect(event.requires).toContainEqual({ kind: "flag", flag: `${name}.step${step - 1}` });
+        expect(event.requires).toEqual(
+          step === 1 ? [] : [{ kind: "flag", flag: `${name}.step${step - 1}` }],
+        );
       }
     });
 

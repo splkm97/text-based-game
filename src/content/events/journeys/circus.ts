@@ -356,11 +356,8 @@ export const CIRCUS_EVENTS: readonly GameEvent[] = [
           stat: "agi",
           dc: 12,
           success: {
-            text: "공연이 시작되는 사이 마차 한 대의 돈궤를 비웠다. 언덕을 넘을 때까지 아무도 쫓아오지 않았다. 그게 더 불안했다.",
-            effects: [
-              { kind: "gold", delta: 10 },
-              { kind: "sanity", delta: -3 },
-            ],
+            text: "공연이 시작되는 사이 천막 자락을 빠져나왔다. 언덕을 넘을 때까지 아무도 쫓아오지 않았다. 그게 더 불안했다.",
+            effects: [{ kind: "sanity", delta: -3 }],
           },
           failure: {
             text: "차력사가 출구에 서 있었다. 그는 여전히 미안한 얼굴이었다. 던지기 전에.",
