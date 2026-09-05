@@ -20,10 +20,31 @@ body {
   background-color: var(--color-ink);
   color: var(--color-parchment);
   font-family: var(--font-pixel);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
   -webkit-tap-highlight-color: transparent;
 }
 
 .safe-area {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
     env(safe-area-inset-left);
+}
+
+/* Mandatory interaction states, shared by every control. */
+:focus-visible {
+  outline: 2px solid var(--color-ember);
+  outline-offset: 2px;
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:active:not(:disabled) {
+    transform: none;
+  }
+  * {
+    transition-duration: 0ms;
+  }
 }

@@ -150,6 +150,11 @@ describe("load", () => {
     expect(seeds).toEqual([NOW, NOW]);
   });
 
+  test("hasSave reflects the persisted slot without touching it", () => {
+    expect(setup({ saved: makeRun() }).state().hasSave()).toBe(true);
+    expect(setup().state().hasSave()).toBe(false);
+  });
+
   test("without a save it returns false and changes nothing", () => {
     const { state } = setup();
     expect(state().load()).toBe(false);

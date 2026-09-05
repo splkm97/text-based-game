@@ -55,6 +55,8 @@ export type RunStore = {
   readonly spendPoint: (stat: StatId) => void;
   /** Same as the autosave; exists for the explicit 저장 button. */
   readonly save: () => void;
+  /** Whether a saved run exists; the title screen shows 이어하기 on it. */
+  readonly hasSave: () => boolean;
   /** Manual 불러오기: increments `loadCount` and reseeds the rng. False when nothing is saved. */
   readonly load: () => boolean;
   /** Drops the run and its save. No ranking entry is written. */
@@ -160,6 +162,7 @@ export const createRunStore = (deps: RunStoreDeps): StoreApi<RunStore> =>
           deps.persistence.saveRun(run);
         }
       },
+      hasSave: () => deps.persistence.loadRun() !== null,
       load: () => {
         const saved = deps.persistence.loadRun();
         if (saved === null) {

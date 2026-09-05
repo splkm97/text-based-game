@@ -17,4 +17,15 @@
   --color-dusk: #83769c;
 
   --font-pixel: "Galmuri11", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+
+  /* Type scale: meta 12 / label 14 / body 16 / screen title 24 / app title 32. */
+  --text-display: 2rem;
+  --text-display--line-height: 1.2;
+  --leading-prose: 1.6;
+
+  /* Single-column phone layout. */
+  --container-phone: 30rem;
+
+  /* Motion budget: one easing, 120ms for controls, 240ms for bar fills. */
+  --ease-ink: cubic-bezier(0.2, 0, 0, 1);
 }

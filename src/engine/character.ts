@@ -31,9 +31,9 @@ export type CreateCharacterInput = {
   readonly allocation: Stats;
 };
 
-const CREATION_MIN = 4;
-const CREATION_MAX = 10;
-const CREATION_TOTAL = 42;
+export const CREATION_MIN = 4;
+export const CREATION_MAX = 10;
+export const CREATION_TOTAL = 42;
 const UNARMED_ATTACK = 1;
 
 export const mapStats = (f: (stat: StatId) => number): Stats => ({
