@@ -1,4 +1,5 @@
 import type { ReactElement } from "react";
+import { UpdateToast } from "./components/UpdateToast";
 import { type Screen, useScreenStore } from "./screenStore";
 import { AdventureScreen } from "./screens/AdventureScreen";
 import { CodexScreen } from "./screens/CodexScreen";
@@ -26,6 +27,7 @@ export function App() {
   return (
     <main className="safe-area mx-auto flex min-h-dvh w-full max-w-phone flex-col">
       {screenFor(screen)}
+      <UpdateToast />
     </main>
   );
 }

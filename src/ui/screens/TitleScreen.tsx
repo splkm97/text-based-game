@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { PixelSprite } from "../../art/PixelSprite";
 import { ICONS } from "../../art/sprites/icons";
 import { Button } from "../components/Button";
+import { InstallPrompt } from "../components/InstallPrompt";
 import { useRun } from "../runStoreContext";
 import { useScreenStore } from "../screenStore";
 
@@ -55,6 +56,7 @@ export function TitleScreen() {
           랭킹
         </Button>
       </nav>
+      <InstallPrompt />
       <dialog
         ref={dialog}
         aria-labelledby="overwrite-warning"
