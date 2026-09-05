@@ -21,6 +21,7 @@
     "galmuri": "^2.40.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "workbox-window": "7.4.1",
     "zod": "4.5.4",
     "zustand": "5.0.15"
   },
