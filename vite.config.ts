@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: "autoUpdate",
+      registerType: "prompt",
       includeAssets: ["icon.svg"],
       workbox: { globPatterns: ["**/*.{js,css,html,woff2}"] },
       manifest: {

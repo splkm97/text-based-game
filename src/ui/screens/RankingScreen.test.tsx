@@ -77,6 +77,16 @@ test("an empty ranking says so and offers nothing to reset", () => {
   );
 });
 
+test("unranked-only records say the ranking itself is empty, not that nothing was recorded", () => {
+  const store = makeStore();
+  store.getState().addRanking(entry({ id: "a", name: "다솔", ranked: false }));
+  renderRanking(store);
+  expect(screen.getByText("랭킹에 오른 기록이 없어요.")).toBeDefined();
+  expect(screen.queryByText("아직 기록이 없어요.")).toBeNull();
+  expect(screen.queryByRole("list", { name: "랭킹" })).toBeNull();
+  expect(screen.getByText("랭킹 제외 기록 (1)")).toBeDefined();
+});
+
 test("reset asks first, then clears every record", async () => {
   const store = makeStore();
   store.getState().addRanking(entry({ id: "a", name: "가온", score: 300 }));

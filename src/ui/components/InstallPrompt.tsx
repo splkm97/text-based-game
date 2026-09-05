@@ -27,9 +27,14 @@ export function InstallPrompt() {
   if (offer === null) {
     return null;
   }
-  const install = () => {
-    setOffer(null);
-    void offer.prompt();
+  const install = async () => {
+    try {
+      await offer.prompt();
+      setOffer(null);
+    } catch {
+      // The browser can reject the prompt (e.g. called twice); hide the banner either way.
+      setOffer(null);
+    }
   };
 
   return (

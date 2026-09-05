@@ -34,6 +34,8 @@ export function RankingScreen() {
   const ranked = meta.ranking.filter((entry) => entry.ranked);
   const unranked = meta.ranking.filter((entry) => !entry.ranked);
   const nothingToReset = isEmpty(meta);
+  const emptyRankingMessage =
+    unranked.length > 0 ? "랭킹에 오른 기록이 없어요." : "아직 기록이 없어요.";
 
   const confirmReset = () => {
     dialog.current?.close();
@@ -45,7 +47,7 @@ export function RankingScreen() {
       <TopBar title="랭킹" onBack={() => go("title")} />
       <section className="flex flex-1 flex-col gap-3 p-3">
         {ranked.length === 0 ? (
-          <p className="py-8 text-center text-sm text-ash">아직 기록이 없어요.</p>
+          <p className="py-8 text-center text-sm text-ash">{emptyRankingMessage}</p>
         ) : (
           <ol aria-label="랭킹" className="flex flex-col gap-2">
             {ranked.map((entry, index) => (
