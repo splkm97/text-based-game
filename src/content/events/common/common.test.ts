@@ -182,6 +182,44 @@ describe("common event set", () => {
       }
     }
   });
+
+  test("every event keeps at least two reachable choices", () => {
+    // A choice gated only by gold stays reachable: gold is a renewable resource, unlike a
+    // fixed stat/trait/item gate chosen at chargen or found rarely. Counts toward the base
+    // total alongside fully ungated choices; a flag/notFlag pair on the same flag adds one more.
+    for (const event of COMMON_EVENTS) {
+      const base = event.choices.filter(
+        (choice) =>
+          choice.requires.length === 0 ||
+          choice.requires.every((condition) => condition.kind === "gold"),
+      ).length;
+      const flagged = new Set<string>();
+      const negated = new Set<string>();
+      for (const choice of event.choices) {
+        for (const condition of choice.requires) {
+          if (condition.kind === "flag") flagged.add(condition.flag);
+          if (condition.kind === "notFlag") negated.add(condition.flag);
+        }
+      }
+      const pairBonus = [...flagged].filter((flag) => negated.has(flag)).length;
+      expect(base + pairBonus).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  test("a direct outcome with a negative gold delta requires at least that much gold", () => {
+    for (const choice of CHOICES) {
+      if (choice.outcome.kind !== "direct") continue;
+      const goldCost = choice.outcome.result.effects.find(
+        (effect) => effect.kind === "gold" && effect.delta < 0,
+      );
+      if (goldCost?.kind !== "gold") continue;
+      const goldGate = choice.requires.find((condition) => condition.kind === "gold");
+      expect(goldGate).toBeDefined();
+      if (goldGate?.kind === "gold") {
+        expect(goldGate.min).toBeGreaterThanOrEqual(-goldCost.delta);
+      }
+    }
+  });
 });
 
 describe("common event coverage quotas", () => {

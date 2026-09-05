@@ -256,7 +256,7 @@ export const TOWN_EVENTS: readonly GameEvent[] = [
       },
       {
         text: "구경하며 한 잔 마신다",
-        requires: [],
+        requires: [{ kind: "gold", min: 3 }],
         outcome: {
           kind: "direct",
           result: {

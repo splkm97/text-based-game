@@ -29,7 +29,10 @@ export const TOWN_MORE_EVENTS: readonly GameEvent[] = [
       },
       {
         text: "제값을 치르고 방을 잡는다",
-        requires: [{ kind: "notFlag", flag: "common.town_tab_paid" }],
+        requires: [
+          { kind: "notFlag", flag: "common.town_tab_paid" },
+          { kind: "gold", min: 6 },
+        ],
         outcome: {
           kind: "direct",
           result: {
@@ -293,7 +296,7 @@ export const TOWN_MORE_EVENTS: readonly GameEvent[] = [
       },
       {
         text: "헌금 그릇에 동전을 넣는다",
-        requires: [],
+        requires: [{ kind: "gold", min: 4 }],
         outcome: {
           kind: "direct",
           result: {

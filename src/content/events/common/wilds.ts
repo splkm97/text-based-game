@@ -91,7 +91,7 @@ export const WILDS_EVENTS: readonly GameEvent[] = [
           monster: "gray_wolf",
           win: {
             text: "우두머리가 쓰러지자 무리가 흩어진다. 숲이 갑자기 조용해진다.",
-            effects: [],
+            effects: [{ kind: "gold", delta: 8 }],
           },
           flee: {
             text: "무리가 잠시 뒤쫓다 멈춘다. 배가 고픈 정도는 아니었던 모양이다.",
@@ -271,7 +271,7 @@ export const WILDS_EVENTS: readonly GameEvent[] = [
           monster: "goblin_chief",
           win: {
             text: "족장이 쓰러지자 나머지 고블린이 뼈를 떨어뜨리고 흩어진다. 족장의 단검은 사람 손에 맞게 만든 것이었다.",
-            effects: [{ kind: "item", item: "hunter_knife" }],
+            effects: [{ kind: "gold", delta: 10 }],
           },
           flee: {
             text: "족장은 뒤쫓지 않았다. 대신 무언가 무거운 것을 던졌다.",

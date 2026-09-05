@@ -72,7 +72,7 @@ export const MYSTIC_EVENTS: readonly GameEvent[] = [
           result: {
             text: "사제가 무릎을 꿇고 펜던트를 벗어 건넨다. 서약한 자에게 드리는 것이라며. 무엇을 서약했는지는 사제도 말해 주지 않는다.",
             effects: [
-              { kind: "item", item: "owl_pendant" },
+              { kind: "item", item: "lucky_coin" },
               { kind: "xp", delta: 3 },
             ],
           },
@@ -284,7 +284,7 @@ export const MYSTIC_EVENTS: readonly GameEvent[] = [
       },
       {
         text: "복채를 내고 점을 본다",
-        requires: [],
+        requires: [{ kind: "gold", min: 5 }],
         outcome: {
           kind: "direct",
           result: {

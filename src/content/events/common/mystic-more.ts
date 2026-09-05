@@ -149,15 +149,21 @@ export const MYSTIC_MORE_EVENTS: readonly GameEvent[] = [
       },
       {
         text: "축복받은 물을 청한다",
-        requires: [{ kind: "stat", stat: "wis", min: 8 }],
+        requires: [],
         outcome: {
-          kind: "direct",
-          result: {
+          kind: "check",
+          stat: "wis",
+          dc: 13,
+          success: {
             text: "은둔자는 당신 눈을 보더니 샘물을 병에 담아 준다. 이미 아는 사람에게는 설명이 필요 없다고 했다.",
             effects: [
               { kind: "item", item: "holy_water" },
               { kind: "xp", delta: 2 },
             ],
+          },
+          failure: {
+            text: "은둔자는 고개를 젓는다. 아직 준비되지 않았다고 한다. 병은 빈 채로 돌려받는다.",
+            effects: [{ kind: "sanity", delta: -1 }],
           },
         },
       },
@@ -231,7 +237,7 @@ export const MYSTIC_MORE_EVENTS: readonly GameEvent[] = [
       },
       {
         text: "돌을 던져 쫓는다",
-        requires: [],
+        requires: [{ kind: "gold", min: 2 }],
         outcome: {
           kind: "direct",
           result: {

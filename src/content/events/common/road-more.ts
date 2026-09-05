@@ -85,7 +85,10 @@ export const ROAD_MORE_EVENTS: readonly GameEvent[] = [
       },
       {
         text: "처음 보는 사이처럼 흥정한다",
-        requires: [{ kind: "notFlag", flag: "common.road_tinker_debt" }],
+        requires: [
+          { kind: "notFlag", flag: "common.road_tinker_debt" },
+          { kind: "gold", min: 3 },
+        ],
         outcome: {
           kind: "direct",
           result: {

@@ -82,7 +82,7 @@ export const ROAD_EVENTS: readonly GameEvent[] = [
           result: {
             text: "동전이 사라지고 창이 비켜난다. 세상에서 가장 비싼 널빤지 위를 걷는다.",
             effects: [
-              { kind: "gold", delta: -8 },
+              { kind: "gold", delta: -10 },
               { kind: "xp", delta: 2 },
             ],
           },

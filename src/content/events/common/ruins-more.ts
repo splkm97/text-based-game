@@ -144,7 +144,7 @@ export const RUINS_MORE_EVENTS: readonly GameEvent[] = [
             text: "그것이 쓰러지자 갱도 끝에서 푸르게 빛나는 광맥이 드러난다. 광부들이 남긴 검 한 자루가 그 빛으로 벼려져 있었다.",
             effects: [
               { kind: "removeItem", item: "torch" },
-              { kind: "item", item: "moonsteel_blade" },
+              { kind: "item", item: "silver_rapier" },
             ],
           },
           flee: {

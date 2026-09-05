@@ -82,7 +82,10 @@ export const RUINS_EVENTS: readonly GameEvent[] = [
           monster: "stone_gargoyle",
           win: {
             text: "석상이 부서진 자리에서 옛 성의 문장이 새겨진 방패가 나온다. 가고일이 지키던 것은 문이 아니라 이것이었다.",
-            effects: [{ kind: "item", item: "kite_shield" }],
+            effects: [
+              { kind: "item", item: "kite_shield" },
+              { kind: "gold", delta: 25 },
+            ],
           },
           flee: {
             text: "돌 발톱이 등을 긁고 지나간다. 석상은 문 위로 돌아가 다시 웅크린다. 다음을 기약하듯이.",
