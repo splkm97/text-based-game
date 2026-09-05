@@ -208,7 +208,7 @@ export const MONSTERS: Readonly<Record<MonsterId, Monster>> = {
     id: "mine_horror",
     name: "광산의 공포",
     description:
-      "버려진 광산 깊은 곳에 사는 무언가. 광부들은 그것에 이름을 붙이지 않았다. 부르면 온다고 믿었기 때문이다.",
+      "버려진 광산 깊은 곳에 사는 무언가로, 광부들은 그것에 이름을 붙이지 않았다. 부르면 온다고 믿었기 때문이다.",
     hp: 48,
     attack: 10,
     defense: 20,

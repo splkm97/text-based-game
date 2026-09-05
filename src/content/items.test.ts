@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { Effect, Item } from "../engine/types";
+import type { Effect, Item, WeaponKind } from "../engine/types";
 import { ITEM_IDS } from "./ids";
 import { ITEMS } from "./items";
 
@@ -11,6 +11,16 @@ const expectWithin = (value: number, min: number, max: number): void => {
   expect(Number.isInteger(value)).toBe(true);
   expect(value).toBeGreaterThanOrEqual(min);
   expect(value).toBeLessThanOrEqual(max);
+};
+
+const expectPriceBuysNonDecreasingDefense = (
+  items: readonly { readonly price: number; readonly defense: number }[],
+): void => {
+  const sorted = [...items].sort((a, b) => a.price - b.price);
+  sorted.reduce((previousDefense, item) => {
+    expect(item.defense).toBeGreaterThanOrEqual(previousDefense);
+    return item.defense;
+  }, Number.NEGATIVE_INFINITY);
 };
 
 describe("ITEMS catalog shape", () => {
@@ -63,6 +73,32 @@ describe("weapons", () => {
     expect(count((w) => w.weaponKind === "magic")).toBe(2);
     expect(count((w) => w.weaponKind === "ranged")).toBe(3);
   });
+
+  test("weaponKind and twoHanded match the exact catalog for every weapon id", () => {
+    const expected: Readonly<Record<string, { weaponKind: WeaponKind; twoHanded: boolean }>> = {
+      rusty_sword: { weaponKind: "physical", twoHanded: false },
+      hunter_knife: { weaponKind: "physical", twoHanded: false },
+      iron_mace: { weaponKind: "physical", twoHanded: false },
+      guard_saber: { weaponKind: "physical", twoHanded: false },
+      silver_rapier: { weaponKind: "physical", twoHanded: false },
+      moonsteel_blade: { weaponKind: "physical", twoHanded: false },
+      woodcutter_axe: { weaponKind: "physical", twoHanded: true },
+      pike_of_the_watch: { weaponKind: "physical", twoHanded: true },
+      giant_cleaver: { weaponKind: "physical", twoHanded: true },
+      apprentice_wand: { weaponKind: "magic", twoHanded: false },
+      ashwood_staff: { weaponKind: "magic", twoHanded: false },
+      short_bow: { weaponKind: "ranged", twoHanded: false },
+      hunting_crossbow: { weaponKind: "ranged", twoHanded: false },
+      elm_longbow: { weaponKind: "ranged", twoHanded: false },
+    };
+    const weapons = ofKind("weapon");
+    expect(weapons.map((w) => w.id).toSorted()).toEqual(Object.keys(expected).toSorted());
+    for (const weapon of weapons) {
+      expect({ weaponKind: weapon.weaponKind, twoHanded: weapon.twoHanded }).toEqual(
+        expected[weapon.id],
+      );
+    }
+  });
 });
 
 describe("shields and armor", () => {
@@ -82,6 +118,11 @@ describe("shields and armor", () => {
       expect(plate.defense).toBe(5);
     }
     expect(plate.price).toBeGreaterThanOrEqual(350);
+  });
+
+  test("a higher price never buys lower-or-equal defense within shields or within armor", () => {
+    expectPriceBuysNonDecreasingDefense(ofKind("shield"));
+    expectPriceBuysNonDecreasingDefense(ofKind("armor"));
   });
 });
 

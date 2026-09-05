@@ -45,7 +45,7 @@ export const CONSUMABLES = {
     effects: [{ kind: "hp", delta: 4 }],
     price: 18,
     name: "해독제",
-    description: "약제사가 장담한 해독제. 독이 아니었더라도 마시면 왠지 나아지는 기분이 든다.",
+    description: "약제사가 장담한 해독제. 독에 당한 게 아니어도 마시면 왠지 나아지는 기분이 든다.",
   },
   torch: {
     id: "torch",
@@ -69,7 +69,7 @@ export const CONSUMABLES = {
     effects: [{ kind: "sanity", delta: 8 }],
     price: 45,
     name: "성수",
-    description: "사제가 축복한 물. 마시면 마음이 맑아진다. 축복이 진짜였는지는 별개의 문제다.",
+    description: "사제가 축복한 물이며, 마시면 마음이 맑아진다. 축복이 진짜였는지는 별개의 문제다.",
   },
   dream_powder: {
     id: "dream_powder",
@@ -91,6 +91,7 @@ export const CONSUMABLES = {
     ],
     price: 120,
     name: "활력의 영약",
-    description: "황금빛으로 빛나는 영약. 한 모금에 온몸이 깨어난다. 값이 비싼 데는 이유가 있다.",
+    description:
+      "황금빛으로 빛나는 영약으로, 한 모금에 온몸이 깨어난다. 값이 비싼 데는 이유가 있다.",
   },
 } satisfies Partial<Readonly<Record<ItemId, Item>>>;

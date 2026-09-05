@@ -33,7 +33,7 @@ export const SHIELDS = {
     id: "mirror_shield",
     kind: "shield",
     defense: 3,
-    price: 280,
+    price: 160,
     name: "거울 방패",
     description:
       "표면을 거울처럼 닦아 놓은 방패. 적을 눈부시게 한다지만, 주로 비치는 것은 자기 얼굴이다.",
@@ -85,7 +85,7 @@ export const ARMOR = {
     id: "shadow_leathers",
     kind: "armor",
     defense: 3,
-    price: 200,
+    price: 120,
     name: "그림자 가죽옷",
     description:
       "검게 물들인 부드러운 가죽옷. 소리도 안 나고 빛도 안 비치니, 어두운 골목에서 특히 사랑받는다.",
