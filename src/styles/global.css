@@ -1,3 +1,8 @@
+/*
+ * Font: Galmuri11, from the Galmuri project (author: quiple).
+ * Licensed under the SIL Open Font License 1.1.
+ * Full license text ships at node_modules/galmuri/ofl.md.
+ */
 @font-face {
   font-family: "Galmuri11";
   src: url("galmuri/dist/Galmuri11.woff2") format("woff2");
@@ -16,6 +21,9 @@ body {
   color: var(--color-parchment);
   font-family: var(--font-pixel);
   -webkit-tap-highlight-color: transparent;
+}
+
+.safe-area {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
     env(safe-area-inset-left);
 }
