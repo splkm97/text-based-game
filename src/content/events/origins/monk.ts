@@ -353,10 +353,22 @@ export const MONK_EVENTS: readonly GameEvent[] = [
         text: "속죄 헌금을 바치고 책을 내려놓는다.",
         requires: [{ kind: "gold", min: 80 }],
         outcome: {
-          kind: "direct",
-          result: {
+          kind: "check",
+          stat: "cha",
+          dc: 12,
+          success: {
             text: "은화는 사면의 무게를 줄이지 못했지만, 문을 여는 데는 충분했다. 수도원 회계관은 영수증을 써 주었다.",
-            effects: [{ kind: "end", ending: "monk_absolution" }],
+            effects: [
+              { kind: "gold", delta: -80 },
+              { kind: "end", ending: "monk_absolution" },
+            ],
+          },
+          failure: {
+            text: "회계관은 은화를 세더니 고개를 저었다. 헌금은 받았지만 문은 열리지 않았다.",
+            effects: [
+              { kind: "gold", delta: -80 },
+              { kind: "end", ending: "monk_heresy" },
+            ],
           },
         },
       },

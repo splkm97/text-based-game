@@ -310,18 +310,18 @@ export const HEIR_EVENTS: readonly GameEvent[] = [
     requires: [{ kind: "flag", flag: "heir.step5" }],
     choices: [
       {
-        text: "인장을 내보이고 가문의 권리를 주장한다.",
+        text: "인장을 되찾은 사실을 내세워 가문의 권리를 주장한다.",
         requires: [{ kind: "flag", flag: "heir.seal" }],
         outcome: {
           kind: "check",
           stat: "cha",
           dc: 13,
           success: {
-            text: "판관은 인장을 뒤집어 보고, 서기는 잉크를 찍었다. 사촌은 아무 말도 하지 않았다. 그날 밤 그는 도시를 떠났다.",
+            text: "판관은 인장을 되찾은 경위를 캐물었으나 흠을 잡지 못했다. 서기는 잉크를 찍었다. 사촌은 아무 말도 하지 않았다. 그날 밤 그는 도시를 떠났다.",
             effects: [{ kind: "end", ending: "heir_restored" }],
           },
           failure: {
-            text: "사촌은 인장이 도난품이라고 말했고, 당신은 그것을 부인할 수 없었다. 판관은 인장을 압수하고 당신에게 국경까지의 기한을 주었다.",
+            text: "사촌은 그 경위가 도둑질이었다고 되받아쳤고, 당신은 그것을 부인할 수 없었다. 판관은 당신의 주장을 기각하고 국경까지의 기한을 주었다.",
             effects: [{ kind: "end", ending: "heir_exile" }],
           },
         },

@@ -101,6 +101,7 @@ describe.each(ORIGIN_IDS)("%s chain", (origin) => {
       expect(event.weight).toBe(6);
       expect(event.choices.length).toBeGreaterThanOrEqual(2);
       expect(event.choices.length).toBeLessThanOrEqual(4);
+      expect(event.choices.some((c) => c.requires.length === 0)).toBe(true);
     }
   });
 
