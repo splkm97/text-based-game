@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  /* PICO-8 palette is the only color source; drop Tailwind's default palette. */
+  --color-*: initial;
+  --color-ink: #1d2b53;
+  --color-ink-deep: #000000;
+  --color-slate: #5f574f;
+  --color-ash: #c2c3c7;
+  --color-parchment: #fff1e8;
+  --color-ember: #ffa300;
+  --color-blood: #ff004d;
+  --color-moss: #008751;
+  --color-sky: #29adff;
+  --color-gold: #ffec27;
+  --color-sand: #ffccaa;
+  --color-dusk: #83769c;
+
+  --font-pixel: "Galmuri11", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+}
