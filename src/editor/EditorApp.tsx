@@ -13,6 +13,7 @@ import { layoutGraph } from "./graph/layout";
 import type { GraphNode } from "./graph/model";
 import { buildGraph } from "./graph/model";
 import { Inspector } from "./Inspector";
+import { TestPlay } from "./TestPlay";
 import type { Draft } from "./textPath";
 import { applyDraft, pathKey, readText } from "./textPath";
 import type { TextPath } from "./textPathSchema";
@@ -145,7 +146,7 @@ export function EditorApp() {
             aria-label="테스트 플레이"
             className="border-t-2 border-slate p-3 text-sm text-dusk"
           >
-            테스트 플레이는 준비 중입니다.
+            <TestPlay content={content} selected={selected} />
           </section>
         </aside>
       </div>
