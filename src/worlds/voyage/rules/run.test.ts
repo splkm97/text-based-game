@@ -37,6 +37,13 @@ describe("phase cycle", () => {
     expect(run.crew.filter((crew) => crew.infection === "healthy")).toHaveLength(7);
   });
 
+  test("firstEvent lands day 1 in observe on that event, even a weight-0 one", () => {
+    const run = startRun(TEST_CONTENT, constantRng(0.5), "fallback_quiet_watch");
+    expect(run.phase).toEqual({ kind: "observe", event: "fallback_quiet_watch" });
+    expect(run.seenEvents).toEqual(["fallback_quiet_watch"]);
+    expect(codeOf(() => startRun(TEST_CONTENT, constantRng(0.5), "ev_missing"))).toBe("UNKNOWN_ID");
+  });
+
   test("comms -> observe -> act -> night -> comms, with messages and reveals on arrival", () => {
     const rng = constantRng(0.99);
     const day1 = startRun(TEST_CONTENT, rng);

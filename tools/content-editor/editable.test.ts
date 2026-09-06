@@ -30,7 +30,7 @@ const worldEditables = async (world: WorldId): Promise<readonly Editable[]> => {
     case "adventurer":
       return editables((await import("../../src/worlds/adventurer/editor/model.ts")).MODEL);
     case "voyage":
-      throw new Error("voyage has no editor model");
+      return editables((await import("../../src/worlds/voyage/editor/model.ts")).MODEL);
   }
 };
 

@@ -5,4 +5,4 @@ import type { SaveRequest } from "../../src/editor/textPathSchema.ts";
 
 export type WorldId = SaveRequest["world"];
 
-export const EDITABLE_WORLDS: readonly WorldId[] = ["adventurer"];
+export const EDITABLE_WORLDS: readonly WorldId[] = ["adventurer", "voyage"];

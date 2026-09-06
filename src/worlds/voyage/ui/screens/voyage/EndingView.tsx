@@ -68,7 +68,7 @@ export function EndingView({ run, phase, onExit }: EndingViewProps) {
       </article>
       <ActionRow>
         <ErrorLine />
-        <Button variant="primary" block onClick={startRun}>
+        <Button variant="primary" block onClick={() => startRun()}>
           다시
         </Button>
         <Button block onClick={leave}>

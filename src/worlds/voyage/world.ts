@@ -2,10 +2,11 @@ import type { WorldModule } from "../../host/world";
 import { META } from "./meta";
 import { App } from "./ui/App";
 
-// Placeholder until the editor adapter lands; the DEV check mirrors the adventurer world so the
-// production build never reaches editor code.
+// The editor import sits behind the DEV check so the production build drops the adapter chunk.
 const loadEditor: WorldModule["loadEditor"] = () =>
-  Promise.reject(new Error(import.meta.env.DEV ? "editor adapter pending" : "editor is dev-only"));
+  import.meta.env.DEV
+    ? import("./editor/adapter").then(({ ADAPTER }) => ({ open: (use) => use(ADAPTER) }))
+    : Promise.reject(new Error("editor is dev-only"));
 
 const world: WorldModule = { meta: META, Root: App, loadEditor };
 

@@ -6,6 +6,7 @@ import type {
   Action,
   Content,
   CrewState,
+  EventId,
   KnownSymptoms,
   Message,
   Phase,
@@ -90,11 +91,19 @@ const freshCrew = (content: Content): readonly CrewState[] =>
     symptoms: [],
   }));
 
-/** Day 1 comms with one random crew member already incubating. */
-export const startRun = (content: Content, rng: Rng): RunState => {
+/** Marks `event` as today's observe draw. */
+const observe = (run: RunState, event: EventId): RunState => ({
+  ...run,
+  seenEvents: run.seenEvents.includes(event) ? run.seenEvents : [...run.seenEvents, event],
+  phase: { kind: "observe", event },
+});
+
+/** Day 1 comms with one random crew member already incubating. `firstEvent` lands day 1 in
+ * observe on that event whatever its weight or requirements: the editor's test play starts there. */
+export const startRun = (content: Content, rng: Rng, firstEvent?: EventId): RunState => {
   const crew = freshCrew(content);
   const carrier = pickWeighted(crew, () => 1, rng);
-  return enterComms(
+  const run = enterComms(
     {
       day: 1,
       phase: { kind: "comms", arrived: [] },
@@ -116,16 +125,11 @@ export const startRun = (content: Content, rng: Rng): RunState => {
     },
     content,
   );
+  return firstEvent === undefined ? run : observe(run, requireEvent(firstEvent, content).id);
 };
 
-const advanceToObserve = (run: RunState, content: Content, rng: Rng): RunState => {
-  const event = drawEvent(run, content, rng);
-  return {
-    ...run,
-    seenEvents: run.seenEvents.includes(event) ? run.seenEvents : [...run.seenEvents, event],
-    phase: { kind: "observe", event },
-  };
-};
+const advanceToObserve = (run: RunState, content: Content, rng: Rng): RunState =>
+  observe(run, drawEvent(run, content, rng));
 
 const finishNight = (run: RunState, content: Content): RunState => {
   const next = { ...run, day: run.day + 1 };

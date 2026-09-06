@@ -6,7 +6,7 @@ import { createRng } from "../../../shared/rng";
 import { CONTENT } from "../content";
 import { RulesError, type RulesErrorCode } from "../rules/errors";
 import * as rules from "../rules/run";
-import type { Action, Content, Rng, RunState } from "../types";
+import type { Action, Content, EventId, Rng, RunState } from "../types";
 import { type Persistence, persistence } from "./persistence";
 
 export type RunStoreDeps = {
@@ -20,8 +20,8 @@ export type RunStore = {
   readonly run: RunState | null;
   readonly rng: Rng;
   readonly lastError: RulesErrorCode | null;
-  /** Replaces any run in progress. */
-  readonly startRun: () => void;
+  /** Replaces any run in progress; `firstEvent` forces day 1's observe draw (editor test play). */
+  readonly startRun: (firstEvent?: EventId) => void;
   /** comms -> observe; night -> the next day. */
   readonly continueRun: () => void;
   readonly choose: (index: number) => void;
@@ -72,11 +72,11 @@ export const createRunStore = (deps: RunStoreDeps): StoreApi<RunStore> =>
       run: null,
       rng: deps.makeRng(deps.now()),
       lastError: null,
-      startRun: () =>
+      startRun: (firstEvent) =>
         guarded(() => {
           const rng = deps.makeRng(deps.now());
           set({ rng });
-          commit(rules.startRun(content, rng));
+          commit(rules.startRun(content, rng, firstEvent));
         }),
       continueRun: () => transition((run, rng) => rules.continueRun(run, content, rng)),
       choose: (index) => transition((run) => rules.chooseOption(run, index, content)),

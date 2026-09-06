@@ -60,17 +60,6 @@ test("400 on a body that fails the save schema", async () => {
   expect(written).toEqual([]);
 });
 
-test("404 without a source scan when the world is not in the allowlist", async () => {
-  const { io, listed, written } = memoryIo();
-  const response = await handleSave(
-    { world: "voyage", id: "death", path: ["title"], value: "새 죽음" },
-    io,
-  );
-  expect(response).toEqual({ status: 404, error: expect.stringContaining("voyage") });
-  expect(listed).toEqual([]);
-  expect(written).toEqual([]);
-});
-
 test("404 when no file contains the id", async () => {
   const { io, listed, written, formatted } = memoryIo();
   const response = await handleSave(
