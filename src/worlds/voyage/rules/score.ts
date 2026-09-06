@@ -3,8 +3,8 @@
 import type { EndingId, RunState } from "../types";
 import { countOf } from "./crew";
 
-const SURVIVOR_POINTS = 10;
-const HEALTHY_POINTS = 5;
+export const SURVIVOR_POINTS = 10;
+export const HEALTHY_POINTS = 5;
 
 export const computeScore = (run: RunState, ending: EndingId): number =>
   ending === "arrival"

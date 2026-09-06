@@ -21,6 +21,14 @@ const makeStore = () =>
     persistence: createPersistence(memoryStorage()),
   });
 
+// jsdom 29 ships <dialog> without showModal/close; the tests only need the open flag.
+HTMLDialogElement.prototype.showModal ??= function showModal(this: HTMLDialogElement) {
+  this.setAttribute("open", "");
+};
+HTMLDialogElement.prototype.close ??= function close(this: HTMLDialogElement) {
+  this.removeAttribute("open");
+};
+
 beforeEach(() => {
   useScreenStore.setState({ screen: "title" });
 });
@@ -72,4 +80,22 @@ test("an ended run renders its ending, score, and the way out", async () => {
   expect(onExit).toHaveBeenCalledOnce();
   expect(store.getState().run).toBeNull();
   expect(useScreenStore.getState().screen).toBe("title");
+});
+
+test("새 항해 over a live voyage asks first, then starts day 1", async () => {
+  const store = makeStore();
+  const live = makeRun({ day: 12 });
+  store.setState({ run: live });
+  render(
+    <RunStoreContext value={store}>
+      <App onExit={() => {}} />
+    </RunStoreContext>,
+  );
+  await userEvent.click(screen.getByRole("button", { name: "새 항해" }));
+  expect(screen.getByRole("dialog", { hidden: true }).hasAttribute("open")).toBe(true);
+  expect(store.getState().run).toBe(live);
+  expect(useScreenStore.getState().screen).toBe("title");
+  await userEvent.click(screen.getByRole("button", { name: "새로 시작", hidden: true }));
+  expect(store.getState().run?.day).toBe(1);
+  expect(useScreenStore.getState().screen).toBe("voyage");
 });

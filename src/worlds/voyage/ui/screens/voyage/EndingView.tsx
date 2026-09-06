@@ -2,6 +2,7 @@ import { ActionRow } from "../../../../../shared/ui/ActionRow";
 import { Button } from "../../../../../shared/ui/Button";
 import { Panel } from "../../../../../shared/ui/Panel";
 import { countOf } from "../../../rules/crew";
+import { HEALTHY_POINTS, SURVIVOR_POINTS } from "../../../rules/score";
 import type { Ending, Phase, RunState } from "../../../types";
 import { useContent } from "../../contentContext";
 import { useRun } from "../../runStoreContext";
@@ -31,8 +32,8 @@ export function EndingView({ run, phase, onExit }: EndingViewProps) {
   const rows: readonly Row[] =
     phase.ending === "arrival"
       ? [
-          { label: "생존 ×10", value: countOf(run, "alive") },
-          { label: "건강 ×5", value: countOf(run, "healthy") },
+          { label: `생존 ×${SURVIVOR_POINTS}`, value: countOf(run, "alive") },
+          { label: `건강 ×${HEALTHY_POINTS}`, value: countOf(run, "healthy") },
           { label: "신뢰", value: run.trust },
         ]
       : [];
