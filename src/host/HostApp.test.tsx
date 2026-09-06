@@ -4,17 +4,28 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, test } from "vitest";
 import { META } from "../worlds/adventurer/meta";
+import { META as VOYAGE } from "../worlds/voyage/meta";
 import { HostApp } from "./HostApp";
 import { themeStyle } from "./theme";
 
 afterEach(cleanup);
 
-test("the hub lists the adventurer world; starting it opens its title screen, and 허브로 returns", async () => {
+test("the hub lists both worlds; starting the adventurer opens its title screen, and 허브로 returns", async () => {
   render(<HostApp />);
   expect(screen.getByRole("heading", { name: "TXT GAME BOX" })).toBeDefined();
   expect(screen.getByRole("heading", { name: META.title })).toBeDefined();
+  expect(screen.getByRole("heading", { name: VOYAGE.title })).toBeDefined();
   await userEvent.click(screen.getByRole("button", { name: `${META.title} 시작` }));
   expect(await screen.findByRole("button", { name: "새 모험" })).toBeDefined();
+  expect(screen.queryByRole("heading", { name: "TXT GAME BOX" })).toBeNull();
+  await userEvent.click(screen.getByRole("button", { name: "허브로" }));
+  expect(screen.getByRole("heading", { name: "TXT GAME BOX" })).toBeDefined();
+});
+
+test("starting the voyage opens its title screen, and 허브로 returns", async () => {
+  render(<HostApp />);
+  await userEvent.click(screen.getByRole("button", { name: `${VOYAGE.title} 시작` }));
+  expect(await screen.findByRole("button", { name: "새 항해" })).toBeDefined();
   expect(screen.queryByRole("heading", { name: "TXT GAME BOX" })).toBeNull();
   await userEvent.click(screen.getByRole("button", { name: "허브로" }));
   expect(screen.getByRole("heading", { name: "TXT GAME BOX" })).toBeDefined();
