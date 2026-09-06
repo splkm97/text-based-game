@@ -1,6 +1,6 @@
-import { CONTENT } from "../../../content";
 import { TRAIT_IDS } from "../../../content/ids";
 import type { TraitId } from "../../../engine/types";
+import { useContent } from "../../contentContext";
 import { ChoiceCard } from "./ChoiceCard";
 
 type TraitPickerProps = {
@@ -9,11 +9,12 @@ type TraitPickerProps = {
 };
 
 export function TraitPicker({ value, onChange }: TraitPickerProps) {
+  const content = useContent();
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="sr-only">특성</legend>
       {TRAIT_IDS.map((id) => {
-        const trait = CONTENT.traits[id];
+        const trait = content.traits[id];
         return (
           <ChoiceCard
             key={id}

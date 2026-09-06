@@ -1,11 +1,11 @@
 import { useId } from "react";
 import { PixelSprite } from "../../../art/PixelSprite";
 import { MONSTER_SPRITES } from "../../../art/sprites/monsters";
-import { CONTENT } from "../../../content";
 import type { RunPhase, RunState } from "../../../engine/types";
 import { ActionRow } from "../../components/ActionRow";
 import { Button } from "../../components/Button";
 import { StatBar } from "../../components/StatBar";
+import { useContent } from "../../contentContext";
 import { useRun } from "../../runStoreContext";
 import { ErrorLine } from "./ErrorLine";
 
@@ -22,11 +22,12 @@ type CombatViewProps = {
 export function CombatView({ run, phase, onOpenInventory }: CombatViewProps) {
   const fight = useRun((state) => state.fight);
   const flee = useRun((state) => state.flee);
+  const content = useContent();
   const reasonId = useId();
   const { combat } = phase;
-  const monster = CONTENT.monsters[combat.monster];
+  const monster = content.monsters[combat.monster];
   const hasConsumable = run.character.inventory.some(
-    (id) => CONTENT.items[id].kind === "consumable",
+    (id) => content.items[id].kind === "consumable",
   );
   // Keyed by absolute log position: lines repeat verbatim, so the text alone is no key.
   const recent = combat.log.map((line, at) => ({ at, line })).slice(-LOG_LINES);

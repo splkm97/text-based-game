@@ -6,11 +6,12 @@ import { afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest
 import { CONTENT } from "../../content";
 import { startCombat } from "../../engine/combat";
 import { fixedRolls, makeRun } from "../../engine/testContent";
-import type { RunState } from "../../engine/types";
+import type { ContentRegistry, RunState } from "../../engine/types";
 import { createMetaStore } from "../../store/metaStore";
 import { createPersistence } from "../../store/persistence";
 import { createRunStore } from "../../store/runStore";
 import { memoryStorage } from "../../store/testStorage";
+import { ContentContext } from "../contentContext";
 import { RunStoreContext } from "../runStoreContext";
 import { useScreenStore } from "../screenStore";
 import { AdventureScreen } from "./AdventureScreen";
@@ -21,7 +22,8 @@ const NOTHING = { text: "", effects: [] } as const;
 /** The run starts on the river crossing: its first choice needs a rope the hero lacks. */
 const RIVER = "common_wilds_river_crossing";
 
-const setup = (run: RunState, ...rolls: readonly number[]) => {
+/** Mounts the screen over `content`; the store keeps the real registry so the assertion is on the UI. */
+const setupWith = (content: ContentRegistry, run: RunState, ...rolls: readonly number[]) => {
   const persistence = createPersistence(memoryStorage());
   const store = createRunStore({
     content: CONTENT,
@@ -32,9 +34,11 @@ const setup = (run: RunState, ...rolls: readonly number[]) => {
   });
   store.setState({ run });
   render(
-    <RunStoreContext value={store}>
-      <AdventureScreen />
-    </RunStoreContext>,
+    <ContentContext value={content}>
+      <RunStoreContext value={store}>
+        <AdventureScreen />
+      </RunStoreContext>
+    </ContentContext>,
   );
   const phase = () => {
     const current = store.getState().run;
@@ -45,6 +49,8 @@ const setup = (run: RunState, ...rolls: readonly number[]) => {
   };
   return { store, user: userEvent.setup(), phase };
 };
+
+const setup = (run: RunState, ...rolls: readonly number[]) => setupWith(CONTENT, run, ...rolls);
 
 const button = (name: string | RegExp) => screen.getByRole<HTMLButtonElement>("button", { name });
 
@@ -124,5 +130,23 @@ describe("EndingView", () => {
     await user.click(button("타이틀로"));
     expect(store.getState().run).toBeNull();
     expect(useScreenStore.getState().screen).toBe("title");
+  });
+});
+
+describe("ContentContext", () => {
+  const SENTINEL = "덧씌운 강가의 사건";
+
+  test("the event title comes from the provided registry, not the content singleton", () => {
+    const source = CONTENT.events[RIVER];
+    if (source === undefined) {
+      throw new Error(`unknown event: ${RIVER}`);
+    }
+    const overlaid: ContentRegistry = {
+      ...CONTENT,
+      events: { ...CONTENT.events, [RIVER]: { ...source, title: SENTINEL } },
+    };
+    setupWith(overlaid, makeRun({ phase: { kind: "event", event: RIVER } }));
+    expect(screen.getByRole("heading", { name: SENTINEL })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: source.title })).toBeNull();
   });
 });

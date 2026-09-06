@@ -1,5 +1,4 @@
 import { type FormEvent, use, useState } from "react";
-import { CONTENT } from "../../content";
 import { JOURNEY_IDS } from "../../content/ids";
 import { ActionRow } from "../components/ActionRow";
 import { Button } from "../components/Button";
@@ -7,6 +6,7 @@ import { Panel } from "../components/Panel";
 import { Toggle } from "../components/Toggle";
 import { TopBar } from "../components/TopBar";
 import { WarningGlyph } from "../components/WarningGlyph";
+import { useContent } from "../contentContext";
 import { RunStoreContext, useRun } from "../runStoreContext";
 import { useScreenStore } from "../screenStore";
 import {
@@ -28,6 +28,7 @@ const HARD_MODE_WARNING = "주의: 적이 더 강해지고 골드는 줄어요. 
 
 export function CreateScreen() {
   const go = useScreenStore((state) => state.go);
+  const content = useContent();
   const store = use(RunStoreContext);
   const startRun = useRun((state) => state.startRun);
   const lastError = useRun((state) => state.lastError);
@@ -79,8 +80,8 @@ export function CreateScreen() {
             {JOURNEY_IDS.map((id) => (
               <Toggle
                 key={id}
-                label={CONTENT.journeys[id].name}
-                description={CONTENT.journeys[id].description}
+                label={content.journeys[id].name}
+                description={content.journeys[id].description}
                 checked={draft.journeys.includes(id)}
                 onChange={() => patch({ journeys: toggleJourney(draft.journeys, id) })}
               />

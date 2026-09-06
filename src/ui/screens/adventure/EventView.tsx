@@ -1,6 +1,6 @@
 import { useId } from "react";
-import { CONTENT } from "../../../content";
 import type { Choice, RunPhase, RunState } from "../../../engine/types";
+import { useContent } from "../../contentContext";
 import { useRun } from "../../runStoreContext";
 import { unavailableReason } from "./choiceReason";
 import { SaveBar } from "./SaveBar";
@@ -22,8 +22,9 @@ type ChoiceButtonProps = {
 
 /** A full-width choice. When a requirement fails, the button is disabled and says why. */
 function ChoiceButton({ run, choice, onChoose }: ChoiceButtonProps) {
+  const content = useContent();
   const reasonId = useId();
-  const reason = unavailableReason(run, choice, CONTENT);
+  const reason = unavailableReason(run, choice, content);
   return (
     <li>
       <button
@@ -45,8 +46,9 @@ function ChoiceButton({ run, choice, onChoose }: ChoiceButtonProps) {
 }
 
 export function EventView({ run, phase }: EventViewProps) {
+  const content = useContent();
   const choose = useRun((state) => state.choose);
-  const event = CONTENT.events[phase.event];
+  const event = content.events[phase.event];
   return (
     <>
       <article className="flex flex-col gap-3 p-3">

@@ -1,5 +1,5 @@
-import { CONTENT } from "../../content";
 import type { RankingEntry } from "../../engine/types";
+import { useContent } from "../contentContext";
 
 type RankingRowProps = {
   readonly entry: RankingEntry;
@@ -10,6 +10,7 @@ type RankingRowProps = {
 };
 
 export function RankingRow({ entry, rank, reason }: RankingRowProps) {
+  const content = useContent();
   return (
     <li className="flex items-start gap-3 border-2 border-slate bg-ink-deep p-2 inset-ring inset-ring-parchment/20">
       {rank !== undefined && (
@@ -23,9 +24,9 @@ export function RankingRow({ entry, rank, reason }: RankingRowProps) {
           )}
         </span>
         <span className="mt-1 flex flex-wrap gap-x-2 text-xs text-ash">
-          <span>{CONTENT.origins[entry.origin].name}</span>
+          <span>{content.origins[entry.origin].name}</span>
           <span aria-hidden="true">·</span>
-          <span>{CONTENT.endings[entry.ending].title}</span>
+          <span>{content.endings[entry.ending].title}</span>
           <span aria-hidden="true">·</span>
           <span className="tabular-nums">{entry.day}일째</span>
         </span>

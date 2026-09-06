@@ -1,7 +1,7 @@
-import { CONTENT } from "../../../content";
 import { deriveStats } from "../../../engine/character";
 import type { EquipSlot, Item, ItemId, RunState } from "../../../engine/types";
 import { Button } from "../../components/Button";
+import { useContent } from "../../contentContext";
 import { useRun } from "../../runStoreContext";
 import { ItemRow } from "./ItemRow";
 import { Sheet } from "./Sheet";
@@ -27,10 +27,11 @@ export function InventorySheet({ run, open, consumableOnly, onClose }: Inventory
   const equip = useRun((state) => state.equip);
   const unequip = useRun((state) => state.unequip);
   const use = useRun((state) => state.use);
+  const content = useContent();
   const { character } = run;
-  const derived = deriveStats(character, CONTENT);
+  const derived = deriveStats(character, content);
   const rows = character.inventory
-    .map((id, index) => ({ id, index, item: CONTENT.items[id] }))
+    .map((id, index) => ({ id, index, item: content.items[id] }))
     .filter((row) => !consumableOnly || row.item.kind === "consumable");
 
   const actionFor = (id: ItemId, index: number, item: Item) => {
@@ -79,7 +80,7 @@ export function InventorySheet({ run, open, consumableOnly, onClose }: Inventory
               <div key={slot} className="contents">
                 <dt className="text-ash">{SLOT_NAME[slot]}</dt>
                 <dd className={held === null ? "text-dusk" : ""}>
-                  {held === null ? "없음" : CONTENT.items[held].name}
+                  {held === null ? "없음" : content.items[held].name}
                 </dd>
               </div>
             );

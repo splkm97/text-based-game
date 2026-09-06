@@ -1,20 +1,21 @@
-import { CONTENT } from "../../../content";
 import { STAT_IDS, STAT_NAMES } from "../../../engine/types";
+import { useContent } from "../../contentContext";
 import { type Draft, finalStats, previewDerived } from "./draft";
 
 type SummaryProps = { readonly draft: Draft };
 
 export function Summary({ draft }: SummaryProps) {
-  const derived = previewDerived(draft);
-  const stats = finalStats(draft);
-  const bonus = CONTENT.traits[draft.trait].statBonus;
-  const journeys = draft.journeys.map((id) => CONTENT.journeys[id].name).join(", ");
+  const content = useContent();
+  const derived = previewDerived(draft, content);
+  const stats = finalStats(draft, content);
+  const bonus = content.traits[draft.trait].statBonus;
+  const journeys = draft.journeys.map((id) => content.journeys[id].name).join(", ");
   return (
     <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
       <dt className="text-ash">출신</dt>
-      <dd>{CONTENT.origins[draft.origin].name}</dd>
+      <dd>{content.origins[draft.origin].name}</dd>
       <dt className="text-ash">특성</dt>
-      <dd>{CONTENT.traits[draft.trait].name}</dd>
+      <dd>{content.traits[draft.trait].name}</dd>
       <dt className="text-ash">여정</dt>
       <dd>{journeys === "" ? "없음" : journeys}</dd>
       <dt className="text-ash">난이도</dt>

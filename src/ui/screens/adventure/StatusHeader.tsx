@@ -1,11 +1,11 @@
 import { PixelSprite } from "../../../art/PixelSprite";
 import { ICONS } from "../../../art/sprites/icons";
 import { ORIGIN_PORTRAITS } from "../../../art/sprites/portraits";
-import { CONTENT } from "../../../content";
 import { deriveStats } from "../../../engine/character";
 import { isActionPhase } from "../../../engine/run";
 import type { RunState } from "../../../engine/types";
 import { StatBar } from "../../components/StatBar";
+import { useContent } from "../../contentContext";
 
 const XP_MAX = 100;
 
@@ -21,9 +21,10 @@ type StatusHeaderProps = {
 
 /** Sticky top strip: who you are, the three resource bars, gold, bag, and pending points. */
 export function StatusHeader({ run, onOpenInventory, onOpenLevelUp }: StatusHeaderProps) {
+  const content = useContent();
   const { character } = run;
-  const origin = CONTENT.origins[character.origin];
-  const derived = deriveStats(character, CONTENT);
+  const origin = content.origins[character.origin];
+  const derived = deriveStats(character, content);
   const pending = character.pendingStatPoints;
   const canSpend = pending > 0 && isActionPhase(run);
   return (

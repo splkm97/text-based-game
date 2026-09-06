@@ -1,9 +1,9 @@
-import { CONTENT } from "../../../content";
 import type { Ending, RunPhase, RunState } from "../../../engine/types";
 import { ActionRow } from "../../components/ActionRow";
 import { Button } from "../../components/Button";
 import { Panel } from "../../components/Panel";
 import { WarningGlyph } from "../../components/WarningGlyph";
+import { useContent } from "../../contentContext";
 import { useRun } from "../../runStoreContext";
 import { useScreenStore } from "../../screenStore";
 import { ErrorLine } from "./ErrorLine";
@@ -24,8 +24,9 @@ type Row = { readonly label: string; readonly value: number };
 
 export function EndingView({ run, phase }: EndingViewProps) {
   const abandon = useRun((state) => state.abandon);
+  const content = useContent();
   const go = useScreenStore((state) => state.go);
-  const ending = CONTENT.endings[phase.ending];
+  const ending = content.endings[phase.ending];
   const { character } = run;
   // Labels mirror `computeScore`; the total is the engine's own number, never re-derived here.
   const rows: readonly Row[] = [

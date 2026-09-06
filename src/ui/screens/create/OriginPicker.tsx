@@ -1,8 +1,8 @@
 import { PixelSprite } from "../../../art/PixelSprite";
 import { ORIGIN_PORTRAITS } from "../../../art/sprites/portraits";
-import { CONTENT } from "../../../content";
 import { ORIGIN_IDS } from "../../../content/ids";
 import type { OriginId } from "../../../engine/types";
+import { useContent } from "../../contentContext";
 import { ChoiceCard } from "./ChoiceCard";
 
 type OriginPickerProps = {
@@ -11,11 +11,12 @@ type OriginPickerProps = {
 };
 
 export function OriginPicker({ value, onChange }: OriginPickerProps) {
+  const content = useContent();
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="sr-only">출신</legend>
       {ORIGIN_IDS.map((id) => {
-        const origin = CONTENT.origins[id];
+        const origin = content.origins[id];
         return (
           <ChoiceCard
             key={id}

@@ -1,6 +1,5 @@
 // The in-progress character sheet and the pure rules the creation screen shows live.
 
-import { CONTENT } from "../../../content";
 import { JOURNEY_IDS, ORIGIN_IDS, TRAIT_IDS } from "../../../content/ids";
 import {
   addStats,
@@ -12,6 +11,7 @@ import {
   mapStats,
 } from "../../../engine/character";
 import {
+  type ContentRegistry,
   type JourneyId,
   type OriginId,
   STAT_IDS,
@@ -70,20 +70,20 @@ export const toggleJourney = (
     : JOURNEY_IDS.filter((journey) => journey === id || journeys.includes(journey));
 
 /** Stats after the trait bonus, as the engine bakes them at creation. */
-export const finalStats = (draft: Draft): Stats =>
-  addStats(draft.allocation, CONTENT.traits[draft.trait].statBonus);
+export const finalStats = (draft: Draft, content: ContentRegistry): Stats =>
+  addStats(draft.allocation, content.traits[draft.trait].statBonus);
 
 /**
  * Derived stats for the sheet as it stands, points spent or not. `createCharacter` rejects an
  * incomplete allocation, so this feeds `deriveStats` an unequipped character directly.
  */
-export const previewDerived = (draft: Draft): DerivedStats =>
+export const previewDerived = (draft: Draft, content: ContentRegistry): DerivedStats =>
   deriveStats(
     {
       name: draft.name,
       origin: draft.origin,
       trait: draft.trait,
-      stats: finalStats(draft),
+      stats: finalStats(draft, content),
       hp: 0,
       sanity: 0,
       xp: 0,
@@ -93,7 +93,7 @@ export const previewDerived = (draft: Draft): DerivedStats =>
       inventory: [],
       equipment: { mainHand: null, offHand: null, armor: null, relic: null },
     },
-    CONTENT,
+    content,
   );
 
 export const toRunInput = (draft: Draft): NewRunInput => ({

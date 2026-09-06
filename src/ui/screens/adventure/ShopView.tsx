@@ -1,10 +1,10 @@
 import { useId } from "react";
-import { CONTENT } from "../../../content";
 import { deriveStats, effectiveStats, hasRoom } from "../../../engine/character";
 import { buyPrice, sellPrice } from "../../../engine/shop";
 import type { RunPhase, RunState } from "../../../engine/types";
 import { Button } from "../../components/Button";
 import { Panel } from "../../components/Panel";
+import { useContent } from "../../contentContext";
 import { useRun } from "../../runStoreContext";
 import { ItemRow, itemMeta } from "./ItemRow";
 import { SaveBar } from "./SaveBar";
@@ -17,10 +17,11 @@ export function ShopView({ run, phase }: ShopViewProps) {
   const buy = useRun((state) => state.buy);
   const sell = useRun((state) => state.sell);
   const leaveShop = useRun((state) => state.leaveShop);
+  const content = useContent();
   const { character } = run;
-  const cha = effectiveStats(character, CONTENT).cha;
-  const room = hasRoom(character, CONTENT);
-  const slots = deriveStats(character, CONTENT).inventorySlots;
+  const cha = effectiveStats(character, content).cha;
+  const room = hasRoom(character, content);
+  const slots = deriveStats(character, content).inventorySlots;
   const reasonBase = useId();
   return (
     <>
@@ -34,7 +35,7 @@ export function ShopView({ run, phase }: ShopViewProps) {
         <Panel title="팔아요">
           <ul className="flex flex-col gap-2">
             {phase.shop.stock.map((id) => {
-              const item = CONTENT.items[id];
+              const item = content.items[id];
               const price = buyPrice(item, cha);
               const reason = character.gold < price ? "골드 부족" : room ? null : "가방 가득";
               const reasonId = `${reasonBase}${id}`;
@@ -66,7 +67,7 @@ export function ShopView({ run, phase }: ShopViewProps) {
           ) : (
             <ul className="flex flex-col gap-2">
               {character.inventory.map((id, index) => {
-                const item = CONTENT.items[id];
+                const item = content.items[id];
                 return (
                   // biome-ignore lint/suspicious/noArrayIndexKey: the bag may hold the same item twice
                   <ItemRow key={`${id}-${index}`} item={item} meta={`${sellPrice(item, cha)} 골드`}>

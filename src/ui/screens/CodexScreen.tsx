@@ -3,12 +3,12 @@ import { PixelSprite } from "../../art/PixelSprite";
 import type { Sprite } from "../../art/sprite";
 import { ICONS } from "../../art/sprites/icons";
 import { MONSTER_SPRITES } from "../../art/sprites/monsters";
-import { CONTENT } from "../../content";
 import { ENDING_IDS, ITEM_IDS, MONSTER_IDS } from "../../content/ids";
-import type { Codex, Ending } from "../../engine/types";
+import type { Codex, ContentRegistry, Ending } from "../../engine/types";
 import { CodexEntry } from "../components/CodexEntry";
 import { type Tab, Tabs } from "../components/Tabs";
 import { TopBar } from "../components/TopBar";
+import { useContent } from "../contentContext";
 import { useMeta } from "../metaStoreContext";
 import { useScreenStore } from "../screenStore";
 import { SLATE } from "../theme";
@@ -40,11 +40,11 @@ const art = (sprite: Sprite, title: string, discovered: boolean): ReactNode =>
     <PixelSprite sprite={sprite} title="미발견" scale={3} className="shrink-0" monochrome={SLATE} />
   );
 
-const entries = (tab: CodexTab, codex: Codex): readonly ReactNode[] => {
+const entries = (tab: CodexTab, codex: Codex, content: ContentRegistry): readonly ReactNode[] => {
   switch (tab) {
     case "endings":
       return ENDING_IDS.map((id) => {
-        const ending = CONTENT.endings[id];
+        const ending = content.endings[id];
         return (
           <CodexEntry
             key={id}
@@ -57,7 +57,7 @@ const entries = (tab: CodexTab, codex: Codex): readonly ReactNode[] => {
       });
     case "monsters":
       return MONSTER_IDS.map((id) => {
-        const monster = CONTENT.monsters[id];
+        const monster = content.monsters[id];
         const discovered = codex.monsters.includes(id);
         return (
           <CodexEntry
@@ -71,7 +71,7 @@ const entries = (tab: CodexTab, codex: Codex): readonly ReactNode[] => {
       });
     case "items":
       return ITEM_IDS.map((id) => {
-        const item = CONTENT.items[id];
+        const item = content.items[id];
         const discovered = codex.items.includes(id);
         return (
           <CodexEntry
@@ -89,6 +89,7 @@ const entries = (tab: CodexTab, codex: Codex): readonly ReactNode[] => {
 export function CodexScreen() {
   const go = useScreenStore((state) => state.go);
   const codex = useMeta((state) => state.meta.codex);
+  const content = useContent();
   const [tab, setTab] = useState<CodexTab>("endings");
 
   return (
@@ -101,7 +102,9 @@ export function CodexScreen() {
             {codex[tab].length}/{TOTAL[tab]}
           </span>
         </p>
-        <ul className="safe-bottom flex flex-col gap-2 px-3 pt-3">{entries(tab, codex)}</ul>
+        <ul className="safe-bottom flex flex-col gap-2 px-3 pt-3">
+          {entries(tab, codex, content)}
+        </ul>
       </Tabs>
     </>
   );
