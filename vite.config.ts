@@ -2,10 +2,12 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vitest/config";
+import { contentEditor } from "./tools/content-editor/vitePlugin.ts";
 
 export default defineConfig({
   plugins: [
     react(),
+    contentEditor(),
     tailwindcss(),
     VitePWA({
       registerType: "prompt",
@@ -40,7 +42,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/**/*.test.{ts,tsx}"],
+    include: ["src/**/*.test.{ts,tsx}", "tools/**/*.test.ts"],
     // Module singletons (stores, screen state) would leak across test files otherwise.
     isolate: true,
   },
