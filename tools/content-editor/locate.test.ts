@@ -142,4 +142,8 @@ test("locates real content sources on disk", async () => {
 
   const death = locate(endings, { kind: "endingTitle", ending: "death" });
   expect(endings.slice(death.start, death.end)).toBe(JSON.stringify("죽음"));
+
+  const fallback = await readFile("src/content/events/common/fallback.ts", "utf8");
+  const rest = locate(fallback, { kind: "eventTitle", event: "fallback_rest" });
+  expect(fallback.slice(rest.start, rest.end)).toBe(JSON.stringify("조용한 하루"));
 });

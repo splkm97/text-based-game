@@ -25,6 +25,7 @@ Rules a future agent must keep. Each entry is an obligation and the reason it ex
 - Give every failure path a cost and every event at least one ungated choice. The tests assert both; the rules keep runs from stalling or becoming free.
 - Omit optional keys such as `Monster.drop` instead of writing `undefined`. `exactOptionalPropertyTypes` rejects the explicit value.
 - Write every `title` and `text` in `src/content` as a plain double-quoted string literal, not a template literal, a concatenation, or a computed value. The editor's write-back parses the file, locates that literal, and replaces it; any other form is not editable.
+- Write the `id` of every event and ending as a plain double-quoted string literal too, never an imported constant. The write-back finds the object by matching that `id` literal, so an event whose id is a reference is invisible to the editor.
 - Write user-visible text in Korean and original. Never name any existing game or studio in `src`, `public`, or `index.html`. Use 골드 as the only currency word.
 
 ## Persistence
