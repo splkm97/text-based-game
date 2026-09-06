@@ -1,8 +1,10 @@
 import { readFile } from "node:fs/promises";
 import { expect, test } from "vitest";
-import type { TextPath } from "../../src/editor/textPathSchema.ts";
+import type { SaveRequest } from "../../src/editor/textPathSchema.ts";
 import { locateText } from "./locate.ts";
 import { replaceLiteral } from "./rewrite.ts";
+
+type Path = SaveRequest["path"];
 
 // Same shape as src/worlds/adventurer/content/events/origins/monk.ts plus an endings record.
 // Korean text precedes every located literal so a UTF-8 byte offset base would slice the wrong span.
@@ -78,75 +80,83 @@ export const ENDINGS = {
 const EVENT = "origin_monk_1_abbey_messenger";
 const FILE = "monk.ts";
 
-const locate = (source: string, path: TextPath) => {
-  const result = locateText(source, FILE, path);
+const locate = (source: string, id: string, path: Path) => {
+  const result = locateText(source, FILE, id, path);
   if (!result.ok) throw new Error(`expected ok, got ${result.reason}`);
   return result;
 };
 
-const CASES: readonly (readonly [TextPath, string])[] = [
-  [{ kind: "eventTitle", event: EVENT }, "수도원의 전령"],
-  [{ kind: "eventText", event: EVENT }, "수도원 문이 닫힌 지 하루 만에 전령이 당신을 따라잡는다."],
-  [{ kind: "choiceText", event: EVENT, choice: 1 }, "전령을 설득해 시간을 번다."],
-  [
-    { kind: "leafText", event: EVENT, choice: 0, leaf: "result" },
-    "전령은 한참 뒤따르다가 말머리를 돌렸다.",
-  ],
-  [
-    { kind: "leafText", event: EVENT, choice: 1, leaf: "failure" },
-    "전령은 절차에는 관심이 없었다.",
-  ],
-  [{ kind: "endingTitle", ending: "death" }, "죽음"],
-  [{ kind: "endingText", ending: "death" }, "당신은 길 위에서 숨을 거두었다."],
+const CASES: readonly (readonly [string, Path, string])[] = [
+  [EVENT, ["title"], "수도원의 전령"],
+  [EVENT, ["text"], "수도원 문이 닫힌 지 하루 만에 전령이 당신을 따라잡는다."],
+  [EVENT, ["choices", 1, "text"], "전령을 설득해 시간을 번다."],
+  [EVENT, ["choices", 0, "outcome", "result", "text"], "전령은 한참 뒤따르다가 말머리를 돌렸다."],
+  [EVENT, ["choices", 1, "outcome", "failure", "text"], "전령은 절차에는 관심이 없었다."],
+  ["death", ["title"], "죽음"],
+  ["death", ["text"], "당신은 길 위에서 숨을 거두었다."],
 ];
 
-test.each(CASES)("locates %j as the quoted literal", (path, expected) => {
-  const { start, end } = locate(FIXTURE, path);
+test.each(CASES)("locates %s %j as the quoted literal", (id, path, expected) => {
+  const { start, end } = locate(FIXTURE, id, path);
   expect(FIXTURE.slice(start, end)).toBe(JSON.stringify(expected));
 });
 
-test.each(CASES)("replacing %j changes only that literal", (path) => {
-  const before = locate(FIXTURE, path);
+test.each(CASES)("replacing %s %j changes only that literal", (id, path) => {
+  const before = locate(FIXTURE, id, path);
   const value = '새 문장 "따옴표" 포함';
   const next = replaceLiteral(FIXTURE, before.start, before.end, value);
-  const after = locate(next, path);
+  const after = locate(next, id, path);
 
   expect(next.slice(after.start, after.end)).toBe(JSON.stringify(value));
   expect(next.slice(0, after.start)).toBe(FIXTURE.slice(0, before.start));
   expect(next.slice(after.end)).toBe(FIXTURE.slice(before.end));
 });
 
-test("unknown event, out-of-range choice, and missing leaf are notFound", () => {
-  const paths: readonly TextPath[] = [
-    { kind: "eventTitle", event: "no_such_event" },
-    { kind: "choiceText", event: EVENT, choice: 2 },
-    { kind: "leafText", event: EVENT, choice: 0, leaf: "success" },
-    { kind: "endingTitle", ending: "no_such_ending" },
+test("unknown id, missing property, and mismatched step kinds are notFound", () => {
+  const targets: readonly (readonly [string, Path])[] = [
+    ["no_such_event", ["title"]],
+    ["no_such_ending", ["title"]],
+    [EVENT, ["choices", 2, "text"]],
+    [EVENT, ["choices", 0, "outcome", "success", "text"]],
+    [EVENT, ["choices", "0", "text"]],
+    [EVENT, ["title", 0]],
+    [EVENT, ["title", "length"]],
   ];
-  for (const path of paths) {
-    expect(locateText(FIXTURE, FILE, path)).toEqual({ ok: false, reason: "notFound" });
+  for (const [id, path] of targets) {
+    expect(locateText(FIXTURE, FILE, id, path), `${id} ${path.join(".")}`).toEqual({
+      ok: false,
+      reason: "notFound",
+    });
   }
 });
 
-test("a template literal value is notLiteral", () => {
-  const path: TextPath = { kind: "eventTitle", event: "origin_monk_2_wayside_shrine" };
-  expect(locateText(FIXTURE, FILE, path)).toEqual({ ok: false, reason: "notLiteral" });
+test("a template literal or an object at the end of the path is notLiteral", () => {
+  const targets: readonly (readonly [string, Path])[] = [
+    ["origin_monk_2_wayside_shrine", ["title"]],
+    [EVENT, ["choices", 0, "outcome"]],
+  ];
+  for (const [id, path] of targets) {
+    expect(locateText(FIXTURE, FILE, id, path), `${id} ${path.join(".")}`).toEqual({
+      ok: false,
+      reason: "notLiteral",
+    });
+  }
 });
 
 test("locates real content sources on disk", async () => {
   const monk = await readFile("src/worlds/adventurer/content/events/origins/monk.ts", "utf8");
   const endings = await readFile("src/worlds/adventurer/content/endings.ts", "utf8");
 
-  const title = locate(monk, { kind: "eventTitle", event: EVENT });
+  const title = locate(monk, EVENT, ["title"]);
   expect(monk.slice(title.start, title.end)).toBe(JSON.stringify("수도원의 전령"));
 
-  const death = locate(endings, { kind: "endingTitle", ending: "death" });
+  const death = locate(endings, "death", ["title"]);
   expect(endings.slice(death.start, death.end)).toBe(JSON.stringify("죽음"));
 
   const fallback = await readFile(
     "src/worlds/adventurer/content/events/common/fallback.ts",
     "utf8",
   );
-  const rest = locate(fallback, { kind: "eventTitle", event: "fallback_rest" });
+  const rest = locate(fallback, "fallback_rest", ["title"]);
   expect(fallback.slice(rest.start, rest.end)).toBe(JSON.stringify("조용한 하루"));
 });

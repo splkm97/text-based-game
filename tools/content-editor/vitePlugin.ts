@@ -17,7 +17,7 @@ const BODY_LIMIT = 64 * 1024;
 const run = promisify(execFile);
 
 const fileIo = (root: string): SaveIo => ({
-  listFiles: () => contentSourceFiles(root),
+  listFiles: (world) => contentSourceFiles(root, world),
   readFile: (file) => readFile(join(root, file), "utf8"),
   writeFile: (file, source) => writeFile(join(root, file), source, "utf8"),
   format: async (file) => {

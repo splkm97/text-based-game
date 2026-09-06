@@ -3,7 +3,7 @@
 // its quotes. oxc `start`/`end` are UTF-16 code-unit offsets, so they index the JS string directly.
 
 import type {
-  ArrayExpressionElement,
+  ArrayExpression,
   Expression,
   ObjectExpression,
   ObjectProperty,
@@ -11,7 +11,7 @@ import type {
   StringLiteral,
 } from "oxc-parser";
 import { parseSync, Visitor } from "oxc-parser";
-import type { TextPath } from "../../src/editor/textPathSchema.ts";
+import type { SaveRequest } from "../../src/editor/textPathSchema.ts";
 
 export type LocateResult =
   | { readonly ok: true; readonly start: number; readonly end: number }
@@ -19,9 +19,6 @@ export type LocateResult =
 
 const isStringLiteral = (node: Expression): node is StringLiteral =>
   node.type === "Literal" && typeof node.value === "string";
-
-const isObject = (node: ArrayExpressionElement | undefined): node is ObjectExpression =>
-  node?.type === "ObjectExpression";
 
 const keyName = (key: PropertyKey): string | undefined => {
   if (key.type === "Identifier") return key.name;
@@ -33,21 +30,23 @@ const property = (object: ObjectExpression, name: string): Expression | undefine
     (p): p is ObjectProperty => p.type === "Property" && !p.computed && keyName(p.key) === name,
   )?.value;
 
+const element = (array: ArrayExpression, index: number): Expression | undefined => {
+  const node = array.elements[index];
+  return node === null || node === undefined || node.type === "SpreadElement" ? undefined : node;
+};
+
 const hasId = (object: ObjectExpression, id: string): boolean => {
   const value = property(object, "id");
   return value !== undefined && isStringLiteral(value) && value.value === id;
 };
 
-const choiceAt = (event: ObjectExpression, index: number): ObjectExpression | undefined => {
-  const choices = property(event, "choices");
-  const element = choices?.type === "ArrayExpression" ? choices.elements[index] : undefined;
-  return isObject(element) ? element : undefined;
-};
-
-const leafOf = (choice: ObjectExpression, leaf: string): ObjectExpression | undefined => {
-  const outcome = property(choice, "outcome");
-  const node = isObject(outcome) ? property(outcome, leaf) : undefined;
-  return isObject(node) ? node : undefined;
+/** One step down: a property name into an object literal, an index into an array literal. */
+const step = (node: Expression | undefined, key: string | number): Expression | undefined => {
+  if (node === undefined) return undefined;
+  if (typeof key === "number") {
+    return node.type === "ArrayExpression" ? element(node, key) : undefined;
+  }
+  return node.type === "ObjectExpression" ? property(node, key) : undefined;
 };
 
 /** All object literals in the program, in source order. */
@@ -62,43 +61,17 @@ const objectLiterals = (
   return found;
 };
 
-const isEvent = (object: ObjectExpression, id: string): boolean =>
-  hasId(object, id) && property(object, "choices") !== undefined;
-
-const isEnding = (object: ObjectExpression, id: string): boolean =>
-  hasId(object, id) && property(object, "tone") !== undefined;
-
-/** The expression holding the path's text, or undefined when the path does not resolve. */
-const resolve = (objects: readonly ObjectExpression[], path: TextPath): Expression | undefined => {
-  switch (path.kind) {
-    case "eventTitle":
-    case "eventText": {
-      const event = objects.find((o) => isEvent(o, path.event));
-      return event ? property(event, path.kind === "eventTitle" ? "title" : "text") : undefined;
-    }
-    case "choiceText": {
-      const event = objects.find((o) => isEvent(o, path.event));
-      const choice = event ? choiceAt(event, path.choice) : undefined;
-      return choice ? property(choice, "text") : undefined;
-    }
-    case "leafText": {
-      const event = objects.find((o) => isEvent(o, path.event));
-      const choice = event ? choiceAt(event, path.choice) : undefined;
-      const leaf = choice ? leafOf(choice, path.leaf) : undefined;
-      return leaf ? property(leaf, "text") : undefined;
-    }
-    case "endingTitle":
-    case "endingText": {
-      const ending = objects.find((o) => isEnding(o, path.ending));
-      return ending ? property(ending, path.kind === "endingTitle" ? "title" : "text") : undefined;
-    }
-  }
-};
-
-export const locateText = (source: string, filename: string, path: TextPath): LocateResult => {
+/** The string literal reached by walking `path` from the first object literal whose `id` is `id`. */
+export const locateText = (
+  source: string,
+  filename: string,
+  id: string,
+  path: SaveRequest["path"],
+): LocateResult => {
   const objects = objectLiterals(source, filename);
   if (objects === undefined) return { ok: false, reason: "parseError" };
-  const node = resolve(objects, path);
+  const owner = objects.find((object) => hasId(object, id));
+  const node = path.reduce<Expression | undefined>(step, owner);
   if (node === undefined) return { ok: false, reason: "notFound" };
   if (!isStringLiteral(node)) return { ok: false, reason: "notLiteral" };
   return { ok: true, start: node.start, end: node.end };

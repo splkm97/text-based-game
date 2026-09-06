@@ -40,3 +40,7 @@ export type EditorModel<R> = {
 export type EditorAdapter<R = never> = EditorModel<R> & {
   readonly TestPlay: ComponentType<{ readonly registry: R; readonly selectedId: string | null }>;
 };
+/** Hides a world's registry type from the frame: `open` lends the adapter to a generic consumer. */
+export type EditorAdapterHandle = {
+  readonly open: <T>(use: <R>(adapter: EditorAdapter<R>) => T) => T;
+};

@@ -4,21 +4,12 @@
 
 import { z } from "zod";
 
-export const LEAF_KEYS = ["result", "success", "failure", "win", "flee", "leave"] as const;
-export type LeafKey = (typeof LEAF_KEYS)[number];
-
-const id = z.string().min(1);
-const index = z.number().int().min(0);
-
-export const TextPathSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("eventTitle"), event: id }),
-  z.object({ kind: z.literal("eventText"), event: id }),
-  z.object({ kind: z.literal("choiceText"), event: id, choice: index }),
-  z.object({ kind: z.literal("leafText"), event: id, choice: index, leaf: z.enum(LEAF_KEYS) }),
-  z.object({ kind: z.literal("endingTitle"), ending: id }),
-  z.object({ kind: z.literal("endingText"), ending: id }),
-]);
-export type TextPath = z.infer<typeof TextPathSchema>;
-
-export const SaveRequestSchema = z.object({ path: TextPathSchema, value: z.string().min(1) });
+/** Names the object literal carrying `id`, then walks `path` (property names and array indices)
+ * down to one string literal, which becomes `value`. */
+export const SaveRequestSchema = z.object({
+  world: z.enum(["adventurer", "voyage"]),
+  id: z.string().min(1),
+  path: z.array(z.union([z.string(), z.number().int().min(0)])).readonly(),
+  value: z.string().min(1),
+});
 export type SaveRequest = z.infer<typeof SaveRequestSchema>;

@@ -2,7 +2,7 @@
 // host imports a world's `meta.ts` statically and its `world.ts` through a dynamic `import()`.
 
 import type { ComponentType } from "react";
-import type { EditorAdapter } from "../editor/adapter";
+import type { EditorAdapterHandle } from "../editor/adapter";
 import type { Sprite } from "../shared/art/sprite";
 
 export type WorldId = "adventurer" | "voyage";
@@ -43,5 +43,5 @@ export type WorldRootProps = { readonly onExit: () => void };
 export type WorldModule = {
   readonly meta: WorldMeta;
   readonly Root: ComponentType<WorldRootProps>;
-  readonly loadEditor: () => Promise<EditorAdapter>;
+  readonly loadEditor: () => Promise<EditorAdapterHandle>;
 };

@@ -1,26 +1,22 @@
 // SVG lane graph. Pure view over a `Layout`: selection lives in the parent, hover in this file.
-// Colors come from the theme's CSS variables so the palette stays in one place.
+// Colors come from the theme's role tokens so the world's palette applies unchanged.
 
 import type { KeyboardEvent } from "react";
 import { useState } from "react";
-import type { JourneyId, OriginId } from "../../worlds/adventurer/content/ids";
-import type { Layout, LayoutOptions, Placed } from "../../worlds/adventurer/editor/graph/layout";
-import type {
-  EdgeKind,
-  GraphEdge,
-  GraphNode,
-  Lane,
-} from "../../worlds/adventurer/editor/graph/model";
-import type { EventPool } from "../../worlds/adventurer/engine/types";
+import type { TokenName } from "../../host/world";
+import type { GraphEdge, GraphNode } from "../adapter";
+import type { Layout, LayoutOptions, Placed } from "./layout";
 
-export type PoolFilter = "all" | OriginId | JourneyId;
+/** The filter value that shows every group. */
+export const ALL_GROUPS = "all";
 
 export type GraphViewProps = {
   readonly layout: Layout;
   readonly edges: readonly GraphEdge[];
   readonly selectedId: string | null;
   readonly dirtyIds: ReadonlySet<string>;
-  readonly filter: PoolFilter;
+  /** `ALL_GROUPS` or a `group` value; ungrouped nodes always show. */
+  readonly filter: string;
   readonly onSelect: (id: string) => void;
 };
 
@@ -30,65 +26,26 @@ export const LAYOUT_OPTIONS: LayoutOptions = {
   gapX: 16,
   gapY: 12,
   laneGap: 64,
-  commonColumns: 3,
 };
 
 const HEADER_HEIGHT = 32;
 const LABEL_MAX = 14;
 const MARKER_SIZE = 8;
+const TERMINAL_BAR = 4;
 
-const LANE_TITLE: Readonly<Record<Lane, string>> = {
-  start: "시작",
-  origin: "출신",
-  common: "공통",
-  journey: "여정",
-  ending: "엔딩",
-};
-
-const EDGE_COLOR: Readonly<Record<EdgeKind, string>> = {
-  next: "var(--color-parchment)",
-  flag: "var(--color-dusk)",
-  start: "var(--color-sky)",
-  end: "var(--color-ember)",
-};
+const color = (token: TokenName): string => `var(--color-${token})`;
 
 const truncate = (label: string): string => {
   const chars = [...label];
   return chars.length > LABEL_MAX ? `${chars.slice(0, LABEL_MAX - 1).join("")}…` : label;
 };
 
-const poolVisible = (pool: EventPool, filter: PoolFilter): boolean => {
-  switch (pool.kind) {
-    case "common":
-      return true;
-    case "origin":
-      return pool.origin === filter;
-    case "journey":
-      return pool.journey === filter;
-  }
-};
-
-/** Common and ending lanes always show; start and story lanes show only the chosen pool. */
-const visible = (node: GraphNode, filter: PoolFilter): boolean => {
-  if (filter === "all") return true;
-  switch (node.kind) {
-    case "origin":
-    case "journey":
-      return node.id === filter;
-    case "event":
-      return poolVisible(node.pool, filter);
-    case "ending":
-      return true;
-  }
-};
-
-/** Engine-owned endings and zero-weight events are reachable only by rule, so they read muted. */
-const muted = (node: GraphNode): boolean =>
-  (node.kind === "ending" && node.engineOwned) || (node.kind === "event" && node.weight === 0);
+const visible = (node: GraphNode, filter: string): boolean =>
+  filter === ALL_GROUPS || node.group === undefined || node.group === filter;
 
 const nodeStroke = (node: GraphNode, selected: boolean): string => {
-  if (selected) return "var(--color-ember)";
-  return muted(node) ? "var(--color-dusk)" : "var(--color-ash)";
+  if (selected) return color("ember");
+  return node.muted === true ? color("dusk") : color("ash");
 };
 
 const edgePath = (from: Placed, to: Placed): string => {
@@ -101,7 +58,8 @@ const edgePath = (from: Placed, to: Placed): string => {
   return `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`;
 };
 
-const edgeKey = (edge: GraphEdge): string => [edge.from, edge.to, edge.kind, edge.label].join("|");
+const edgeKey = (edge: GraphEdge): string =>
+  [edge.from, edge.to, edge.token, edge.style, edge.label].join("|");
 
 type NodeProps = {
   readonly placed: Placed;
@@ -114,6 +72,7 @@ type NodeProps = {
 function Node({ placed, selected, dirty, onSelect, onActive }: NodeProps) {
   const { node, x, y } = placed;
   const { nodeWidth, nodeHeight } = LAYOUT_OPTIONS;
+  const stroke = nodeStroke(node, selected);
   const onKeyDown = (event: KeyboardEvent<SVGGElement>) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -140,16 +99,17 @@ function Node({ placed, selected, dirty, onSelect, onActive }: NodeProps) {
       <rect
         width={nodeWidth}
         height={nodeHeight}
-        fill="var(--color-ink-deep)"
-        stroke={nodeStroke(node, selected)}
+        fill={color("ink-deep")}
+        stroke={stroke}
         strokeWidth={2}
       />
+      {node.terminal === true && <rect width={TERMINAL_BAR} height={nodeHeight} fill={stroke} />}
       <text
         x={12}
         y={nodeHeight / 2}
         dominantBaseline="central"
         fontSize={12}
-        fill={muted(node) ? "var(--color-dusk)" : "var(--color-parchment)"}
+        fill={node.muted === true ? color("dusk") : color("parchment")}
       >
         {truncate(node.label)}
       </text>
@@ -159,7 +119,7 @@ function Node({ placed, selected, dirty, onSelect, onActive }: NodeProps) {
           y={6}
           width={MARKER_SIZE}
           height={MARKER_SIZE}
-          fill="var(--color-gold)"
+          fill={color("gold")}
         />
       )}
     </g>
@@ -178,6 +138,7 @@ export function GraphView({
   const shown = layout.placed.filter((placed) => visible(placed.node, filter));
   const byId = new Map(shown.map((placed) => [placed.node.id, placed]));
   const highlight = activeId ?? selectedId;
+  const tokens = [...new Set(edges.map((edge) => edge.token))];
 
   return (
     <svg
@@ -187,10 +148,10 @@ export function GraphView({
       aria-label="콘텐츠 그래프"
     >
       <defs>
-        {(Object.keys(EDGE_COLOR) as readonly EdgeKind[]).map((kind) => (
+        {tokens.map((token) => (
           <marker
-            key={kind}
-            id={`arrow-${kind}`}
+            key={token}
+            id={`arrow-${token}`}
             viewBox="0 0 8 8"
             refX={8}
             refY={4}
@@ -198,13 +159,13 @@ export function GraphView({
             markerHeight={MARKER_SIZE}
             orient="auto"
           >
-            <path d="M0 0L8 4L0 8z" fill={EDGE_COLOR[kind]} />
+            <path d="M0 0L8 4L0 8z" fill={color(token)} />
           </marker>
         ))}
       </defs>
-      {(Object.keys(LANE_TITLE) as readonly Lane[]).map((lane) => (
-        <text key={lane} x={layout.laneX[lane]} y={20} fontSize={12} fill="var(--color-ash)">
-          {LANE_TITLE[lane]}
+      {layout.lanes.map(({ lane, x }) => (
+        <text key={lane.id} x={x} y={20} fontSize={12} fill={color("ash")}>
+          {lane.label}
         </text>
       ))}
       <g transform={`translate(0 ${HEADER_HEIGHT})`}>
@@ -218,11 +179,11 @@ export function GraphView({
               key={edgeKey(edge)}
               d={edgePath(from, to)}
               fill="none"
-              stroke={EDGE_COLOR[edge.kind]}
+              stroke={color(edge.token)}
               strokeWidth={lit ? 4 : 2}
-              strokeDasharray={edge.kind === "flag" ? "6 4" : undefined}
+              strokeDasharray={edge.style === "dashed" ? "6 4" : undefined}
               opacity={highlight === null || lit ? 1 : 0.35}
-              markerEnd={`url(#arrow-${edge.kind})`}
+              markerEnd={`url(#arrow-${edge.token})`}
             >
               <title>{edge.label}</title>
             </path>,

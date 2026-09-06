@@ -1,27 +1,26 @@
-// Dev-only content editor page. Owns the draft, the selection (mirrored to `?node=`), and the
-// pool filter; the graph and inspector are views over them. `content` overlays the draft on the
-// committed registry so the test-play section runs the engine over unsaved edits.
+// Dev-only content editor page. Picks the world from `?world=` (the first registered world by
+// default) and loads its editor adapter; the frame then owns the draft, the selection (mirrored
+// to `?node=`), and the group filter, with the graph and inspector as views over them.
+// `registry` overlays the draft on the committed registry so test play runs over unsaved edits.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { WORLDS } from "../host/registry";
+import { themeStyle } from "../host/theme";
+import type { WorldMeta } from "../host/world";
+import { PaletteContext } from "../shared/art/paletteContext";
 import { Button } from "../shared/ui/Button";
-import { CONTENT } from "../worlds/adventurer/content";
-import { JOURNEY_IDS, ORIGIN_IDS } from "../worlds/adventurer/content/ids";
-import { layoutGraph } from "../worlds/adventurer/editor/graph/layout";
-import type { GraphNode } from "../worlds/adventurer/editor/graph/model";
-import { buildGraph } from "../worlds/adventurer/editor/graph/model";
-import { TestPlay } from "../worlds/adventurer/editor/TestPlay";
-import type { Draft } from "../worlds/adventurer/editor/textPath";
-import { applyDraft, pathKey, readText } from "../worlds/adventurer/editor/textPath";
+import type { ContentGraph, EditorAdapter, EditorAdapterHandle, TextPath } from "./adapter";
 import { saveText } from "./api";
-import type { PoolFilter } from "./graph/GraphView";
-import { GraphView, LAYOUT_OPTIONS } from "./graph/GraphView";
-import { Inspector } from "./Inspector";
-import type { TextPath } from "./textPathSchema";
+import { ALL_GROUPS, GraphView, LAYOUT_OPTIONS } from "./graph/GraphView";
+import { layoutGraph } from "./graph/layout";
+import type { Draft } from "./Inspector";
+import { draftKey, Inspector } from "./Inspector";
 
 const NODE_PARAM = "node";
+const WORLD_PARAM = "world";
 
-const readNodeParam = (): string | null =>
-  new URLSearchParams(window.location.search).get(NODE_PARAM);
+const readParam = (name: string): string | null =>
+  new URLSearchParams(window.location.search).get(name);
 
 const writeNodeParam = (id: string): void => {
   const url = new URL(window.location.href);
@@ -32,29 +31,41 @@ const writeNodeParam = (id: string): void => {
 const without = (draft: Draft, key: string): Draft =>
   new Map([...draft].filter(([k]) => k !== key));
 
-const ownerOf = (path: TextPath): string =>
-  path.kind === "endingTitle" || path.kind === "endingText" ? path.ending : path.event;
+type GroupOption = { readonly value: string; readonly label: string };
 
-const isFilter = (value: string): value is PoolFilter =>
-  value === "all" ||
-  ORIGIN_IDS.some((id) => id === value) ||
-  JOURNEY_IDS.some((id) => id === value);
+/** The groups of the first lane, labeled by the first node carrying each. */
+const groupOptions = (graph: ContentGraph): readonly GroupOption[] => {
+  const first = graph.lanes[0]?.id;
+  const options = graph.nodes.flatMap((node) =>
+    node.lane === first && node.group !== undefined
+      ? [{ value: node.group, label: node.label }]
+      : [],
+  );
+  return options.filter((o, i) => options.findIndex((p) => p.value === o.value) === i);
+};
 
-export function EditorApp() {
+type EditorProps<R> = { readonly adapter: EditorAdapter<R>; readonly meta: WorldMeta };
+
+function Editor<R>({ adapter, meta }: EditorProps<R>) {
   const [draft, setDraft] = useState<Draft>(() => new Map());
-  const [selectedId, setSelectedId] = useState<string | null>(readNodeParam);
-  const [filter, setFilter] = useState<PoolFilter>("all");
+  const [selectedId, setSelectedId] = useState<string | null>(() => readParam(NODE_PARAM));
+  const [filter, setFilter] = useState(ALL_GROUPS);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const content = useMemo(() => applyDraft(CONTENT, draft), [draft]);
-  const graph = useMemo(() => buildGraph(content), [content]);
-  const layout = useMemo(() => layoutGraph(graph, LAYOUT_OPTIONS), [graph]);
-  const dirtyIds = useMemo(
-    () => new Set([...draft.values()].map((entry) => ownerOf(entry.path))),
-    [draft],
+  const registry = useMemo(
+    () =>
+      [...draft.values()].reduce(
+        (acc, entry) => adapter.applyText(acc, entry.id, entry.path, entry.value),
+        adapter.registry,
+      ),
+    [adapter, draft],
   );
-  const selected: GraphNode | null = graph.nodes.find((node) => node.id === selectedId) ?? null;
+  const graph = useMemo(() => adapter.graph(registry), [adapter, registry]);
+  const layout = useMemo(() => layoutGraph(graph, LAYOUT_OPTIONS), [graph]);
+  const dirtyIds = useMemo(() => new Set([...draft.values()].map((entry) => entry.id)), [draft]);
+  const selected = graph.nodes.find((node) => node.id === selectedId) ?? null;
+  const fields = selected === null ? [] : adapter.fields(adapter.registry, selected.id);
 
   const select = (id: string) => {
     setSelectedId(id);
@@ -62,21 +73,26 @@ export function EditorApp() {
   };
 
   const change = (path: TextPath, value: string) => {
-    const key = pathKey(path);
+    if (selected === null) return;
+    const id = selected.id;
+    const key = draftKey(id, path);
     setDraft((prev) =>
-      value === readText(CONTENT, path)
+      value === adapter.readText(adapter.registry, id, path)
         ? without(prev, key)
-        : new Map([...prev, [key, { path, value }]]),
+        : new Map([...prev, [key, { id, path, value }]]),
     );
   };
 
-  const revert = (path: TextPath) => setDraft((prev) => without(prev, pathKey(path)));
+  const revert = (path: TextPath) => {
+    if (selected === null) return;
+    setDraft((prev) => without(prev, draftKey(selected.id, path)));
+  };
 
   const save = async () => {
     setSaving(true);
     setError(null);
     for (const [key, entry] of draft) {
-      const result = await saveText(entry);
+      const result = await saveText({ world: adapter.worldId, ...entry });
       if (!result.ok) {
         setError(`저장 실패: ${result.error}`);
         break;
@@ -92,23 +108,17 @@ export function EditorApp() {
     <div className="flex h-dvh flex-col bg-ink text-parchment">
       <header className="flex min-h-11 flex-wrap items-center gap-3 border-b-2 border-slate px-3 py-2">
         <h1 className="text-2xl">콘텐츠 편집기</h1>
+        <span className="text-sm text-ash">{meta.title}</span>
         <select
-          aria-label="풀 필터"
+          aria-label="그룹 필터"
           value={filter}
-          onChange={(event) => {
-            if (isFilter(event.target.value)) setFilter(event.target.value);
-          }}
+          onChange={(event) => setFilter(event.target.value)}
           className="min-h-11 border-2 border-slate bg-ink-deep px-2 font-pixel text-base text-parchment"
         >
-          <option value="all">전체</option>
-          {ORIGIN_IDS.map((id) => (
-            <option key={id} value={id}>
-              {CONTENT.origins[id].name}
-            </option>
-          ))}
-          {JOURNEY_IDS.map((id) => (
-            <option key={id} value={id}>
-              {CONTENT.journeys[id].name}
+          <option value={ALL_GROUPS}>전체</option>
+          {groupOptions(graph).map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
             </option>
           ))}
         </select>
@@ -136,20 +146,78 @@ export function EditorApp() {
         </div>
         <aside className="flex w-120 shrink-0 flex-col overflow-y-auto border-l-2 border-slate">
           <Inspector
-            committed={CONTENT}
             node={selected}
+            fields={fields}
+            original={(path) =>
+              selected === null ? undefined : adapter.readText(adapter.registry, selected.id, path)
+            }
             draft={draft}
             onChange={change}
             onRevert={revert}
           />
           <section
             aria-label="테스트 플레이"
-            className="border-t-2 border-slate p-3 text-sm text-dusk"
+            style={themeStyle(meta.theme)}
+            className="border-t-2 border-slate bg-ink p-3 text-sm text-dusk"
           >
-            <TestPlay content={content} selected={selected} />
+            <PaletteContext value={meta.theme.palette}>
+              <adapter.TestPlay registry={registry} selectedId={selectedId} />
+            </PaletteContext>
           </section>
         </aside>
       </div>
     </div>
   );
+}
+
+type LoadState =
+  | { readonly kind: "loading" }
+  | { readonly kind: "ready"; readonly handle: EditorAdapterHandle; readonly meta: WorldMeta }
+  | { readonly kind: "failed"; readonly error: string };
+
+/** The world named by `?world=`, else the first registered one. */
+const worldEntry = () => {
+  const id = readParam(WORLD_PARAM);
+  const entry = WORLDS.find((world) => world.meta.id === id) ?? WORLDS[0];
+  if (entry === undefined) throw new Error("no world is registered");
+  return entry;
+};
+
+export function EditorApp() {
+  const [state, setState] = useState<LoadState>({ kind: "loading" });
+
+  useEffect(() => {
+    const entry = worldEntry();
+    const cancelled = new AbortController();
+    entry
+      .load()
+      .then((module) => module.loadEditor())
+      .then(
+        (handle) => {
+          if (!cancelled.signal.aborted) setState({ kind: "ready", handle, meta: entry.meta });
+        },
+        (error: unknown) => {
+          const message = error instanceof Error ? error.message : String(error);
+          if (!cancelled.signal.aborted) setState({ kind: "failed", error: message });
+        },
+      );
+    return () => cancelled.abort();
+  }, []);
+
+  switch (state.kind) {
+    case "loading":
+      return (
+        <p role="status" className="p-3 text-sm text-ash">
+          편집기를 불러오는 중…
+        </p>
+      );
+    case "failed":
+      return (
+        <p role="alert" className="p-3 text-sm text-blood">
+          편집기를 불러오지 못했습니다: {state.error}
+        </p>
+      );
+    case "ready":
+      return state.handle.open((adapter) => <Editor adapter={adapter} meta={state.meta} />);
+  }
 }

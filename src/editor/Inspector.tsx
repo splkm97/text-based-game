@@ -1,70 +1,55 @@
-// Edits the selected node's texts into the draft. `committed` is the registry without the draft:
-// each field shows the draft value when one exists and the committed value as the original.
+// Edits the selected node's texts into the draft. Each field shows the draft value when one exists
+// and the committed value as the original. A field is single-line when its label ends with 제목
+// or contains 선택지, otherwise a textarea.
 
 import { useId } from "react";
 import { Button } from "../shared/ui/Button";
-import type { GraphNode } from "../worlds/adventurer/editor/graph/model";
-import type { Draft } from "../worlds/adventurer/editor/textPath";
-import { pathKey, readText } from "../worlds/adventurer/editor/textPath";
-import type { ContentRegistry, GameEvent } from "../worlds/adventurer/engine/types";
-import type { LeafKey, TextPath } from "./textPathSchema";
-import { LEAF_KEYS } from "./textPathSchema";
+import type { EditableField, GraphNode, TextPath } from "./adapter";
+
+export type DraftEntry = { readonly id: string; readonly path: TextPath; readonly value: string };
+export type Draft = ReadonlyMap<string, DraftEntry>;
+
+/** Stable key for a draft entry, e.g. `origin_monk_1/choices.1.outcome.failure.text`. */
+export const draftKey = (id: string, path: TextPath): string => `${id}/${path.join(".")}`;
 
 export type InspectorProps = {
-  readonly committed: ContentRegistry;
   readonly node: GraphNode | null;
+  /** The node's editable texts; empty when the node has none. */
+  readonly fields: readonly EditableField[];
+  /** The committed text at a path of the selected node, without the draft. */
+  readonly original: (path: TextPath) => string | undefined;
   readonly draft: Draft;
   readonly onChange: (path: TextPath, value: string) => void;
   readonly onRevert: (path: TextPath) => void;
 };
 
-type FieldEdit = Pick<InspectorProps, "committed" | "draft" | "onChange" | "onRevert">;
-
-const LEAF_LABEL: Readonly<Record<LeafKey, string>> = {
-  result: "결과",
-  success: "성공",
-  failure: "실패",
-  win: "승리",
-  flee: "도주",
-  leave: "나가기",
-};
+type FieldEdit = Pick<InspectorProps, "original" | "draft" | "onChange" | "onRevert">;
 
 const CONTROL =
   "w-full min-h-11 border-2 border-slate bg-ink-deep px-3 py-2 font-pixel text-base text-parchment";
 
-type FieldProps = FieldEdit & {
-  readonly label: string;
-  readonly path: TextPath;
-  readonly multiline?: boolean;
-};
+const singleLine = (label: string): boolean => label.endsWith("제목") || label.includes("선택지");
+
+type FieldProps = FieldEdit & { readonly nodeId: string; readonly field: EditableField };
 
 function Field({
-  label,
-  path,
-  multiline = false,
-  committed,
+  nodeId,
+  field: { label, path },
+  original,
   draft,
   onChange,
   onRevert,
 }: FieldProps) {
   const id = useId();
-  const original = readText(committed, path) ?? "";
-  const entry = draft.get(pathKey(path));
-  const value = entry?.value ?? original;
+  const committed = original(path) ?? "";
+  const entry = draft.get(draftKey(nodeId, path));
+  const value = entry?.value ?? committed;
   return (
     <div className="flex flex-col gap-1">
       <label htmlFor={id} className="text-sm text-ash">
         {label}
       </label>
-      {multiline ? (
-        <textarea
-          id={id}
-          rows={4}
-          value={value}
-          onChange={(event) => onChange(path, event.target.value)}
-          className={`${CONTROL} leading-prose`}
-        />
-      ) : (
+      {singleLine(label) ? (
         <input
           id={id}
           type="text"
@@ -73,10 +58,18 @@ function Field({
           onChange={(event) => onChange(path, event.target.value)}
           className={CONTROL}
         />
+      ) : (
+        <textarea
+          id={id}
+          rows={4}
+          value={value}
+          onChange={(event) => onChange(path, event.target.value)}
+          className={`${CONTROL} leading-prose`}
+        />
       )}
       {entry !== undefined && (
         <div className="flex items-start gap-2">
-          <p className="min-w-0 flex-1 text-xs text-dusk">원래: {original}</p>
+          <p className="min-w-0 flex-1 text-xs text-dusk">원래: {committed}</p>
           <Button aria-label={`${label} 원래대로`} onClick={() => onRevert(path)}>
             원래대로
           </Button>
@@ -86,73 +79,7 @@ function Field({
   );
 }
 
-type ChoiceProps = FieldEdit & { readonly event: string; readonly index: number };
-
-function ChoiceFields({ event, index, ...edit }: ChoiceProps) {
-  const leafPath = (leaf: LeafKey): TextPath => ({ kind: "leafText", event, choice: index, leaf });
-  return (
-    <fieldset className="flex flex-col gap-3 border-2 border-slate p-3">
-      <legend className="px-1 text-sm text-ash">선택지 {index + 1}</legend>
-      <Field label="텍스트" path={{ kind: "choiceText", event, choice: index }} {...edit} />
-      {LEAF_KEYS.filter((leaf) => readText(edit.committed, leafPath(leaf)) !== undefined).map(
-        (leaf) => (
-          <Field key={leaf} label={LEAF_LABEL[leaf]} path={leafPath(leaf)} multiline {...edit} />
-        ),
-      )}
-    </fieldset>
-  );
-}
-
-function EventFields({ event, ...edit }: FieldEdit & { readonly event: GameEvent }) {
-  return (
-    <>
-      <Field label="제목" path={{ kind: "eventTitle", event: event.id }} {...edit} />
-      <Field label="본문" path={{ kind: "eventText", event: event.id }} multiline {...edit} />
-      {event.choices.map((_, index) => (
-        <ChoiceFields
-          key={pathKey({ kind: "choiceText", event: event.id, choice: index })}
-          event={event.id}
-          index={index}
-          {...edit}
-        />
-      ))}
-    </>
-  );
-}
-
-function Body({ node, ...edit }: FieldEdit & { readonly node: GraphNode }) {
-  switch (node.kind) {
-    case "origin":
-      return (
-        <p className="text-sm leading-prose text-ash">
-          {edit.committed.origins[node.id].description}
-        </p>
-      );
-    case "journey":
-      return (
-        <p className="text-sm leading-prose text-ash">
-          {edit.committed.journeys[node.id].description}
-        </p>
-      );
-    case "event": {
-      const event = edit.committed.events[node.id];
-      return event === undefined ? (
-        <p className="text-sm text-blood">사건 {node.id}이(가) 콘텐츠에 없습니다.</p>
-      ) : (
-        <EventFields event={event} {...edit} />
-      );
-    }
-    case "ending":
-      return (
-        <>
-          <Field label="제목" path={{ kind: "endingTitle", ending: node.id }} {...edit} />
-          <Field label="본문" path={{ kind: "endingText", ending: node.id }} multiline {...edit} />
-        </>
-      );
-  }
-}
-
-export function Inspector({ node, ...edit }: InspectorProps) {
+export function Inspector({ node, fields, ...edit }: InspectorProps) {
   if (node === null) {
     return <p className="p-3 text-sm text-dusk">그래프에서 노드를 선택하세요.</p>;
   }
@@ -162,7 +89,13 @@ export function Inspector({ node, ...edit }: InspectorProps) {
         <h2 className="text-base text-parchment">{node.label}</h2>
         <p className="text-xs text-dusk">{node.id}</p>
       </header>
-      <Body node={node} {...edit} />
+      {fields.length === 0 ? (
+        <p className="text-sm text-ash">편집할 텍스트가 없습니다.</p>
+      ) : (
+        fields.map((field) => (
+          <Field key={field.path.join(".")} nodeId={node.id} field={field} {...edit} />
+        ))
+      )}
     </div>
   );
 }

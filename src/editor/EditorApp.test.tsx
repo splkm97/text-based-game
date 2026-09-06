@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 
-// The editor's two boundaries: the URL query that keeps the selection, and the save endpoint.
-// `fetch` is the only stub; everything else runs over the real content registry.
+// The editor's boundaries: the URL query that picks the world and keeps the selection, and the
+// save endpoint. `fetch` is the only stub; everything else runs over the real adventurer adapter.
 
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { EditorApp } from "./EditorApp";
@@ -31,11 +31,13 @@ const jsonResponse = (status: number, body: object): Response =>
     headers: { "content-type": "application/json" },
   });
 
-const nodeButton = (id: string): Element => {
-  const node = document.querySelector(`[data-node-id="${id}"]`);
-  if (node === null) throw new Error(`no graph node for ${id}`);
-  return node;
-};
+/** The graph node for `id`, once the world's adapter has loaded and rendered. */
+const nodeButton = (id: string): Promise<Element> =>
+  waitFor(() => {
+    const node = document.querySelector(`[data-node-id="${id}"]`);
+    if (node === null) throw new Error(`no graph node for ${id}`);
+    return node;
+  });
 
 const titleInput = (): HTMLInputElement => {
   const input = screen.getByLabelText("제목");
@@ -46,7 +48,7 @@ const titleInput = (): HTMLInputElement => {
 /** Selects the abbey messenger event and appends `suffix` to its title. */
 const editTitle = async (suffix: string): Promise<void> => {
   render(<EditorApp />);
-  await userEvent.click(nodeButton(EVENT_ID));
+  await userEvent.click(await nodeButton(EVENT_ID));
   expect(titleInput().value).toBe(EVENT_TITLE);
   await userEvent.type(titleInput(), suffix);
 };
@@ -82,7 +84,9 @@ test("saving posts one request per dirty field and clears the draft on success",
   expect(init?.method).toBe("POST");
   if (typeof init?.body !== "string") throw new Error("body is not a JSON string");
   expect(JSON.parse(init.body)).toEqual({
-    path: { kind: "eventTitle", event: EVENT_ID },
+    world: "adventurer",
+    id: EVENT_ID,
+    path: ["title"],
     value: `${EVENT_TITLE} 개정`,
   });
 });
@@ -122,9 +126,10 @@ test("a failed save keeps the draft and shows the error", async () => {
   expect(screen.getByText("변경 1건")).toBeDefined();
 });
 
-test("loading with ?node=death selects the death ending", () => {
-  window.history.replaceState(null, "", "/__content?node=death");
+test("loading with ?world=adventurer&node=death selects the death ending", async () => {
+  window.history.replaceState(null, "", "/__content?world=adventurer&node=death");
   render(<EditorApp />);
+  const death = await nodeButton("death");
   expect(titleInput().value).toBe("죽음");
-  expect(nodeButton("death").getAttribute("aria-pressed")).toBe("true");
+  expect(death.getAttribute("aria-pressed")).toBe("true");
 });
