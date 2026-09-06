@@ -79,6 +79,13 @@ describe("startRun", () => {
     expect(state().lastError).toBe("INVALID_ALLOCATION");
     expect(persistence.loadRun()).toBeNull();
   });
+
+  test("firstEvent reaches the engine and overrides the draw", () => {
+    const { state } = setup();
+    // `ev_rich_only` needs 1000 gold, so an ordinary draw can never land on it.
+    state().startRun({ ...newRunInput, firstEvent: "ev_rich_only" });
+    expect(state().run?.phase).toEqual({ kind: "event", event: "ev_rich_only" });
+  });
 });
 
 describe("start, choose, continue", () => {

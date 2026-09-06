@@ -11,6 +11,7 @@ import * as engine from "../engine/run";
 import type {
   ContentRegistry,
   EquipSlot,
+  EventId,
   ItemId,
   JourneyId,
   RankingEntry,
@@ -26,6 +27,8 @@ import { uuid } from "./uuid";
 export type NewRunInput = CreateCharacterInput & {
   readonly hardMode: boolean;
   readonly journeys: readonly JourneyId[];
+  /** Starts day 1 on this event instead of drawing one; the content editor sets it. */
+  readonly firstEvent?: EventId;
 };
 
 export type RunStoreDeps = {
@@ -139,7 +142,12 @@ export const createRunStore = (deps: RunStoreDeps): StoreApi<RunStore> =>
           const rng = deps.makeRng(deps.now());
           const character = createCharacter(input, content);
           const run = engine.startRun(
-            { character, hardMode: input.hardMode, journeys: input.journeys },
+            {
+              character,
+              hardMode: input.hardMode,
+              journeys: input.journeys,
+              ...(input.firstEvent === undefined ? {} : { firstEvent: input.firstEvent }),
+            },
             content,
             rng,
           );

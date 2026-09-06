@@ -12,6 +12,7 @@ import {
   type Character,
   type ContentRegistry,
   type EquipSlot,
+  type EventId,
   type ItemId,
   type JourneyId,
   type Outcome,
@@ -29,6 +30,8 @@ export type StartRunInput = {
   readonly character: Character;
   readonly hardMode: boolean;
   readonly journeys: readonly JourneyId[];
+  /** Starts day 1 on this event instead of drawing one, bypassing pool and requirement checks. */
+  readonly firstEvent?: EventId;
 };
 
 /** Phases in which the player may manage the character without spending a turn. */
@@ -62,7 +65,7 @@ export const startRun = (input: StartRunInput, content: ContentRegistry, rng: Rn
       journeys: input.journeys,
       flags: content.origins[input.character.origin].startingFlags,
       seenEvents: [],
-      queuedEvent: null,
+      queuedEvent: input.firstEvent ?? null,
       pendingEnding: null,
       log: [],
     },

@@ -9,8 +9,16 @@ import {
   startRun,
   unequipItem,
 } from "./run";
-import { constantRng, fixedRolls, makeHero, makeRun, TEST_CONTENT } from "./testContent";
-import type { RunState } from "./types";
+import {
+  constantRng,
+  fixedRolls,
+  makeHero,
+  makeRun,
+  TEST_CONTENT,
+  TEST_EVENTS,
+  withEvents,
+} from "./testContent";
+import type { GameEvent, RunState } from "./types";
 
 const codeOf = (fn: () => void): string => {
   try {
@@ -46,6 +54,33 @@ describe("startRun", () => {
       phase: { kind: "event", event: "ev_crossroad" },
     });
     expect(run.seenEvents).toEqual(["ev_crossroad"]);
+  });
+
+  test("firstEvent starts on an event this character could never draw", () => {
+    const monkVigil: GameEvent = {
+      id: "ev_monk_vigil",
+      title: "수도사의 밤샘",
+      text: "촛불이 흔들린다.",
+      pool: { kind: "origin", origin: "origin_monk" },
+      weight: 100,
+      once: false,
+      requires: [],
+      choices: [
+        {
+          text: "기도한다",
+          requires: [],
+          outcome: { kind: "direct", result: { text: "기도했다.", effects: [] } },
+        },
+      ],
+    };
+    const run = startRun(
+      { character: makeHero(), hardMode: false, journeys: [], firstEvent: monkVigil.id },
+      withEvents({ ...TEST_EVENTS, [monkVigil.id]: monkVigil }),
+      constantRng(0),
+    );
+    expect(run.phase).toEqual({ kind: "event", event: "ev_monk_vigil" });
+    expect(run.seenEvents).toEqual(["ev_monk_vigil"]);
+    expect(run.queuedEvent).toBeNull();
   });
 });
 
