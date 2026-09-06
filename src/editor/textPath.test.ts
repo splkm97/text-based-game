@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { CONTENT } from "../content";
-import type { TextPath } from "./textPath";
 import { applyDraft, pathKey, readText } from "./textPath";
+import type { TextPath } from "./textPathSchema";
 
 const EVENT = "origin_monk_1_abbey_messenger";
 
