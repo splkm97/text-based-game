@@ -80,7 +80,9 @@ export function EditorApp() {
         setError(`저장 실패: ${result.error}`);
         break;
       }
-      setDraft((prev) => without(prev, key));
+      // The field stays editable while its request is in flight, so drop the entry only when the
+      // draft still holds the value that was saved; a newer edit outlives the save.
+      setDraft((prev) => (prev.get(key)?.value === entry.value ? without(prev, key) : prev));
     }
     setSaving(false);
   };
@@ -133,7 +135,7 @@ export function EditorApp() {
         </div>
         <aside className="flex w-120 shrink-0 flex-col overflow-y-auto border-l-2 border-slate">
           <Inspector
-            content={CONTENT}
+            committed={CONTENT}
             node={selected}
             draft={draft}
             onChange={change}

@@ -1,5 +1,5 @@
-// Edits the selected node's texts into the draft. `content` is the committed registry: each
-// field shows the draft value when one exists and the committed value as the original.
+// Edits the selected node's texts into the draft. `committed` is the registry without the draft:
+// each field shows the draft value when one exists and the committed value as the original.
 
 import { useId } from "react";
 import type { ContentRegistry, GameEvent } from "../engine/types";
@@ -11,14 +11,14 @@ import type { LeafKey, TextPath } from "./textPathSchema";
 import { LEAF_KEYS } from "./textPathSchema";
 
 export type InspectorProps = {
-  readonly content: ContentRegistry;
+  readonly committed: ContentRegistry;
   readonly node: GraphNode | null;
   readonly draft: Draft;
   readonly onChange: (path: TextPath, value: string) => void;
   readonly onRevert: (path: TextPath) => void;
 };
 
-type FieldEdit = Pick<InspectorProps, "content" | "draft" | "onChange" | "onRevert">;
+type FieldEdit = Pick<InspectorProps, "committed" | "draft" | "onChange" | "onRevert">;
 
 const LEAF_LABEL: Readonly<Record<LeafKey, string>> = {
   result: "결과",
@@ -38,9 +38,17 @@ type FieldProps = FieldEdit & {
   readonly multiline?: boolean;
 };
 
-function Field({ label, path, multiline = false, content, draft, onChange, onRevert }: FieldProps) {
+function Field({
+  label,
+  path,
+  multiline = false,
+  committed,
+  draft,
+  onChange,
+  onRevert,
+}: FieldProps) {
   const id = useId();
-  const original = readText(content, path) ?? "";
+  const original = readText(committed, path) ?? "";
   const entry = draft.get(pathKey(path));
   const value = entry?.value ?? original;
   return (
@@ -86,7 +94,7 @@ function ChoiceFields({ event, index, ...edit }: ChoiceProps) {
     <fieldset className="flex flex-col gap-3 border-2 border-slate p-3">
       <legend className="px-1 text-sm text-ash">선택지 {index + 1}</legend>
       <Field label="텍스트" path={{ kind: "choiceText", event, choice: index }} {...edit} />
-      {LEAF_KEYS.filter((leaf) => readText(edit.content, leafPath(leaf)) !== undefined).map(
+      {LEAF_KEYS.filter((leaf) => readText(edit.committed, leafPath(leaf)) !== undefined).map(
         (leaf) => (
           <Field key={leaf} label={LEAF_LABEL[leaf]} path={leafPath(leaf)} multiline {...edit} />
         ),
@@ -117,17 +125,17 @@ function Body({ node, ...edit }: FieldEdit & { readonly node: GraphNode }) {
     case "origin":
       return (
         <p className="text-sm leading-prose text-ash">
-          {edit.content.origins[node.id].description}
+          {edit.committed.origins[node.id].description}
         </p>
       );
     case "journey":
       return (
         <p className="text-sm leading-prose text-ash">
-          {edit.content.journeys[node.id].description}
+          {edit.committed.journeys[node.id].description}
         </p>
       );
     case "event": {
-      const event = edit.content.events[node.id];
+      const event = edit.committed.events[node.id];
       return event === undefined ? (
         <p className="text-sm text-blood">사건 {node.id}이(가) 콘텐츠에 없습니다.</p>
       ) : (

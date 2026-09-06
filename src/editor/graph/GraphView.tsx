@@ -4,6 +4,7 @@
 import type { KeyboardEvent } from "react";
 import { useState } from "react";
 import type { JourneyId, OriginId } from "../../content/ids";
+import type { EventPool } from "../../engine/types";
 import type { Layout, LayoutOptions, Placed } from "./layout";
 import type { EdgeKind, GraphEdge, GraphNode, Lane } from "./model";
 
@@ -51,6 +52,17 @@ const truncate = (label: string): string => {
   return chars.length > LABEL_MAX ? `${chars.slice(0, LABEL_MAX - 1).join("")}…` : label;
 };
 
+const poolVisible = (pool: EventPool, filter: PoolFilter): boolean => {
+  switch (pool.kind) {
+    case "common":
+      return true;
+    case "origin":
+      return pool.origin === filter;
+    case "journey":
+      return pool.journey === filter;
+  }
+};
+
 /** Common and ending lanes always show; start and story lanes show only the chosen pool. */
 const visible = (node: GraphNode, filter: PoolFilter): boolean => {
   if (filter === "all") return true;
@@ -59,15 +71,7 @@ const visible = (node: GraphNode, filter: PoolFilter): boolean => {
     case "journey":
       return node.id === filter;
     case "event":
-      switch (node.pool.kind) {
-        case "common":
-          return true;
-        case "origin":
-          return node.pool.origin === filter;
-        case "journey":
-          return node.pool.journey === filter;
-      }
-      break;
+      return poolVisible(node.pool, filter);
     case "ending":
       return true;
   }
