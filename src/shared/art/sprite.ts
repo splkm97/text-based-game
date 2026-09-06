@@ -1,10 +1,8 @@
-// 16x16 pixel sprite model. Each row is 16 chars: a hex digit 0-f indexes a 16-entry palette,
-// "." is transparent.
-
-export const SPRITE_SIZE = 16;
+// Square pixel sprite model. `rows` holds `size` strings of `size` chars: a hex digit 0-f
+// indexes a 16-entry palette, "." is transparent.
 
 export type Sprite = {
-  readonly size: typeof SPRITE_SIZE;
+  readonly size: number;
   readonly rows: readonly string[];
 };
 
@@ -26,12 +24,13 @@ const fillOf = (palette: readonly string[], char: string): string | undefined =>
 
 /** Throws RangeError on a wrong row count, a wrong row length, or a char outside 0-f and ".". */
 export function validateSprite(sprite: Sprite): void {
-  if (sprite.rows.length !== SPRITE_SIZE) {
-    throw new RangeError(`sprite needs ${SPRITE_SIZE} rows, got ${sprite.rows.length}`);
+  const { size } = sprite;
+  if (sprite.rows.length !== size) {
+    throw new RangeError(`sprite needs ${size} rows, got ${sprite.rows.length}`);
   }
   for (const [y, row] of sprite.rows.entries()) {
-    if (row.length !== SPRITE_SIZE) {
-      throw new RangeError(`row ${y} needs ${SPRITE_SIZE} chars, got ${row.length}`);
+    if (row.length !== size) {
+      throw new RangeError(`row ${y} needs ${size} chars, got ${row.length}`);
     }
     for (const char of row) {
       if (char !== TRANSPARENT && DIGITS.indexOf(char) < 0) {
@@ -41,9 +40,9 @@ export function validateSprite(sprite: Sprite): void {
   }
 }
 
-/** Builds and validates a sprite so an authoring typo fails at module load. */
+/** Builds and validates a square sprite from its rows so an authoring typo fails at module load. */
 export function sprite(rows: readonly string[]): Sprite {
-  const built: Sprite = { size: SPRITE_SIZE, rows };
+  const built: Sprite = { size: rows.length, rows };
   validateSprite(built);
   return built;
 }

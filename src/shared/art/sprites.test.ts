@@ -1,12 +1,13 @@
 import { describe, expect, test } from "vitest";
 import { PICO8 } from "./pico8";
-import { SPRITE_SIZE, type Sprite, spriteRects, validateSprite } from "./sprite";
+import { type Sprite, spriteRects, validateSprite } from "./sprite";
 
-const BLANK_ROW = ".".repeat(SPRITE_SIZE);
-const blankRows = (): readonly string[] => Array.from({ length: SPRITE_SIZE }, () => BLANK_ROW);
-const withRow = (y: number, row: string): Sprite => ({
-  size: SPRITE_SIZE,
-  rows: blankRows().with(y, row),
+const SIZE = 16;
+const blankRows = (size = SIZE): readonly string[] =>
+  Array.from({ length: size }, () => ".".repeat(size));
+const withRow = (y: number, row: string, size = SIZE): Sprite => ({
+  size,
+  rows: blankRows(size).with(y, row),
 });
 
 describe("PICO8", () => {
@@ -34,23 +35,27 @@ describe("PICO8", () => {
 
 describe("validateSprite", () => {
   test("accepts a blank 16x16 sprite", () => {
-    expect(() => validateSprite({ size: SPRITE_SIZE, rows: blankRows() })).not.toThrow();
+    expect(() => validateSprite({ size: SIZE, rows: blankRows() })).not.toThrow();
+  });
+
+  test("accepts a blank 32x32 sprite", () => {
+    expect(() => validateSprite({ size: 32, rows: blankRows(32) })).not.toThrow();
   });
 
   test("throws on wrong row count", () => {
-    expect(() => validateSprite({ size: SPRITE_SIZE, rows: blankRows().slice(1) })).toThrow(
-      RangeError,
-    );
+    expect(() => validateSprite({ size: SIZE, rows: blankRows().slice(1) })).toThrow(RangeError);
+    expect(() => validateSprite({ size: 32, rows: blankRows(SIZE) })).toThrow(RangeError);
   });
 
   test("throws on wrong row length", () => {
-    expect(() => validateSprite(withRow(3, ".".repeat(SPRITE_SIZE - 1)))).toThrow(RangeError);
-    expect(() => validateSprite(withRow(3, ".".repeat(SPRITE_SIZE + 1)))).toThrow(RangeError);
+    expect(() => validateSprite(withRow(3, ".".repeat(SIZE - 1)))).toThrow(RangeError);
+    expect(() => validateSprite(withRow(3, ".".repeat(SIZE + 1)))).toThrow(RangeError);
+    expect(() => validateSprite(withRow(20, ".".repeat(SIZE), 32))).toThrow(RangeError);
   });
 
   test("throws on a character outside 0-f and .", () => {
-    expect(() => validateSprite(withRow(0, `x${".".repeat(SPRITE_SIZE - 1)}`))).toThrow(RangeError);
-    expect(() => validateSprite(withRow(0, `A${".".repeat(SPRITE_SIZE - 1)}`))).toThrow(RangeError);
+    expect(() => validateSprite(withRow(0, `x${".".repeat(SIZE - 1)}`))).toThrow(RangeError);
+    expect(() => validateSprite(withRow(0, `A${".".repeat(SIZE - 1)}`))).toThrow(RangeError);
   });
 });
 
@@ -73,6 +78,12 @@ describe("spriteRects", () => {
     expect(spriteRects(withRow(0, "12.2............"), PICO8, "#abcdef")).toEqual([
       { x: 0, y: 0, width: 2, fill: "#abcdef" },
       { x: 3, y: 0, width: 1, fill: "#abcdef" },
+    ]);
+  });
+
+  test("a 32x32 sprite yields rects at coordinates beyond 15", () => {
+    expect(spriteRects(withRow(31, `${".".repeat(28)}7777`, 32), PICO8)).toEqual([
+      { x: 28, y: 31, width: 4, fill: PICO8[7] },
     ]);
   });
 });

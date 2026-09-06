@@ -1,6 +1,6 @@
 import { use } from "react";
 import { PaletteContext } from "./paletteContext";
-import { SPRITE_SIZE, type Sprite, spriteRects } from "./sprite";
+import { type Sprite, spriteRects } from "./sprite";
 
 type PixelSpriteProps = {
   readonly sprite: Sprite;
@@ -14,10 +14,11 @@ type PixelSpriteProps = {
 
 export function PixelSprite({ sprite, title, scale = 4, className, monochrome }: PixelSpriteProps) {
   const palette = use(PaletteContext);
-  const side = SPRITE_SIZE * scale;
+  const { size } = sprite;
+  const side = size * scale;
   return (
     <svg
-      viewBox={`0 0 ${SPRITE_SIZE} ${SPRITE_SIZE}`}
+      viewBox={`0 0 ${size} ${size}`}
       width={side}
       height={side}
       role="img"
