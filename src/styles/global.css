@@ -25,12 +25,12 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Top, right, and left only: the bottom inset belongs to whichever row ends the screen. */
 .safe-area {
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
 }
 
-/* Sticky bottom rows scroll past the root's safe-area padding, so they carry their own. */
+/* The last row of every screen (sticky action rows, or the content itself) pads the bottom inset. */
 .safe-bottom {
   padding-bottom: calc(var(--spacing) * 3 + env(safe-area-inset-bottom));
 }

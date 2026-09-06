@@ -19,7 +19,7 @@ export function RankingRow({ entry, rank, reason }: RankingRowProps) {
         <span className="flex flex-wrap items-center gap-2">
           <span className="text-base">{entry.name}</span>
           {entry.hardMode && (
-            <span className="border border-slate px-1 text-xs text-ash">어려움</span>
+            <span className="border-2 border-slate px-1 text-xs text-ash">어려움</span>
           )}
         </span>
         <span className="mt-1 flex flex-wrap gap-x-2 text-xs text-ash">
@@ -27,7 +27,7 @@ export function RankingRow({ entry, rank, reason }: RankingRowProps) {
           <span aria-hidden="true">·</span>
           <span>{CONTENT.endings[entry.ending].title}</span>
           <span aria-hidden="true">·</span>
-          <span className="tabular-nums">{entry.day}일차</span>
+          <span className="tabular-nums">{entry.day}일째</span>
         </span>
         {reason !== undefined && <span className="mt-1 block text-xs text-dusk">{reason}</span>}
       </span>

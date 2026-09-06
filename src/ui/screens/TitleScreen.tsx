@@ -36,7 +36,7 @@ export function TitleScreen() {
   };
 
   return (
-    <section className="flex flex-1 flex-col items-center px-4 pt-8 pb-6 text-center">
+    <section className="safe-bottom flex flex-1 flex-col items-center px-4 pt-8 text-center">
       <PixelSprite sprite={ICONS.d20} title="20면체 주사위" scale={5} />
       <h1 className="mt-6 text-display">모험가 이야기</h1>
       <p className="mt-2 text-sm text-ash">{TAGLINE}</p>

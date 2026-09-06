@@ -1,11 +1,12 @@
 import { type ReactNode, use, useState } from "react";
 import { isRanked } from "../../../engine/score";
 import type { RunState } from "../../../engine/types";
+import { ActionRow } from "../../components/ActionRow";
 import { Button } from "../../components/Button";
 import { WarningGlyph } from "../../components/WarningGlyph";
 import { RunStoreContext, useRun } from "../../runStoreContext";
 import { useScreenStore } from "../../screenStore";
-import { ActionRow } from "./ActionRow";
+import { ErrorLine } from "./ErrorLine";
 import { Sheet } from "./Sheet";
 
 const LOAD_NOTE = "불러오기 3회 이상이면 랭킹에 오르지 않아요.";
@@ -48,6 +49,7 @@ export function SaveBar({ run, children }: SaveBarProps) {
 
   return (
     <ActionRow>
+      <ErrorLine />
       {children}
       <div className="grid grid-cols-[auto_1fr_auto] gap-2">
         <Button onClick={onSave}>저장</Button>

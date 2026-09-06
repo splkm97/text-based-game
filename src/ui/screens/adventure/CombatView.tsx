@@ -3,10 +3,11 @@ import { PixelSprite } from "../../../art/PixelSprite";
 import { MONSTER_SPRITES } from "../../../art/sprites/monsters";
 import { CONTENT } from "../../../content";
 import type { RunPhase, RunState } from "../../../engine/types";
+import { ActionRow } from "../../components/ActionRow";
 import { Button } from "../../components/Button";
 import { StatBar } from "../../components/StatBar";
 import { useRun } from "../../runStoreContext";
-import { ActionRow } from "./ActionRow";
+import { ErrorLine } from "./ErrorLine";
 
 const LOG_LINES = 6;
 
@@ -55,6 +56,7 @@ export function CombatView({ run, phase, onOpenInventory }: CombatViewProps) {
         </ol>
       </section>
       <ActionRow>
+        <ErrorLine />
         <div className="grid grid-cols-3 gap-2">
           <Button variant="primary" onClick={fight}>
             공격

@@ -1,6 +1,5 @@
 // Meta state that outlives a run: the codex and the ranking. Every change is persisted.
 
-import { useStore } from "zustand";
 import { createStore, type StoreApi } from "zustand/vanilla";
 import type { EndingId, ItemId, MetaState, MonsterId, RankingEntry } from "../engine/types";
 import { type Persistence, persistence } from "./persistence";
@@ -58,6 +57,3 @@ export const createMetaStore = (store: Persistence): MetaStoreApi =>
   });
 
 export const metaStore: MetaStoreApi = createMetaStore(persistence);
-
-export const useMetaStore = <T>(selector: (state: MetaStore) => T): T =>
-  useStore(metaStore, selector);

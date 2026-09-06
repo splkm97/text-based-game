@@ -1,11 +1,12 @@
 import { CONTENT } from "../../../content";
 import type { Ending, RunPhase, RunState } from "../../../engine/types";
+import { ActionRow } from "../../components/ActionRow";
 import { Button } from "../../components/Button";
 import { Panel } from "../../components/Panel";
 import { WarningGlyph } from "../../components/WarningGlyph";
 import { useRun } from "../../runStoreContext";
 import { useScreenStore } from "../../screenStore";
-import { ActionRow } from "./ActionRow";
+import { ErrorLine } from "./ErrorLine";
 
 type EndedPhase = Extract<RunPhase, { kind: "ended" }>;
 
@@ -80,6 +81,7 @@ export function EndingView({ run, phase }: EndingViewProps) {
         </p>
       </article>
       <ActionRow>
+        <ErrorLine />
         <Button variant="primary" block onClick={() => leave("ranking")}>
           랭킹 보기
         </Button>

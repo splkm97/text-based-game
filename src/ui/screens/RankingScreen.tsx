@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import type { MetaState } from "../../engine/types";
+import { ActionRow } from "../components/ActionRow";
 import { Button } from "../components/Button";
 import { RankingRow } from "../components/RankingRow";
 import { TopBar } from "../components/TopBar";
@@ -45,34 +46,36 @@ export function RankingScreen() {
   return (
     <>
       <TopBar title="랭킹" onBack={() => go("title")} />
-      <section className="flex flex-1 flex-col gap-3 p-3">
-        {ranked.length === 0 ? (
-          <p className="py-8 text-center text-sm text-ash">{emptyRankingMessage}</p>
-        ) : (
-          <ol aria-label="랭킹" className="flex flex-col gap-2">
-            {ranked.map((entry, index) => (
-              <RankingRow key={entry.id} entry={entry} rank={index + 1} />
-            ))}
-          </ol>
-        )}
-        {unranked.length > 0 && (
-          <details className="group border-2 border-slate">
-            <summary className="flex min-h-11 cursor-pointer items-center gap-2 px-3 text-sm text-ash">
-              <span className="flex-1">랭킹 제외 기록 ({unranked.length})</span>
-              <Chevron />
-            </summary>
-            <ul className="flex flex-col gap-2 border-slate border-t-2 p-2">
-              {unranked.map((entry) => (
-                <RankingRow key={entry.id} entry={entry} reason={UNRANKED_REASON} />
+      <section className="flex flex-1 flex-col">
+        <div className="flex flex-col gap-3 p-3">
+          {ranked.length === 0 ? (
+            <p className="py-8 text-center text-sm text-ash">{emptyRankingMessage}</p>
+          ) : (
+            <ol aria-label="랭킹" className="flex flex-col gap-2">
+              {ranked.map((entry, index) => (
+                <RankingRow key={entry.id} entry={entry} rank={index + 1} />
               ))}
-            </ul>
-          </details>
-        )}
-        <div className="safe-bottom sticky bottom-0 -mx-3 -mb-3 mt-auto border-slate border-t-2 bg-ink px-3 pt-3">
+            </ol>
+          )}
+          {unranked.length > 0 && (
+            <details className="group border-2 border-slate">
+              <summary className="flex min-h-11 cursor-pointer items-center gap-2 px-3 text-sm text-ash">
+                <span className="flex-1">랭킹 제외 기록 ({unranked.length})</span>
+                <Chevron />
+              </summary>
+              <ul className="flex flex-col gap-2 border-slate border-t-2 p-2">
+                {unranked.map((entry) => (
+                  <RankingRow key={entry.id} entry={entry} reason={UNRANKED_REASON} />
+                ))}
+              </ul>
+            </details>
+          )}
+        </div>
+        <ActionRow>
           <Button block disabled={nothingToReset} onClick={() => dialog.current?.showModal()}>
             기록 초기화
           </Button>
-        </div>
+        </ActionRow>
       </section>
       <dialog
         ref={dialog}

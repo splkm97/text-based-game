@@ -31,7 +31,7 @@ export type Draft = {
 };
 
 export const NAME_MAX = 12;
-export const DEFAULT_NAME = "이름 없는 모험가";
+const DEFAULT_NAME = "이름 없는 모험가";
 export const FREE_POINTS = CREATION_TOTAL - CREATION_MIN * STAT_IDS.length;
 
 export const INITIAL_DRAFT: Draft = {
@@ -52,7 +52,7 @@ export const canRaise = (allocation: Stats, stat: StatId): boolean =>
 export const canLower = (allocation: Stats, stat: StatId): boolean =>
   allocation[stat] > CREATION_MIN;
 
-export const isNameValid = (name: string): boolean => {
+const isNameValid = (name: string): boolean => {
   const length = name.trim().length;
   return length >= 1 && length <= NAME_MAX;
 };

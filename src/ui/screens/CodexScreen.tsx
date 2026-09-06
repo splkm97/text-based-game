@@ -101,7 +101,7 @@ export function CodexScreen() {
             {codex[tab].length}/{TOTAL[tab]}
           </span>
         </p>
-        <ul className="flex flex-col gap-2 p-3">{entries(tab, codex)}</ul>
+        <ul className="safe-bottom flex flex-col gap-2 px-3 pt-3">{entries(tab, codex)}</ul>
       </Tabs>
     </>
   );

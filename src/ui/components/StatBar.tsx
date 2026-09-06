@@ -32,7 +32,7 @@ export function StatBar({ label, value, max, color }: StatBarProps) {
       className="flex items-center gap-2 text-xs"
     >
       <span className={`w-12 ${TEXT[color]}`}>{label}</span>
-      <span className="h-2 flex-1 border border-slate bg-ink-deep">
+      <span className="h-3 flex-1 border-2 border-slate bg-ink-deep">
         <span
           className={`block h-full ${FILL[color]} transition-[width] duration-240 ease-ink`}
           style={{ width: `${ratio * 100}%` }}

@@ -21,7 +21,7 @@ export function CodexEntry({ discovered, name, description, art, tag }: CodexEnt
             {discovered ? name : "???"}
           </span>
           {discovered && tag !== undefined && (
-            <span className="border border-slate px-1 text-xs text-ash">{tag}</span>
+            <span className="border-2 border-slate px-1 text-xs text-ash">{tag}</span>
           )}
         </span>
         {discovered && (
