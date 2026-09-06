@@ -1,6 +1,6 @@
 // Dev-only content editor page. Owns the draft, the selection (mirrored to `?node=`), and the
 // pool filter; the graph and inspector are views over them. `content` overlays the draft on the
-// committed registry so a later test-play section can run the engine over unsaved edits.
+// committed registry so the test-play section runs the engine over unsaved edits.
 
 import { useMemo, useState } from "react";
 import { CONTENT } from "../content";
