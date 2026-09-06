@@ -1,4 +1,5 @@
 import { PixelSprite } from "../shared/art/PixelSprite";
+import { PaletteContext } from "../shared/art/paletteContext";
 import { Button } from "../shared/ui/Button";
 import { WORLDS, type WorldEntry } from "./registry";
 
@@ -16,7 +17,9 @@ export function HubScreen({ onEnter }: HubScreenProps) {
               className="flex flex-col gap-3 border-2 border-slate bg-ink-deep p-3 inset-ring inset-ring-parchment/20"
             >
               <div className="flex items-center gap-3">
-                <PixelSprite sprite={entry.meta.cover} title={entry.meta.title} scale={2} />
+                <PaletteContext value={entry.meta.theme.palette}>
+                  <PixelSprite sprite={entry.meta.cover} title={entry.meta.title} scale={2} />
+                </PaletteContext>
                 <div className="flex min-w-0 flex-col gap-1">
                   <h2 id={`world-${entry.meta.id}`} className="text-2xl">
                     {entry.meta.title}

@@ -3,6 +3,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, test } from "vitest";
+import { PICO8 } from "../shared/art/pico8";
 import { META } from "../worlds/adventurer/meta";
 import { META as VOYAGE } from "../worlds/voyage/meta";
 import { HostApp } from "./HostApp";
@@ -33,4 +34,13 @@ test("starting the voyage opens its title screen, and 허브로 returns", async 
 
 test("themeStyle maps each token to its CSS variable", () => {
   expect(themeStyle(META.theme)).toHaveProperty("--color-ember", META.theme.tokens.ember);
+});
+
+test("the hub draws a world's cover in that world's palette, not the default PICO-8", () => {
+  render(<HostApp />);
+  const cover = screen.getByRole("img", { name: VOYAGE.title });
+  const fills = [...cover.querySelectorAll("rect")].map((rect) => rect.getAttribute("fill") ?? "");
+  // Colors only the voyage palette has: a cover drawn in the default palette shows none of them.
+  const voyageOnly = VOYAGE.theme.palette.filter((color) => !PICO8.includes(color));
+  expect(fills.some((fill) => voyageOnly.includes(fill))).toBe(true);
 });

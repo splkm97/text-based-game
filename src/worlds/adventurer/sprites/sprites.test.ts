@@ -12,17 +12,24 @@ const opaquePixels = (sprite: Sprite): number =>
 const sized = (
   set: Readonly<Record<string, Sprite>>,
   size: number,
-): readonly (readonly [string, Sprite, number])[] =>
-  Object.entries(set).map(([name, sprite]) => [name, sprite, size]);
+  minOpaque: number,
+): readonly (readonly [string, Sprite, number, number])[] =>
+  Object.entries(set).map(([name, sprite]) => [name, sprite, size, minOpaque]);
 
-const all = [...sized(MONSTER_SPRITES, 32), ...sized(ORIGIN_PORTRAITS, 32), ...sized(ICONS, 16)];
+// The floors sit well under the measured minimum of each set (362 at 32x32, 79 at 16x16). They
+// catch a sprite authored near-empty, not a sparse one.
+const all = [
+  ...sized(MONSTER_SPRITES, 32, 150),
+  ...sized(ORIGIN_PORTRAITS, 32, 150),
+  ...sized(ICONS, 16, 40),
+];
 
 test.each(all)(
-  "%s validates at its set's size and has at least 40 opaque pixels",
-  (_name, sprite, size) => {
+  "%s validates at its set's size and is not near-empty",
+  (_name, sprite, size, minOpaque) => {
     expect(sprite.size).toBe(size);
     expect(() => validateSprite(sprite)).not.toThrow();
-    expect(opaquePixels(sprite)).toBeGreaterThanOrEqual(40);
+    expect(opaquePixels(sprite)).toBeGreaterThanOrEqual(minOpaque);
   },
 );
 

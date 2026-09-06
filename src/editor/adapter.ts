@@ -37,7 +37,7 @@ export type EditorModel<R> = {
   readonly readText: (registry: R, nodeId: string, path: TextPath) => string | undefined;
   readonly applyText: (registry: R, nodeId: string, path: TextPath, value: string) => R;
 };
-export type EditorAdapter<R = never> = EditorModel<R> & {
+export type EditorAdapter<R> = EditorModel<R> & {
   readonly TestPlay: ComponentType<{ readonly registry: R; readonly selectedId: string | null }>;
 };
 /** Hides a world's registry type from the frame: `open` lends the adapter to a generic consumer. */
