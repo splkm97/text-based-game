@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { CrewState, RunState } from "../types";
+import type { Content, CrewState, RunState } from "../types";
 import { resolveNight } from "./night";
 import { constantRng, makeCrew, makeRun, TEST_CONTENT } from "./testContent";
 
@@ -122,6 +122,31 @@ describe("confrontation", () => {
     expect(crewOf(after.run, "cook").stress).toBe(98);
     expect(after.run.trust).toBe(73);
     expect(after.report.at(-3)).toBe("바온이 막아선다: 대치 (권위 판정 d20 20)");
+  });
+
+  test("success applies the event effects first, so 40 is the crew member's final stress", () => {
+    const relieving: Content = {
+      ...TEST_CONTENT,
+      confrontations: [
+        {
+          id: "cf_test",
+          title: "대치",
+          text: "막아선다.",
+          dc: 11,
+          success: {
+            text: "물러난다.",
+            effects: [{ kind: "stress", target: "all", delta: -10 }],
+          },
+          failure: { text: "맞는다." },
+        },
+      ],
+    };
+    const start = makeRun({
+      crew: [makeCrew("cook", { stress: 90 }), makeCrew("navigator", { stress: 30 })],
+    });
+    const after = resolveNight(start, relieving, constantRng(QUIET)).run;
+    expect(crewOf(after, "cook").stress).toBe(40);
+    expect(crewOf(after, "navigator").stress).toBe(28);
   });
 
   test("failure costs captain hp 3 by default and 10 trust", () => {

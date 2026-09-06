@@ -6,12 +6,13 @@ import { josa } from "../../../shared/josa";
 import { pickWeighted } from "../../../shared/rng";
 import { SYMPTOM_IDS } from "../ids";
 import type { Content, CrewState, Rng, RunState, SymptomId } from "../types";
-import { clampStress, mapCrew, nameOf, withCrew } from "./crew";
+import { clampStress, findCrew, mapCrew, nameOf, withCrew } from "./crew";
 import { applyEffects } from "./effects";
 
 export const INCUBATION_NIGHTS = 3;
 /** Tuned from the design's 0.25: at 0.25 a carrier seeds the crew before any symptom shows and
- * the scripted replay policy reached arrival in 6% of seeds; at 0.15 it does in about 24%. */
+ * the scripted replay policy reaches arrival in 5% of seeds 1..100; at 0.15 it reaches arrival in
+ * 21% of them. `run.test.ts` replays those seeds and guards a 15% floor. */
 export const SPREAD_CHANCE = 0.15;
 export const DEATH_SICK_DAYS = 4;
 export const NIGHT_STRESS = 8;
@@ -164,12 +165,12 @@ const confront = (run: RunState, content: Content, rng: Rng): Step => {
   const { roll, success } = resolveCheck(run.captain.authority, event.dc, rng);
   const header = `${josa(name, "이/가")} 막아선다: ${event.title} (권위 판정 d20 ${roll})`;
   if (success) {
-    const applied = applyEffects(
-      withCrew(run, { ...crew, stress: CONFRONTATION_RELIEF }),
-      event.success.effects,
-      content,
-    );
-    return { run: applied.run, report: [header, event.success.text, ...applied.log] };
+    const applied = applyEffects(run, event.success.effects, content);
+    const settled = withCrew(applied.run, {
+      ...findCrew(applied.run, crew.id),
+      stress: CONFRONTATION_RELIEF,
+    });
+    return { run: settled, report: [header, event.success.text, ...applied.log] };
   }
   const applied = applyEffects(
     run,

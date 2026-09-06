@@ -159,12 +159,14 @@ describe("replay determinism over real content", () => {
     expect(second).toEqual(first);
   });
 
-  test("the scripted policy reaches arrival for some seed, so the numbers stay winnable", () => {
-    const seeds = Array.from({ length: 40 }, (_, index) => index + 1);
-    const arrived = seeds.some((seed) => {
+  // Guards the SPREAD_CHANCE tuning in `night.ts`: over seeds 1..100 the scripted policy arrives
+  // in 5% of runs at the design's 0.25 and in 21% at the committed 0.15.
+  test("the scripted policy arrives on at least 15% of 100 seeds, so the numbers stay winnable", () => {
+    const seeds = Array.from({ length: 100 }, (_, index) => index + 1);
+    const arrived = seeds.filter((seed) => {
       const run = play(seed);
       return run.phase.kind === "ended" && run.phase.ending === "arrival";
-    });
-    expect(arrived).toBe(true);
+    }).length;
+    expect(arrived / seeds.length).toBeGreaterThanOrEqual(0.15);
   });
 });

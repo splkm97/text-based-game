@@ -7,7 +7,7 @@ const DAY_EVENTS: readonly ObserveEvent[] = [
   {
     id: "ev_day_first_silence",
     title: "첫 정적",
-    text: "출항 사흘째. 지구의 답신은 아직 없다. 통신실 앞에 승무원이 둘 서 있다. 무슨 말이라도 듣고 싶은 얼굴이다.",
+    text: "우리가 보낸 마지막 보고에 지구는 아직 답하지 않았다. 통신실 앞에 승무원이 둘 서 있다. 무슨 말이라도 듣고 싶은 얼굴이다.",
     weight: 8,
     once: true,
     requires: [{ kind: "day", from: 1, to: 3 }],
