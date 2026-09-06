@@ -6,6 +6,7 @@ Rules a future agent must keep. Each entry is an obligation and the reason it ex
 
 - Run every command under Node 24 (`nvm use`, `.nvmrc`). Vitest 5 rejects Node 25 and `engine-strict` makes `pnpm install` fail on the machine default.
 - Treat `pnpm verify && pnpm build` as the completion gate, and require pristine output: no chunk-size warning, no Vitest hints, no Biome fixes. Warnings hide regressions in this repo.
+- Keep `tools/` node-side and typed by `tsconfig.node.json`, not by the app config. It runs in the Vite dev server process, so it needs node globals and must stay out of the browser type surface.
 - Keep `test.isolate` set to `true`. The screen, run, and meta stores are module singletons; a shared worker leaks their state between test files.
 
 ## Layering
@@ -14,6 +15,8 @@ Rules a future agent must keep. Each entry is an obligation and the reason it ex
 - Let `src/content` import only `src/engine/types.ts` and `src/content/ids.ts`. Content is data; logic in content cannot be tested by the integrity checks.
 - Do not re-implement a rule in `src/ui`. Call the engine (`deriveStats`, `choiceAvailable`, `conditionHolds`, `buyPrice`, `sellPrice`, `isActionPhase`, the store's `score`). Two copies of one rule drift.
 - Read stores in UI through `src/ui/runStoreContext.ts` and `src/ui/metaStoreContext.ts`, never through a global hook. Tests inject a store built with `createRunStore`/`createMetaStore` over memory storage.
+- Read the content registry in `src/ui` through `src/ui/contentContext.ts` (`useContent()`), never through the `CONTENT` singleton. The editor overlays a draft registry on that context; a direct import shows the saved text instead of the edit.
+- Keep the editor dev-only: `src/main.tsx` reaches `src/editor` only inside an `import.meta.env.DEV` branch through a dynamic import, and `tools/content-editor` runs only as a Vite dev-server plugin. A production build must contain no chunk from either; the editor writes to source files and has no place in a shipped bundle.
 
 ## Content
 
@@ -21,12 +24,13 @@ Rules a future agent must keep. Each entry is an obligation and the reason it ex
 - Keep story chains gated by flags `<name>.step<k>` and set the step flag on every resolving path of a `once: true` event, including check failures and flee. A `once` event never returns, so a missing flag dead-ends the chain.
 - Give every failure path a cost and every event at least one ungated choice. The tests assert both; the rules keep runs from stalling or becoming free.
 - Omit optional keys such as `Monster.drop` instead of writing `undefined`. `exactOptionalPropertyTypes` rejects the explicit value.
+- Write every `title` and `text` in `src/content` as a plain double-quoted string literal, not a template literal, a concatenation, or a computed value. The editor's write-back parses the file, locates that literal, and replaces it; any other form is not editable.
 - Write user-visible text in Korean and original. Never name any existing game or studio in `src`, `public`, or `index.html`. Use 골드 as the only currency word.
 
 ## Persistence
 
 - When `RunState` or `MetaState` changes shape, bump `RUN_KEY`/`META_KEY` in `src/store/persistence.ts` and update `src/store/schemas.ts` to match. There are no migrations by design; an old payload must fail parsing and be discarded, not half-load.
-- Keep zod at the localStorage boundary only. Elsewhere trust the types.
+- Keep zod at two boundaries only: localStorage (`src/store`) and the editor's HTTP save endpoint (`tools/content-editor`). Both take input the type checker cannot vouch for. Elsewhere trust the types.
 
 ## Design
 

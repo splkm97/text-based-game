@@ -58,5 +58,9 @@ pnpm build    # 정적 빌드와 서비스 워커 생성
 | `src/art` | 16×16 픽셀 스프라이트와 SVG 렌더러. |
 | `src/store` | 상태와 저장. zustand, zod로 검증한 localStorage. |
 | `src/ui` | 화면. React 19, Tailwind 4. |
+| `src/editor` | 콘텐츠 편집기 화면. 개발 모드에서만 실행됩니다. |
+| `tools/content-editor` | 편집기의 저장 서버. Vite 개발 서버 플러그인입니다. |
+
+콘텐츠 편집기가 있습니다. `pnpm dev`를 실행하고 `http://localhost:5173/__content`을 엽니다. 사건과 결말의 글을 화면에서 고치고, **저장**을 누르면 `src/content`의 소스 파일이 그대로 바뀝니다. 이 페이지는 개발 모드에서만 열리며 빌드 결과물에는 들어가지 않습니다. 편집기 안의 시험 플레이는 메모리에만 저장되므로 실제 저장 파일, 도감, 랭킹을 건드리지 않습니다.
 
 기술 스택은 Vite 8, React 19, TypeScript 7, Tailwind 4, Zustand 5, zod 4, Vitest 5, Biome 2입니다. 글꼴은 Galmuri11이며 SIL Open Font License 1.1로 배포됩니다. 색은 PICO-8 16색 팔레트만 씁니다.
