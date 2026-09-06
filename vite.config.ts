@@ -26,8 +26,22 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: "vendor", test: /node_modules/ },
+            { name: "content", test: /\/src\/content\// },
+          ],
+        },
+      },
+    },
+  },
   test: {
     environment: "node",
     include: ["src/**/*.test.{ts,tsx}"],
+    // Module singletons (stores, screen state) would leak across test files otherwise.
+    isolate: true,
   },
 });
