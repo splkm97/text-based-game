@@ -15,7 +15,7 @@ const combatRun: RunState = makeRun({
       monsterHp: 5,
       monsterMaxHp: 8,
       round: 2,
-      log: ["멧돼지이(가) 나타났다!"],
+      log: ["멧돼지가 나타났다!"],
       onWin: {
         text: "이겼다.",
         effects: [

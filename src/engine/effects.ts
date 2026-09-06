@@ -6,10 +6,10 @@ import {
   deriveStats,
   hasRoom,
   removeFromInventory,
+  withCharacter,
 } from "./character";
 import { EngineError } from "./errors";
 import {
-  type Character,
   type ContentRegistry,
   type Effect,
   type ItemId,
@@ -27,8 +27,6 @@ const MAX_LEVEL_UPS = 9;
 const HARD_MODE_GOLD_MULTIPLIER = 0.75;
 
 const signed = (n: number): string => (n < 0 ? `${n}` : `+${n}`);
-
-const withCharacter = (run: RunState, character: Character): RunState => ({ ...run, character });
 
 const changeHp = (run: RunState, delta: number, content: ContentRegistry): Step => {
   const { maxHp } = deriveStats(run.character, content);

@@ -196,6 +196,14 @@ describe("character actions", () => {
     ]);
   });
 
+  test("consumeItem outside combat ends the run when the consumable drains hp to 0", () => {
+    const run = resolved({ character: makeHero({ hp: 1, inventory: ["strong_wine"] }), day: 4 });
+    const ended = consumeItem(run, "strong_wine", TEST_CONTENT);
+    expect(ended.phase).toMatchObject({ kind: "ended", ending: "death" });
+    expect(ended.character.hp).toBe(0);
+    expect(ended.log.at(-1)).toEqual({ day: 4, text: TEST_CONTENT.endings.death.title });
+  });
+
   test("consumeItem in combat costs the action: the monster attacks once", () => {
     const run = makeRun({ character: makeHero({ hp: 20, inventory: ["healing_salve"] }) });
     const combat = chooseOption(run, 2, TEST_CONTENT, constantRng(0));

@@ -1,10 +1,10 @@
 // The run reducer surface the store drives: start, choose, continue, and character actions.
 
-import { allocateStatPoint, effectiveStats, equip, unequip } from "./character";
+import { allocateStatPoint, effectiveStats, equip, unequip, withCharacter } from "./character";
 import { resolveCheck } from "./checks";
 import { consumeItemInCombat, startCombat } from "./combat";
 import { applyConsumable, applyEffects } from "./effects";
-import { determineEnding, finishRun } from "./endings";
+import { determineEnding, finishRun, resourceEnding } from "./endings";
 import { EngineError } from "./errors";
 import { choiceAvailable, pickNextEvent } from "./events";
 import { enterResolution, journal, requireOneOfPhases, requirePhase } from "./phase";
@@ -138,8 +138,6 @@ export const continueRun = (run: RunState, content: ContentRegistry, rng: Rng): 
   return advanceToEvent({ ...run, day: run.day + 1 }, content, rng);
 };
 
-const withCharacter = (run: RunState, character: Character): RunState => ({ ...run, character });
-
 export const equipItem = (run: RunState, item: ItemId, content: ContentRegistry): RunState => {
   requireOneOfPhases(run, ACTION_PHASES);
   return withCharacter(run, equip(run.character, item, content));
@@ -163,5 +161,7 @@ export const consumeItem = (run: RunState, item: ItemId, content: ContentRegistr
   }
   requireOneOfPhases(run, ACTION_PHASES);
   const used = applyConsumable(run, item, content);
-  return { ...used.run, log: [...used.run.log, ...journal(run.day, used.log)] };
+  const after = { ...used.run, log: [...used.run.log, ...journal(run.day, used.log)] };
+  const ending = resourceEnding(after);
+  return ending === null ? after : finishRun(after, ending, content);
 };

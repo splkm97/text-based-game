@@ -6,6 +6,7 @@ import { applyConsumable, applyEffects } from "./effects";
 import { finishRun } from "./endings";
 import { enterResolution, requirePhase } from "./phase";
 import { rollD20 } from "./rng";
+import { josa } from "./text";
 import type {
   CombatState,
   ContentRegistry,
@@ -42,7 +43,7 @@ export const startCombat = (
     monsterHp: hp,
     monsterMaxHp: hp,
     round: 1,
-    log: [`${monster.name}이(가) 나타났다!`],
+    log: [`${josa(monster.name, "이/가")} 나타났다!`],
     onWin,
     onFlee,
   };
@@ -63,7 +64,7 @@ const playerAction = (
     return {
       monsterHp: 0,
       fumbleDamage: 0,
-      line: `치명타! ${monster.name}을(를) 단숨에 쓰러뜨렸다.`,
+      line: `치명타! ${josa(monster.name, "을/를")} 단숨에 쓰러뜨렸다.`,
     };
   }
   if (roll === 1) {

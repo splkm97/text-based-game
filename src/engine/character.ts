@@ -9,6 +9,7 @@ import {
   type Item,
   type ItemId,
   type OriginId,
+  type RunState,
   STAT_IDS,
   type StatId,
   type Stats,
@@ -201,6 +202,11 @@ export const unequip = (
   content: ContentRegistry,
 ): Character =>
   clampResources({ ...character, equipment: withSlot(character.equipment, slot, null) }, content);
+
+export const withCharacter = (run: RunState, character: Character): RunState => ({
+  ...run,
+  character,
+});
 
 export const hasRoom = (character: Character, content: ContentRegistry): boolean =>
   character.inventory.length < deriveStats(character, content).inventorySlots;
