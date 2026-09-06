@@ -35,7 +35,7 @@ export function CombatView({ run, phase, onOpenInventory }: CombatViewProps) {
   return (
     <>
       <section className="flex flex-col items-center gap-3 p-3 text-center">
-        <PixelSprite sprite={MONSTER_SPRITES[combat.monster]} title={monster.name} scale={6} />
+        <PixelSprite sprite={MONSTER_SPRITES[combat.monster]} title={monster.name} scale={3} />
         <div>
           <h2 className="text-2xl">{monster.name}</h2>
           <p className="mt-1 text-xs leading-prose text-ash">{monster.description}</p>

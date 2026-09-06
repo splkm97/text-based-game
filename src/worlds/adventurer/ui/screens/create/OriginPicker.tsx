@@ -25,7 +25,7 @@ export function OriginPicker({ value, onChange }: OriginPickerProps) {
             checked={value === id}
             onSelect={() => onChange(id)}
           >
-            <PixelSprite sprite={ORIGIN_PORTRAITS[id]} title={origin.name} scale={3} />
+            <PixelSprite sprite={ORIGIN_PORTRAITS[id]} title={origin.name} scale={2} />
             <span className="flex-1">
               <span className="block text-base">{origin.name}</span>
               <span className="mt-1 block text-xs leading-prose text-ash">

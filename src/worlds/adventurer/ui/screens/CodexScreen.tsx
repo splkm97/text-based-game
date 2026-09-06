@@ -35,12 +35,12 @@ const TONE_LABEL: Readonly<Record<Ending["tone"], string>> = {
 
 const art = (sprite: Sprite, title: string, discovered: boolean): ReactNode =>
   discovered ? (
-    <PixelSprite sprite={sprite} title={title} scale={3} className="shrink-0" />
+    <PixelSprite sprite={sprite} title={title} scale={2} className="shrink-0" />
   ) : (
     <PixelSprite
       sprite={sprite}
       title="미발견"
-      scale={3}
+      scale={2}
       className="shrink-0"
       monochrome={THEME.tokens.slate}
     />

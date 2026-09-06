@@ -16,7 +16,7 @@ export function HubScreen({ onEnter }: HubScreenProps) {
               className="flex flex-col gap-3 border-2 border-slate bg-ink-deep p-3 inset-ring inset-ring-parchment/20"
             >
               <div className="flex items-center gap-3">
-                <PixelSprite sprite={entry.meta.cover} title={entry.meta.title} scale={4} />
+                <PixelSprite sprite={entry.meta.cover} title={entry.meta.title} scale={2} />
                 <div className="flex min-w-0 flex-col gap-1">
                   <h2 id={`world-${entry.meta.id}`} className="text-2xl">
                     {entry.meta.title}
