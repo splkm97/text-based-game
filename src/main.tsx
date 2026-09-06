@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "./worlds/adventurer/ui/App";
+import { HostApp } from "./host/HostApp";
 import "./styles/theme.css";
 import "./styles/global.css";
 
@@ -18,5 +18,5 @@ const mount = (page: ReactNode): void => {
 if (import.meta.env.DEV && window.location.pathname === "/__content") {
   import("./editor/EditorApp").then(({ EditorApp }) => mount(<EditorApp />));
 } else {
-  mount(<App />);
+  mount(<HostApp />);
 }

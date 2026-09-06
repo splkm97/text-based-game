@@ -5,8 +5,8 @@ import { browserStorage, createSlot, type StorageLike } from "../../../shared/st
 import type { MetaState, RunState } from "../engine/types";
 import { parseMeta, parseRun } from "./schemas";
 
-export const RUN_KEY = "lia.run.v1";
-export const META_KEY = "lia.meta.v1";
+const RUN_KEY = "lia.adventurer.run.v1";
+const META_KEY = "lia.adventurer.meta.v1";
 
 export type Persistence = {
   readonly loadRun: () => RunState | null;

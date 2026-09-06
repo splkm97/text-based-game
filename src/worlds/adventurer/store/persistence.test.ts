@@ -2,7 +2,11 @@ import { describe, expect, test } from "vitest";
 import { memoryStorage, throwingStorage } from "../../../shared/storage";
 import { makeRun } from "../engine/testContent";
 import type { MetaState } from "../engine/types";
-import { createPersistence, META_KEY, RUN_KEY } from "./persistence";
+import { createPersistence } from "./persistence";
+
+// Save keys are namespaced per world so two worlds never read each other's payload.
+const RUN_KEY = "lia.adventurer.run.v1";
+const META_KEY = "lia.adventurer.meta.v1";
 
 const meta: MetaState = {
   codex: { endings: [], monsters: ["wild_boar"], items: [] },

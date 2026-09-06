@@ -50,7 +50,7 @@ afterEach(cleanup);
 test("title offers a new adventure and leads to character creation", async () => {
   render(
     <RunStoreContext value={makeStore()}>
-      <App />
+      <App onExit={() => {}} />
     </RunStoreContext>,
   );
   expect(screen.queryByRole("button", { name: "이어하기" })).toBeNull();
@@ -63,7 +63,7 @@ test("title offers to continue when a run is saved", () => {
   store.getState().startRun(START_INPUT);
   render(
     <RunStoreContext value={store}>
-      <App />
+      <App onExit={() => {}} />
     </RunStoreContext>,
   );
   expect(screen.getByRole("button", { name: "이어하기" })).toBeDefined();
@@ -74,7 +74,7 @@ test("continuing a run that is still in memory does not count as a load", async 
   store.getState().startRun(START_INPUT);
   render(
     <RunStoreContext value={store}>
-      <App />
+      <App onExit={() => {}} />
     </RunStoreContext>,
   );
   await userEvent.click(screen.getByRole("button", { name: "이어하기" }));
@@ -89,7 +89,7 @@ test("continuing a saved run after a reload does not count as a load", async () 
   expect(fresh.getState().run).toBeNull();
   render(
     <RunStoreContext value={fresh}>
-      <App />
+      <App onExit={() => {}} />
     </RunStoreContext>,
   );
   await userEvent.click(screen.getByRole("button", { name: "이어하기" }));
@@ -102,7 +102,7 @@ test("a new adventure over a saved run asks first, then clears the save", async 
   store.getState().startRun(START_INPUT);
   render(
     <RunStoreContext value={store}>
-      <App />
+      <App onExit={() => {}} />
     </RunStoreContext>,
   );
   await userEvent.click(screen.getByRole("button", { name: "새 모험" }));

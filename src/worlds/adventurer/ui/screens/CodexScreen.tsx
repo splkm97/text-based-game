@@ -7,11 +7,11 @@ import { ENDING_IDS, ITEM_IDS, MONSTER_IDS } from "../../content/ids";
 import type { Codex, ContentRegistry, Ending } from "../../engine/types";
 import { ICONS } from "../../sprites/icons";
 import { MONSTER_SPRITES } from "../../sprites/monsters";
+import { THEME } from "../../theme";
 import { CodexEntry } from "../components/CodexEntry";
 import { useContent } from "../contentContext";
 import { useMeta } from "../metaStoreContext";
 import { useScreenStore } from "../screenStore";
-import { SLATE } from "../theme";
 
 type CodexTab = keyof Codex;
 
@@ -37,7 +37,13 @@ const art = (sprite: Sprite, title: string, discovered: boolean): ReactNode =>
   discovered ? (
     <PixelSprite sprite={sprite} title={title} scale={3} className="shrink-0" />
   ) : (
-    <PixelSprite sprite={sprite} title="미발견" scale={3} className="shrink-0" monochrome={SLATE} />
+    <PixelSprite
+      sprite={sprite}
+      title="미발견"
+      scale={3}
+      className="shrink-0"
+      monochrome={THEME.tokens.slate}
+    />
   );
 
 const entries = (tab: CodexTab, codex: Codex, content: ContentRegistry): readonly ReactNode[] => {

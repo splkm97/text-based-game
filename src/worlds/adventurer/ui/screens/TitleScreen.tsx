@@ -1,15 +1,15 @@
 import { useRef } from "react";
-import { InstallPrompt } from "../../../../host/pwa/InstallPrompt";
+import type { WorldRootProps } from "../../../../host/world";
 import { PixelSprite } from "../../../../shared/art/PixelSprite";
 import { Button } from "../../../../shared/ui/Button";
+import { META } from "../../meta";
 import { ICONS } from "../../sprites/icons";
 import { useRun } from "../runStoreContext";
 import { useScreenStore } from "../screenStore";
 
-const TAGLINE = "주사위 한 번에 하루가 갈리는 짧은 여정";
 const OVERWRITE_WARNING = "저장된 모험이 있어요. 새로 시작하면 지워져요.";
 
-export function TitleScreen() {
+export function TitleScreen({ onExit }: WorldRootProps) {
   const go = useScreenStore((state) => state.go);
   const hasSave = useRun((state) => state.hasSave)();
   const inMemory = useRun((state) => state.run) !== null;
@@ -38,8 +38,8 @@ export function TitleScreen() {
   return (
     <section className="safe-bottom flex flex-1 flex-col items-center px-4 pt-8 text-center">
       <PixelSprite sprite={ICONS.d20} title="20면체 주사위" scale={5} />
-      <h1 className="mt-6 text-display">모험가 이야기</h1>
-      <p className="mt-2 text-sm text-ash">{TAGLINE}</p>
+      <h1 className="mt-6 text-display">{META.title}</h1>
+      <p className="mt-2 text-sm text-ash">{META.tagline}</p>
       <nav aria-label="시작 메뉴" className="mt-auto flex w-full flex-col gap-2 pt-8">
         <Button variant="primary" block onClick={startNew}>
           새 모험
@@ -55,8 +55,10 @@ export function TitleScreen() {
         <Button block onClick={() => go("ranking")}>
           랭킹
         </Button>
+        <Button block onClick={onExit}>
+          허브로
+        </Button>
       </nav>
-      <InstallPrompt />
       <dialog
         ref={dialog}
         aria-labelledby="overwrite-warning"
