@@ -11,31 +11,41 @@ Rules a future agent must keep. Each entry is an obligation and the reason it ex
 
 ## Layering
 
-- Keep `src/engine` pure: no React, no zustand, no DOM, no `Date`, no `Math.random`. Content is injected as `ContentRegistry`; randomness comes from the `Rng` parameter. Tests depend on this determinism.
-- Let `src/content` import only `src/engine/types.ts` and `src/content/ids.ts`. Content is data; logic in content cannot be tested by the integrity checks.
-- Do not re-implement a rule in `src/ui`. Call the engine (`deriveStats`, `choiceAvailable`, `conditionHolds`, `buyPrice`, `sellPrice`, `isActionPhase`, the store's `score`). Two copies of one rule drift.
-- Read stores in UI through `src/ui/runStoreContext.ts` and `src/ui/metaStoreContext.ts`, never through a global hook. Tests inject a store built with `createRunStore`/`createMetaStore` over memory storage.
-- Read the content registry in `src/ui` through `src/ui/contentContext.ts` (`useContent()`), never through the `CONTENT` singleton. The editor overlays a draft registry on that context; a direct import shows the saved text instead of the edit.
-- Keep the editor dev-only: `src/main.tsx` reaches `src/editor` only inside an `import.meta.env.DEV` branch through a dynamic import, and `tools/content-editor` runs only as a Vite dev-server plugin. A production build must contain no chunk from either; the editor writes to source files and has no place in a shipped bundle.
+- Keep `src/shared` owned by no world. It holds UI primitives, the pixel sprite renderer, `josa`, `rng`, `dice`, `uuid`, and storage slots, and it imports nothing from `src/host`, `src/worlds`, or `src/editor`. Code only one world can use belongs in that world.
+- Let `src/host` import each world's `meta.ts` statically and each world's `world.ts` only through a dynamic `import()`. The hub draws every card at startup, so a static `world.ts` import would pull every world's code into the first chunk.
+- Let `src/worlds/<id>` import `src/shared` and its own files only. Never another world, never `src/host` except the types in `src/host/world.ts`, never `src/editor` except its own `editor/adapter.ts` importing adapter types. A world must be removable by deleting its folder and its `src/host/registry.ts` entry.
+- Register a new world in `src/host/registry.ts` and add its id to `WorldId` in `src/host/world.ts`. The id is a union member, so the type checker finds every place the world must be handled.
+- Keep `src/editor` the dev-only editor frame, importing `src/shared`, `src/host/registry`, `src/host/theme`, and adapter types. It is a host-side page, not a world, and it must never become a world's dependency.
+- Let `tools/content-editor` plugin code import from `src` only `src/editor/textPathSchema.ts`. Its test files may additionally import world content and a world's `editor/model.ts`, which are pure. The plugin runs in Node, so any other `src` import drags browser code into the dev server.
+- Keep a world's rules pure: no React, no zustand, no DOM, no `Date`, no `Math.random`. Content is injected (`ContentRegistry` in `모험가 이야기`, `Content` in `정적의 항로`); randomness comes from the `Rng` parameter. Tests depend on this determinism.
+- Let a world's `content/` import only that world's `types.ts` and `ids.ts`. Content is data; logic in content cannot be tested by the integrity checks.
+- Do not re-implement a rule in a world's `ui/`. Call that world's rules module. Two copies of one rule drift.
+- Read stores in a world's UI through its context modules (`runStoreContext.ts`, plus `metaStoreContext.ts` where the world keeps cross-run records), never through a global hook. Tests inject a store built over memory storage.
+- Read the content registry in a world's UI through its `contentContext.ts` (`useContent()`), never through the `CONTENT` singleton. The editor overlays a draft registry on that context; a direct import shows the saved text instead of the edit.
+- Keep the editor dev-only: `src/main.tsx` reaches `src/editor` only inside an `import.meta.env.DEV` branch, each world's `loadEditor` guards its adapter import the same way, and `tools/content-editor` runs only as a Vite dev-server plugin. A production build must contain no chunk from any of them; the editor writes to source files and has no place in a shipped bundle.
 
 ## Content
 
-- Add an item, monster, trait, origin, journey, or ending only by extending the unions in `src/content/ids.ts` first. Every `Readonly<Record<Id, T>>` is total, so the type checker enforces completeness; the integrity test enforces that each id is reachable in play.
-- Keep story chains gated by flags `<name>.step<k>` and set the step flag on every resolving path of a `once: true` event, including check failures and flee. A `once` event never returns, so a missing flag dead-ends the chain.
-- Give every failure path a cost and every event at least one ungated choice. The tests assert both; the rules keep runs from stalling or becoming free.
+- Add an item, monster, trait, origin, journey, crew member, symptom, event, or ending only by extending the unions in that world's ids file first. Every `Readonly<Record<Id, T>>` is total, so the type checker enforces completeness; the world's integrity test enforces that each id is reachable in play.
+- Keep story chains in `모험가 이야기` gated by flags `<name>.step<k>` and set the step flag on every resolving path of a `once: true` event, including check failures and flee. A `once` event never returns, so a missing flag dead-ends the chain; the flag-coverage test catches a flag no effect ever sets.
+- Give every failure path in the common event pool a cost, and keep at least two reachable choices in every common event. The tests assert both; the rules keep runs from stalling or becoming free.
 - Omit optional keys such as `Monster.drop` instead of writing `undefined`. `exactOptionalPropertyTypes` rejects the explicit value.
-- Write every `title` and `text` in `src/content` as a plain double-quoted string literal, not a template literal, a concatenation, or a computed value. The editor's write-back parses the file, locates that literal, and replaces it; any other form is not editable.
-- Write the `id` of every event and ending as a plain double-quoted string literal too, never an imported constant. The write-back finds the object by matching that `id` literal, so an event whose id is a reference is invisible to the editor.
-- Write user-visible text in Korean and original. Never name any existing game or studio in `src`, `public`, or `index.html`. Use 골드 as the only currency word.
+- Write every `title` and `text` in a world's `content/` as a plain double-quoted string literal, not a template literal, a concatenation, or a computed value. The editor's write-back parses the file, locates that literal, and replaces it; any other form is not editable.
+- Write the `id` of every editable object as a plain double-quoted string literal too, never an imported constant. The write-back finds the object by matching that `id` literal and then walks a property path, so an object whose id is a reference is invisible to the editor.
+- Add a world to `EDITABLE_WORLDS` in `tools/content-editor/worlds.ts` once it ships an `editor/model.ts`. The editable-coverage test runs over every entry, so an unlisted world gets no write-back check.
+- Write user-visible text in Korean and original. Never name any existing game or studio in `src`, `public`, or `index.html`. Use 골드 as the only currency word in `모험가 이야기`.
 
 ## Persistence
 
-- When `RunState` or `MetaState` changes shape, bump `RUN_KEY`/`META_KEY` in `src/store/persistence.ts` and update `src/store/schemas.ts` to match. There are no migrations by design; an old payload must fail parsing and be discarded, not half-load.
-- Keep zod at two boundaries only: localStorage (`src/store`) and the editor's HTTP save endpoint (`tools/content-editor`). Both take input the type checker cannot vouch for. Elsewhere trust the types.
+- Give each world its own save keys, `lia.<worldId>.run.v1` and, where the world keeps cross-run records, `lia.<worldId>.meta.v1`. Worlds share one `localStorage`, so an unprefixed key would let one world read another's payload.
+- When a world's `RunState` or `MetaState` changes shape, bump that key in the world's `store/persistence.ts` and update its `store/schemas.ts` to match. There are no migrations by design; an old payload must fail parsing and be discarded, not half-load.
+- Keep zod at two boundaries only: the storage slots in each world's `store/` and the editor's HTTP save endpoint (`tools/content-editor`). Both take input the type checker cannot vouch for. Elsewhere trust the types.
 
 ## Design
 
-- Use only the PICO-8 tokens declared in `src/styles/theme.css`. The single hex literal allowed in `src/ui` lives in `src/ui/theme.ts` for SVG fills; put no other hex in TSX.
+- Give every world a `WorldTheme` in its `theme.ts`: a 16-entry hex palette indexed by sprite digits `0`-`f`, plus the twelve role tokens `ink`, `ink-deep`, `slate`, `ash`, `parchment`, `ember`, `blood`, `moss`, `sky`, `gold`, `sand`, `dusk`. The host writes the tokens as CSS variables on a wrapper, so a world re-themes everything inside it without touching a component.
+- Reference role tokens only in TSX and CSS (`bg-ink`, `var(--color-ember)`). A hex literal belongs in a world's `theme.ts` or in the shared palette constants (`src/shared/art/pico8.ts`) and nowhere else. PICO-8 is the palette `모험가 이야기` picked, not a house rule; `정적의 항로` declares its own.
+- Keep sprites square and sized by their own `size` field: 32×32 for monsters, portraits, and world covers, 16×16 for icons. `PixelSprite` reads the palette from `PaletteContext`, so a sprite must index its world's palette, not a hard-coded one.
 - Keep radius 0, borders 2px, no box-shadow, no gradients, transitions on named properties only at 120ms. This is the committed direction; one exception erodes it.
 - Keep every control at least 44×44 px and every text at least 12 px, with a visible focus ring. Reviewers measure these in headless Chrome.
 - Keep the service worker in `registerType: "prompt"`. Auto-update reloads the page mid-run.
@@ -43,4 +53,4 @@ Rules a future agent must keep. Each entry is an obligation and the reason it ex
 ## Process
 
 - Commit one concern per commit with a Conventional Commits prefix; run `pnpm verify` before each commit.
-- Do not commit `.outline/` (agent workspace), `dist/`, or `dev-dist/`.
+- Do not commit `.outline/` (agent workspace), `.claude/`, `dist/`, or `dev-dist/`.
