@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "./ui/App";
+import { App } from "./worlds/adventurer/ui/App";
 import "./styles/theme.css";
 import "./styles/global.css";
 

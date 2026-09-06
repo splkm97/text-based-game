@@ -4,8 +4,8 @@ import type { TextPath } from "../../src/editor/textPathSchema.ts";
 import { locateText } from "./locate.ts";
 import { replaceLiteral } from "./rewrite.ts";
 
-// Same shape as src/content/events/origins/monk.ts plus an endings record. Korean text precedes
-// every located literal so a UTF-8 byte offset base would slice the wrong span.
+// Same shape as src/worlds/adventurer/content/events/origins/monk.ts plus an endings record.
+// Korean text precedes every located literal so a UTF-8 byte offset base would slice the wrong span.
 const FIXTURE = `// 파문당한 수도사 story chain: 금서와 수도원으로 돌아가는 길.
 import type { GameEvent } from "../../../engine/types";
 
@@ -134,8 +134,8 @@ test("a template literal value is notLiteral", () => {
 });
 
 test("locates real content sources on disk", async () => {
-  const monk = await readFile("src/content/events/origins/monk.ts", "utf8");
-  const endings = await readFile("src/content/endings.ts", "utf8");
+  const monk = await readFile("src/worlds/adventurer/content/events/origins/monk.ts", "utf8");
+  const endings = await readFile("src/worlds/adventurer/content/endings.ts", "utf8");
 
   const title = locate(monk, { kind: "eventTitle", event: EVENT });
   expect(monk.slice(title.start, title.end)).toBe(JSON.stringify("수도원의 전령"));
@@ -143,7 +143,10 @@ test("locates real content sources on disk", async () => {
   const death = locate(endings, { kind: "endingTitle", ending: "death" });
   expect(endings.slice(death.start, death.end)).toBe(JSON.stringify("죽음"));
 
-  const fallback = await readFile("src/content/events/common/fallback.ts", "utf8");
+  const fallback = await readFile(
+    "src/worlds/adventurer/content/events/common/fallback.ts",
+    "utf8",
+  );
   const rest = locate(fallback, { kind: "eventTitle", event: "fallback_rest" });
   expect(fallback.slice(rest.start, rest.end)).toBe(JSON.stringify("조용한 하루"));
 });

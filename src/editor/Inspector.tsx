@@ -2,11 +2,11 @@
 // each field shows the draft value when one exists and the committed value as the original.
 
 import { useId } from "react";
-import type { ContentRegistry, GameEvent } from "../engine/types";
-import { Button } from "../ui/components/Button";
-import type { GraphNode } from "./graph/model";
-import type { Draft } from "./textPath";
-import { pathKey, readText } from "./textPath";
+import { Button } from "../shared/ui/Button";
+import type { GraphNode } from "../worlds/adventurer/editor/graph/model";
+import type { Draft } from "../worlds/adventurer/editor/textPath";
+import { pathKey, readText } from "../worlds/adventurer/editor/textPath";
+import type { ContentRegistry, GameEvent } from "../worlds/adventurer/engine/types";
 import type { LeafKey, TextPath } from "./textPathSchema";
 import { LEAF_KEYS } from "./textPathSchema";
 

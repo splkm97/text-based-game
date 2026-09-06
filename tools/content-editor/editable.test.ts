@@ -4,8 +4,8 @@
 
 import { readFile } from "node:fs/promises";
 import { expect, test } from "vitest";
-import { CONTENT } from "../../src/content/index.ts";
 import type { TextPath } from "../../src/editor/textPathSchema.ts";
+import { CONTENT } from "../../src/worlds/adventurer/content/index.ts";
 import { contentSourceFiles } from "./files.ts";
 import { locateText } from "./locate.ts";
 

@@ -3,8 +3,8 @@
 import { readdir } from "node:fs/promises";
 import { join, relative } from "node:path";
 
-const EVENTS_DIR = "src/content/events";
-const ENDINGS_FILE = "src/content/endings.ts";
+const EVENTS_DIR = "src/worlds/adventurer/content/events";
+const ENDINGS_FILE = "src/worlds/adventurer/content/endings.ts";
 
 const isEventSource = (name: string): boolean =>
   name.endsWith(".ts") && !name.endsWith(".test.ts") && name !== "index.ts";

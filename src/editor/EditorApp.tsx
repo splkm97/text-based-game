@@ -3,19 +3,19 @@
 // committed registry so the test-play section runs the engine over unsaved edits.
 
 import { useMemo, useState } from "react";
-import { CONTENT } from "../content";
-import { JOURNEY_IDS, ORIGIN_IDS } from "../content/ids";
-import { Button } from "../ui/components/Button";
+import { Button } from "../shared/ui/Button";
+import { CONTENT } from "../worlds/adventurer/content";
+import { JOURNEY_IDS, ORIGIN_IDS } from "../worlds/adventurer/content/ids";
+import { layoutGraph } from "../worlds/adventurer/editor/graph/layout";
+import type { GraphNode } from "../worlds/adventurer/editor/graph/model";
+import { buildGraph } from "../worlds/adventurer/editor/graph/model";
+import { TestPlay } from "../worlds/adventurer/editor/TestPlay";
+import type { Draft } from "../worlds/adventurer/editor/textPath";
+import { applyDraft, pathKey, readText } from "../worlds/adventurer/editor/textPath";
 import { saveText } from "./api";
 import type { PoolFilter } from "./graph/GraphView";
 import { GraphView, LAYOUT_OPTIONS } from "./graph/GraphView";
-import { layoutGraph } from "./graph/layout";
-import type { GraphNode } from "./graph/model";
-import { buildGraph } from "./graph/model";
 import { Inspector } from "./Inspector";
-import { TestPlay } from "./TestPlay";
-import type { Draft } from "./textPath";
-import { applyDraft, pathKey, readText } from "./textPath";
 import type { TextPath } from "./textPathSchema";
 
 const NODE_PARAM = "node";

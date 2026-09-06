@@ -3,10 +3,15 @@
 
 import type { KeyboardEvent } from "react";
 import { useState } from "react";
-import type { JourneyId, OriginId } from "../../content/ids";
-import type { EventPool } from "../../engine/types";
-import type { Layout, LayoutOptions, Placed } from "./layout";
-import type { EdgeKind, GraphEdge, GraphNode, Lane } from "./model";
+import type { JourneyId, OriginId } from "../../worlds/adventurer/content/ids";
+import type { Layout, LayoutOptions, Placed } from "../../worlds/adventurer/editor/graph/layout";
+import type {
+  EdgeKind,
+  GraphEdge,
+  GraphNode,
+  Lane,
+} from "../../worlds/adventurer/editor/graph/model";
+import type { EventPool } from "../../worlds/adventurer/engine/types";
 
 export type PoolFilter = "all" | OriginId | JourneyId;
 
