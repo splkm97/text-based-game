@@ -262,8 +262,8 @@ export const MYSTIC_MORE_EVENTS: readonly GameEvent[] = [
     requires: [],
     choices: [
       {
-        text: "거인에게 도전한다",
-        requires: [{ kind: "stat", stat: "con", min: 10 }],
+        text: "풋내기는 감당하지 못할, 얼음 아래 잠든 것에 도전한다",
+        requires: [{ kind: "stat", stat: "con", min: 12 }],
         outcome: {
           kind: "combat",
           monster: "frost_giant",

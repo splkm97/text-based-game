@@ -251,13 +251,13 @@ describe("common event coverage quotas", () => {
     expect(shopsInTown.length).toBeGreaterThanOrEqual(4);
   });
 
-  test("gated choices: item 6, stat 6 (min 6..10), gold 2, trait 2, hardMode 1", () => {
+  test("gated choices: item 6, stat 6 (min 6..12), gold 2, trait 2, hardMode 1", () => {
     expect(countWhere((c) => c.kind === "item")).toBeGreaterThanOrEqual(6);
     const statGates = CONDITIONS.filter((c) => c.kind === "stat");
     expect(statGates.length).toBeGreaterThanOrEqual(6);
     for (const gate of statGates) {
       expect(gate.min).toBeGreaterThanOrEqual(6);
-      expect(gate.min).toBeLessThanOrEqual(10);
+      expect(gate.min).toBeLessThanOrEqual(12);
     }
     expect(countWhere((c) => c.kind === "gold")).toBeGreaterThanOrEqual(2);
     expect(countWhere((c) => c.kind === "trait")).toBeGreaterThanOrEqual(2);

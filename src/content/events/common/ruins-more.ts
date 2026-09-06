@@ -157,6 +157,26 @@ export const RUINS_MORE_EVENTS: readonly GameEvent[] = [
         },
       },
       {
+        text: "숨소리의 주인을 찾아 갱도 밑바닥까지 내려간다",
+        requires: [{ kind: "stat", stat: "con", min: 12 }],
+        outcome: {
+          kind: "combat",
+          monster: "dragon_of_ash",
+          win: {
+            text: "갱도 밑바닥은 광산이 아니라 둥지였다. 잿빛 용이 마지막 숨을 내쉬자 산 전체가 한 번 떨렸다. 용이 깔고 자던 것들이 당신의 것이 된다.",
+            effects: [{ kind: "xp", delta: 5 }],
+          },
+          flee: {
+            text: "불길이 갱도를 따라 올라왔다. 판자를 뚫고 굴러 나왔을 때 등의 살갗과 지갑의 절반이 타 버린 뒤였다.",
+            effects: [
+              { kind: "hp", delta: -8 },
+              { kind: "gold", delta: -15 },
+              { kind: "sanity", delta: -2 },
+            ],
+          },
+        },
+      },
+      {
         text: "입구 근처만 뒤진다",
         requires: [],
         outcome: {

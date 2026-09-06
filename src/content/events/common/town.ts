@@ -17,7 +17,7 @@ export const TOWN_EVENTS: readonly GameEvent[] = [
         requires: [],
         outcome: {
           kind: "shop",
-          stock: ["bread_loaf", "healing_salve", "torch", "rope", "calming_tea"],
+          stock: ["bread_loaf", "healing_salve", "torch", "rope", "calming_tea", "shadow_leathers"],
           leave: {
             text: "닭 냄새를 옷에 묻힌 채 광장을 빠져나온다. 지갑은 가벼워졌거나, 아니면 여전히 가볍다.",
             effects: [{ kind: "xp", delta: 1 }],
@@ -73,11 +73,11 @@ export const TOWN_EVENTS: readonly GameEvent[] = [
           kind: "shop",
           stock: [
             "rusty_sword",
-            "iron_mace",
-            "guard_saber",
+            "woodcutter_axe",
+            "pike_of_the_watch",
             "plank_buckler",
-            "padded_jerkin",
-            "chain_shirt",
+            "scale_mail",
+            "knight_plate",
           ],
           leave: {
             text: "대장장이가 고개를 끄덕인다. 인사인지 배웅인지는 알 수 없다.",
@@ -132,7 +132,14 @@ export const TOWN_EVENTS: readonly GameEvent[] = [
         requires: [],
         outcome: {
           kind: "shop",
-          stock: ["healing_salve", "antidote", "calming_tea", "holy_water", "dream_powder"],
+          stock: [
+            "healing_salve",
+            "antidote",
+            "holy_water",
+            "dream_powder",
+            "strong_wine",
+            "elixir_of_vigor",
+          ],
           leave: {
             text: "문을 나서자 냄새가 옷에서 따라 나온다. 며칠은 갈 것이다.",
             effects: [{ kind: "xp", delta: 1 }],
@@ -189,7 +196,14 @@ export const TOWN_EVENTS: readonly GameEvent[] = [
         requires: [],
         outcome: {
           kind: "shop",
-          stock: ["lucky_coin", "owl_pendant", "iron_ring", "sage_spectacles", "apprentice_wand"],
+          stock: [
+            "owl_pendant",
+            "sage_spectacles",
+            "hermit_beads",
+            "apprentice_wand",
+            "elm_longbow",
+            "mirror_shield",
+          ],
           leave: {
             text: "주인이 다음에 오면 더 좋은 이야기가 있을 거라고 한다. 값도 더 좋아질 것이다.",
             effects: [{ kind: "xp", delta: 1 }],

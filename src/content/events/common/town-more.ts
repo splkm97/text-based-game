@@ -177,7 +177,7 @@ export const TOWN_MORE_EVENTS: readonly GameEvent[] = [
           },
           flee: {
             text: "하수도에서 뛰쳐나온다. 대장은 급료 대신 눈빛만 준다.",
-            effects: [],
+            effects: [{ kind: "sanity", delta: -1 }],
           },
         },
       },

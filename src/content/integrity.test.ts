@@ -13,7 +13,7 @@ import type {
   Outcome,
   OutcomeText,
 } from "../engine/types";
-import { FALLBACK_EVENT_ID } from "./ids";
+import { FALLBACK_EVENT_ID, ITEM_IDS, MONSTER_IDS } from "./ids";
 import { CONTENT } from "./index";
 
 const EVENTS: readonly GameEvent[] = Object.values(CONTENT.events);
@@ -170,6 +170,33 @@ describe("content registry", () => {
       ),
     );
     expect(neverSet).toEqual([]);
+  });
+});
+
+describe("catalog reachability", () => {
+  const outcomes: readonly Outcome[] = EVENTS.flatMap((event) =>
+    event.choices.map((choice) => choice.outcome),
+  );
+  const fought = new Set<string>(
+    outcomes.flatMap((outcome) => (outcome.kind === "combat" ? [outcome.monster] : [])),
+  );
+
+  test("every monster appears in at least one combat outcome", () => {
+    expect(MONSTER_IDS.filter((id) => !fought.has(id))).toEqual([]);
+  });
+
+  test("every item is a starting item, shop stock, item effect, or drop of a fought monster", () => {
+    const obtainable = new Set<string>([
+      ...Object.values(CONTENT.origins).flatMap((origin) => origin.startingItems),
+      ...outcomes.flatMap((outcome) => (outcome.kind === "shop" ? outcome.stock : [])),
+      ...EVENTS.flatMap((event) =>
+        effectsOf(event).flatMap((effect) => (effect.kind === "item" ? [effect.item] : [])),
+      ),
+      ...Object.values(CONTENT.monsters).flatMap((monster) =>
+        monster.drop !== undefined && fought.has(monster.id) ? [monster.drop] : [],
+      ),
+    ]);
+    expect(ITEM_IDS.filter((id) => !obtainable.has(id))).toEqual([]);
   });
 });
 

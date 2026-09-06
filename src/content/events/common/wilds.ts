@@ -218,7 +218,7 @@ export const WILDS_EVENTS: readonly GameEvent[] = [
           },
           flee: {
             text: "슬라임은 느렸다. 당신은 느리지 않았다. 늪은 결국 못 건넜다.",
-            effects: [],
+            effects: [{ kind: "sanity", delta: -1 }],
           },
         },
       },
@@ -259,7 +259,7 @@ export const WILDS_EVENTS: readonly GameEvent[] = [
           },
           flee: {
             text: "고함 소리를 뒤로하고 골짜기를 빠져나온다. 고블린들은 굽던 것을 두고 오지는 않았다.",
-            effects: [],
+            effects: [{ kind: "sanity", delta: -1 }],
           },
         },
       },

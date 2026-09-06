@@ -40,7 +40,14 @@ export const ROAD_MORE_EVENTS: readonly GameEvent[] = [
         requires: [],
         outcome: {
           kind: "shop",
-          stock: ["hunter_knife", "torch", "rope", "bread_loaf"],
+          stock: [
+            "hunter_knife",
+            "iron_mace",
+            "hunting_crossbow",
+            "travel_cloak",
+            "padded_jerkin",
+            "torch",
+          ],
           leave: {
             text: "땜장이가 수레 곁을 떠나는 당신에게 손을 흔든다. 물건들이 다시 바람에 울린다.",
             effects: [{ kind: "xp", delta: 1 }],

@@ -141,7 +141,7 @@ export const ROAD_EVENTS: readonly GameEvent[] = [
           monster: "road_bandit",
           win: {
             text: "강도는 매복의 기본조차 몰랐다. 당신이 가르쳐 주었다.",
-            effects: [],
+            effects: [{ kind: "gold", delta: 5 }],
           },
           flee: {
             text: "덤불을 헤치고 달아난다. 등 뒤의 웃음소리가 오래 남는다.",
@@ -265,7 +265,7 @@ export const ROAD_EVENTS: readonly GameEvent[] = [
           },
           flee: {
             text: "멧돼지가 순무를 계속 먹는다. 농부는 담장 위에서 계속 소리를 지른다.",
-            effects: [],
+            effects: [{ kind: "sanity", delta: -1 }],
           },
         },
       },
