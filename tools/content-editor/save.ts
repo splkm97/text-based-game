@@ -7,7 +7,7 @@ import { SaveRequestSchema } from "../../src/editor/textPathSchema.ts";
 import type { LocateResult } from "./locate.ts";
 import { locateText } from "./locate.ts";
 import { replaceLiteral } from "./rewrite.ts";
-import { EDITABLE_WORLDS, type WorldId } from "./worlds.ts";
+import type { WorldId } from "./worlds.ts";
 
 export type SaveIo = {
   readonly listFiles: (world: WorldId) => Promise<readonly string[]>;
@@ -55,9 +55,6 @@ export const handleSave = async (body: unknown, io: SaveIo): Promise<SaveRespons
   const parsed = SaveRequestSchema.safeParse(body);
   if (!parsed.success) return { status: 400, error: z.prettifyError(parsed.error) };
   const { value, ...target } = parsed.data;
-  if (!EDITABLE_WORLDS.includes(target.world)) {
-    return { status: 404, error: `world ${target.world} is not editable` };
-  }
 
   const found = await search(target, io);
   if (!found.ok) return failure(found.reasons, target);
