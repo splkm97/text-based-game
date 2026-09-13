@@ -99,6 +99,10 @@ test("끝까지 진행하면 종결이 열리고 기록에 횟수가 남는다",
   expect(screen.getByText("시작한 회차 1회")).toBeDefined();
   expect(screen.getByText(CONTENT.endings.death.title)).toBeDefined();
   expect(screen.getByText("1회")).toBeDefined();
+  // 미달성 종결의 이름은 어디에도 없다 — 자리와 횟수만 남는다.
+  expect(screen.queryByText(CONTENT.endings.true_ru.title)).toBeNull();
+  expect(screen.queryByText(CONTENT.endings.true_dusik.title)).toBeNull();
+  expect(screen.queryByText(CONTENT.endings.general.title)).toBeNull();
 
   await userEvent.click(screen.getByRole("button", { name: "뒤로 가기" }));
   expect(screen.getByRole("heading", { name: CONTENT.endings.death.title })).toBeDefined();
