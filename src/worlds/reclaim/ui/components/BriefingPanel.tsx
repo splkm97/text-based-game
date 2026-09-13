@@ -22,8 +22,8 @@ export function BriefingPanel({ document }: BriefingPanelProps) {
       </h3>
       {document.meta.length > 0 && (
         <ul aria-label="문서 머리" className="flex flex-col gap-0.5 text-xs text-slate">
-          {document.meta.map((line, index) => (
-            <li key={`${index}:${line}`}>{line}</li>
+          {document.meta.map((line) => (
+            <li key={line}>{line}</li>
           ))}
         </ul>
       )}
@@ -32,8 +32,8 @@ export function BriefingPanel({ document }: BriefingPanelProps) {
           aria-label="문서 본문"
           className="flex list-decimal flex-col gap-1 pl-5 text-sm leading-prose"
         >
-          {document.items.map((item, index) => (
-            <li key={`${index}:${item}`}>{item}</li>
+          {document.items.map((item) => (
+            <li key={item}>{item}</li>
           ))}
         </ol>
       )}

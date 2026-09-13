@@ -25,8 +25,8 @@ export function StatePanel({ run }: StatePanelProps) {
       <h2 className="text-base text-parchment">{content.stages[run.stage].title}</h2>
       {recent.length === 0 ? null : (
         <ol aria-label="회차 기록" className="flex flex-col gap-1 text-xs leading-prose text-ash">
-          {recent.map((entry, index) => (
-            <li key={`${index}:${entry.text}`}>{entry.text}</li>
+          {recent.map((entry) => (
+            <li key={entry.step}>{entry.text}</li>
           ))}
         </ol>
       )}

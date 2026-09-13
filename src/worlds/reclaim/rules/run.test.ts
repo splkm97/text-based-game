@@ -70,9 +70,17 @@ describe("happy path — 단계 전이는 각각 한 번씩", () => {
     expect(run.relic).toBe(true);
     expect(run.contact).toBe(true);
     expect(run.log).toHaveLength(11);
-    // 로그 위치는 결과 단계를 따른다: 대조 뒤 gate, 재통합 뒤에도 night.
-    expect(run.log[7]).toEqual({ stage: "gate", text: TEST_CONTENT.actions.xcheck_compare.result });
-    expect(run.log[10]).toEqual({ stage: "night", text: TEST_CONTENT.actions.night_use.result });
+    // 로그 위치는 결과 단계를 따른다: 대조 뒤 gate, 재통합 뒤에도 night. step은 1부터 센다.
+    expect(run.log[7]).toEqual({
+      step: 8,
+      stage: "gate",
+      text: TEST_CONTENT.actions.xcheck_compare.result,
+    });
+    expect(run.log[10]).toEqual({
+      step: 11,
+      stage: "night",
+      text: TEST_CONTENT.actions.night_use.result,
+    });
   });
 
   test("단계를 바꾸지 않은 본부 방문은 로그 위치를 archive로 남긴다", () => {
@@ -81,7 +89,7 @@ describe("happy path — 단계 전이는 각각 한 번씩", () => {
     expect(outcome.run.relic).toBe(true);
     expect(outcome.run.reviews).toBe(1);
     expect(outcome.run.log).toEqual([
-      { stage: "archive", text: TEST_CONTENT.actions.archive_with_ru.result },
+      { step: 1, stage: "archive", text: TEST_CONTENT.actions.archive_with_ru.result },
     ]);
   });
 });

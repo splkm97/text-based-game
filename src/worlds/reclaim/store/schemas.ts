@@ -27,7 +27,7 @@ const runState = z.object({
   reviews: z.number().int().min(0).max(REVIEW_LIMIT),
   chances: z.number().int().min(0).max(RECHANCE_LIMIT),
   contact: z.boolean(),
-  log: z.array(z.object({ stage: stageId, text: z.string() })),
+  log: z.array(z.object({ step: z.int().min(1), stage: stageId, text: z.string() })),
 });
 
 /** `MetaState`의 저장 형태. 회차 간 기록: 종결별 도달 수와 시작한 회차 수. */

@@ -11,6 +11,9 @@ import type { ActionId, CharacterId, EndingId, StageId } from "./ids";
 export type Placement = "ru_first" | "dusik_first";
 
 export type LogEntry = {
+  /** 1-based position in the run's record. A repeated action repeats its text, so identity lives
+   * here: the record tail needs a stable key that is not the array index. */
+  readonly step: number;
   readonly stage: StageId;
   readonly text: string;
 };

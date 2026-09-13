@@ -25,8 +25,8 @@ export function EndingScreen({ onExit }: WorldRootProps) {
       <h2 className="text-base text-ember">{ending.title}</h2>
       <p className="text-sm leading-prose text-parchment">{ending.text}</p>
       <ul aria-label="에필로그" className="flex flex-col gap-2">
-        {ending.epilogue.map((line, index) => (
-          <li key={`${index}:${line}`} className="text-xs leading-prose text-ash">
+        {ending.epilogue.map((line) => (
+          <li key={line} className="text-xs leading-prose text-ash">
             · {line}
           </li>
         ))}
