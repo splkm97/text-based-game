@@ -4,7 +4,7 @@
 // 메시지로 보인다.
 import { describe, expect, test } from "vitest";
 import type { ActionId, EndingId, StageId } from "../ids";
-import { ACTION_IDS, ENDING_IDS, EVIDENCE_IDS, STAGE_IDS } from "../ids";
+import { ACTION_IDS, ENDING_IDS, STAGE_IDS } from "../ids";
 import { ACTION_SPECS } from "../rules/actions";
 import type { EnumerationReport } from "../rules/enumerate";
 import { enumerateRuns } from "../rules/enumerate";
@@ -246,11 +246,6 @@ describe("문면 총체성 — 콘텐츠 리터럴", () => {
       return fields.length === 0 ? [] : [`${id}(${fields.join(", ")})`];
     });
     expect(blanks, `빈 문면이 있는 액션: ${blanks.join(", ") || "없음"}`).toEqual([]);
-  });
-
-  test("모든 증거 라벨이 비어 있지 않다", () => {
-    const blanks = EVIDENCE_IDS.filter((id) => isBlank(CONTENT.evidence[id]));
-    expect(blanks, `라벨이 빈 증거: ${blanks.join(", ") || "없음"}`).toEqual([]);
   });
 
   test("모든 종결 카드의 title·text·epilogue 첫 문단이 비어 있지 않다", () => {

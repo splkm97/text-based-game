@@ -109,14 +109,6 @@ export const TEST_CONTENT: Content = {
     banjang: characterCard("banjang"),
     taesan: characterCard("taesan"),
   },
-  evidence: {
-    broadcast: "증거 broadcast",
-    documents: "증거 documents",
-    coord: "증거 coord",
-    clue: "증거 clue",
-    relic: "증거 relic",
-    banjangSeed: "증거 banjangSeed",
-  },
 };
 
 /** startRun과 같은 기본값의 회차. 테스트는 원하는 지점만 overrides로 연다. */

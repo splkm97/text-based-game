@@ -1,12 +1,9 @@
-// 회차 현황판 — 단계 제목, 증거 트레이(미확보는 흐리게), 재등장 기회·본부 방문 수치,
-// 군 경로 잠금, 기록 건수. 수치·잠금은 전부 상태에서 렌더한다: 문면에 숫자를 박지
-// 않는다(콘텐츠 계약). 상한은 규칙의 상수를 그대로 읽는다.
+// 회차 현황판 — 단계 제목, 회차 기록(최근 결과 문장), 잠금 신호.
+//
+// 진엔딩 플래그는 화면에 없다: 플레이어는 자기가 한 일과 그 결과 문장만 읽는다. 증거 트레이·
+// 재등장 기회·방문 횟수 같은 수치는 두지 않는다 — 상실은 그 순간의 결과·거부 문면이 말하고
+// (조용한 잠금 금지), 남은 절차는 열린 행동 목록이 말한다.
 
-import { PixelSprite } from "../../../../shared/art/PixelSprite";
-import { EVIDENCE_IDS, type EvidenceId } from "../../ids";
-import { RECHANCE_LIMIT, REVIEW_LIMIT } from "../../rules/run";
-import { ICONS } from "../../sprites/icons";
-import { THEME } from "../../theme";
 import type { RunState } from "../../types";
 import { useContent } from "../contentContext";
 
@@ -14,51 +11,28 @@ type StatePanelProps = {
   readonly run: RunState;
 };
 
-const CHIP = "flex items-center gap-1 border-2 border-slate px-1 text-xs tabular-nums";
+/** Record lines stay short: the panel shows the tail of the run's own record, not a log viewer. */
+const RECORD_LINES = 3;
 
 export function StatePanel({ run }: StatePanelProps) {
   const content = useContent();
+  const recent = run.log.slice(-RECORD_LINES);
   return (
     <section
       aria-label="현황"
       className="flex flex-col gap-2 border-2 border-slate bg-ink-deep p-3"
     >
       <h2 className="text-base text-parchment">{content.stages[run.stage].title}</h2>
-      <ul aria-label="증거" className="flex flex-wrap gap-1">
-        {EVIDENCE_IDS.map((id: EvidenceId) => {
-          const held: boolean = run[id];
-          const label = content.evidence[id];
-          const icon = held ? (
-            <PixelSprite sprite={ICONS[id]} title={label} scale={2} />
-          ) : (
-            <PixelSprite
-              sprite={ICONS[id]}
-              title={label}
-              scale={2}
-              monochrome={THEME.tokens.dusk}
-            />
-          );
-          return (
-            <li key={id} className={`${CHIP} ${held ? "text-parchment" : "text-dusk"}`}>
-              {icon}
-              {label}
-            </li>
-          );
-        })}
-      </ul>
-      <ul
-        aria-label="수치"
-        className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-ash tabular-nums"
-      >
-        <li>
-          재등장 기회 {run.chances}/{RECHANCE_LIMIT}
-        </li>
-        <li>
-          본부 방문 {run.reviews}/{REVIEW_LIMIT}
-        </li>
-        <li>군 경로 {run.gunLocked ? "잠김" : "열림"}</li>
-        <li>기록 {run.log.length}건</li>
-      </ul>
+      {recent.length === 0 ? null : (
+        <ol aria-label="회차 기록" className="flex flex-col gap-1 text-xs leading-prose text-ash">
+          {recent.map((entry) => (
+            <li key={entry.text}>{entry.text}</li>
+          ))}
+        </ol>
+      )}
+      {run.gunLocked ? (
+        <p className="text-xs text-ember">군 경로가 잠겼다. 다른 창구로 가야 한다.</p>
+      ) : null}
     </section>
   );
 }

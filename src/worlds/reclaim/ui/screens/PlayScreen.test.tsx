@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 
-// 플레이 화면 계약: 문면은 전부 주입한 CONTENT의 값 그대로 보이고, 열린 행동 클릭은
-// 단계를 전진시키며 확보한 증거 chip을 켜고, require 미충족 클릭은 단계를 그대로 둔 채
-// deny 문면을 내보인다. 스토어는 메모리 스토리지로 만들어 컨텍스트로 주입한다 — 싱글턴
-// runStore는 쓰지 않는다(localStorage 의존 0).
+// 플레이 화면 계약: 문면은 전부 주입한 CONTENT의 값 그대로 보이고, 열린 행동 클릭은 단계를
+// 전진시키며 그 결과가 회차 기록에 남고, require 미충족 클릭은 단계를 그대로 둔 채 deny 문면을
+// 내보인다. 진엔딩 플래그는 화면에 나타나지 않는다. 스토어는 메모리 스토리지로 만들어
+// 컨텍스트로 주입한다 — 싱글턴 runStore는 쓰지 않는다(localStorage 의존 0).
 
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -39,8 +39,6 @@ const mount = (store: StoreApi<RunStore>): void => {
   );
 };
 
-const chipOf = (label: string): HTMLElement | null => screen.getByText(label).closest("li");
-
 const click = async (label: string): Promise<void> => {
   await userEvent.click(screen.getByRole("button", { name: label }));
 };
@@ -69,20 +67,23 @@ test("공문·서술·동행 대사·행동 버튼을 CONTENT 문면 그대로 �
   expect(screen.getByRole("button", { name: CONTENT.actions.call_respond.label })).toBeDefined();
 });
 
-test("열린 행동을 클릭하면 단계가 전진하고 확보한 증거 chip이 켜진다", async () => {
+test("진엔딩 플래그를 화면에 노출하지 않고, 한 행동의 결과가 회차 기록에 남는다", async () => {
   const store = makeStore();
   store.getState().start();
   mount(store);
+  expect(screen.queryByLabelText("증거")).toBeNull();
   await click(CONTENT.actions.call_respond.label);
   expect(screen.getByRole("heading", { name: CONTENT.stages.office.title })).toBeDefined();
   await click(CONTENT.actions.dispatch_send_taesan.label);
   await click(CONTENT.actions.obs_send_ru_alone.label);
   expect(store.getState().run?.stage).toBe("radio");
   expect(store.getState().run?.clue).toBe(true);
-  const clueChip = chipOf(CONTENT.evidence.clue);
-  expect(clueChip).not.toBeNull();
-  expect(clueChip?.className).not.toContain("text-dusk");
-  expect(chipOf(CONTENT.evidence.broadcast)?.className).toContain("text-dusk");
+  // 확보한 플래그는 어디에도 문면으로 나타나지 않는다 — 기록은 행동의 결과 문장뿐이다.
+  const record = screen.getByLabelText("회차 기록");
+  expect(record.textContent).toContain(CONTENT.actions.obs_send_ru_alone.result);
+  expect(record.textContent).not.toContain(CONTENT.actions.obs_send_ru_alone.deny);
+  expect(document.body.textContent).not.toContain("좌표 수신");
+  expect(document.body.textContent).not.toContain("문서 사본");
 });
 
 test("require를 못 맞춘 행동은 deny 문면을 내보내고 단계를 그대로 둔다", async () => {

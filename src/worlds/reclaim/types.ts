@@ -1,7 +1,7 @@
 // Domain types of 복구 기록. Every field is readonly; state changes produce new objects.
 // Content files may import only this file and ./ids.
 
-import type { ActionId, CharacterId, EndingId, EvidenceId, StageId } from "./ids";
+import type { ActionId, CharacterId, EndingId, StageId } from "./ids";
 
 // ---------------------------------------------------------------------------
 // Run
@@ -88,7 +88,6 @@ export type Content = {
   readonly actions: Readonly<Record<ActionId, ActionText>>;
   readonly endings: Readonly<Record<EndingId, EndingCard>>;
   readonly characters: Readonly<Record<CharacterId, CharacterCard>>;
-  readonly evidence: Readonly<Record<EvidenceId, string>>;
 };
 
 // ---------------------------------------------------------------------------

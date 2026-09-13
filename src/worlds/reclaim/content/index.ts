@@ -7,12 +7,11 @@ import type { Content } from "../types";
 import { ACTIONS_TEXT } from "./actions";
 import { CHARACTERS } from "./characters";
 import { ENDINGS } from "./endings";
-import { EVIDENCE, STAGES } from "./stages";
+import { STAGES } from "./stages";
 
 export const CONTENT: Content = {
   stages: STAGES,
   actions: ACTIONS_TEXT,
   endings: ENDINGS,
   characters: CHARACTERS,
-  evidence: EVIDENCE,
 };

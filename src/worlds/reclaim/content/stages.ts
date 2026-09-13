@@ -4,7 +4,7 @@
 // prompts are the boss's first-person scene narration. Documents are state-free:
 // conditional lines belong to actions.ts results and ending bodies.
 
-import type { EvidenceId, StageId } from "../ids";
+import type { StageId } from "../ids";
 import type { StageCard } from "../types";
 
 export const STAGES: Readonly<Record<StageId, StageCard>> = {
@@ -377,13 +377,4 @@ export const STAGES: Readonly<Record<StageId, StageCard>> = {
       },
     ],
   },
-};
-
-export const EVIDENCE: Readonly<Record<EvidenceId, string>> = {
-  broadcast: "두식 — 좌표 수신",
-  documents: "두식 — 문서 사본",
-  coord: "두식 — 좌표 일치",
-  clue: "루 — 단서 (문양·구조)",
-  relic: "루 — 물건",
-  banjangSeed: "최 반장 조사 재료",
 };

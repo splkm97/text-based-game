@@ -87,13 +87,3 @@ export const CHARACTER_IDS = [
   "taesan", // 배태산
 ] as const;
 export type CharacterId = (typeof CHARACTER_IDS)[number];
-
-export const EVIDENCE_IDS = [
-  "broadcast", // 두식 — 좌표 수신
-  "documents", // 두식 — 문서 사본
-  "coord", // 두식 — 좌표 일치
-  "clue", // 루 — 단서 (문양·구조)
-  "relic", // 루 — 물건
-  "banjangSeed", // 최 반장 조사 재료
-] as const;
-export type EvidenceId = (typeof EVIDENCE_IDS)[number];
