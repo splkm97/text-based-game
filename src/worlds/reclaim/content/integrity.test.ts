@@ -154,6 +154,7 @@ describe("구조 무결성 — 실제 콘텐츠 기준 재확인", () => {
 
 // ---------------------------------------------------------------------------
 // 3. 잠금 무결성 — 신호 없는 잠금 0: require가 있으면 거부 문면이 명시 신호다.
+//    radio_morning_on의 상태 의존 전이(배태산 파견에만 broadcast)도 여기서 명시 판정한다.
 // ---------------------------------------------------------------------------
 
 describe("잠금 무결성 — 조용한 잠금 0", () => {
@@ -165,6 +166,46 @@ describe("잠금 무결성 — 조용한 잠금 0", () => {
       quiet,
       `require가 있는데 거부 문면(deny)이 빈 액션: ${quiet.join(", ") || "없음"}`,
     ).toEqual([]);
+  });
+
+  test("radio_morning_on은 배태산 파견 회차에서만 방송을 남긴다 — 다른 파견은 상실 신호로 false", () => {
+    // office에서 라디오까지 실제 경로로 걸어 간다: 출동 → 파견 → 관측소 → 아침 라디오.
+    const radio = (dispatch: ActionId): RunState => {
+      let run = startRun(CONTENT);
+      for (const id of [
+        "call_respond",
+        dispatch,
+        "obs_send_other",
+        "radio_morning_on",
+      ] as ActionId[]) {
+        const outcome = applyAction(run, id, CONTENT);
+        expect(
+          outcome.ok,
+          `${id} 적용이 거부되었다(사유: ${outcome.reason}) — 라디오 도달 경로가 깨졌다`,
+        ).toBe(true);
+        run = outcome.run;
+      }
+      return run;
+    };
+
+    // 배태산이 파견된 회차: 발표를 받아 적는 손이 있다 — broadcast가 true가 된다.
+    const withTaesan = radio("dispatch_send_taesan");
+    expect(
+      withTaesan.broadcast,
+      "배태산 파견 회차에서 라디오가 방송을 남기지 못했다 — 군·진두식 경로의 전제가 깨진다",
+    ).toBe(true);
+
+    // 다른 사람이 파견된 회차: 발표는 흘렀지만 숫자를 받아 적을 사람이 없다 —
+    // broadcast는 false로 남아 이번 회차의 군·진두식 경로가 닫힌다(상실 신호).
+    const withOther = radio("dispatch_send_other");
+    expect(
+      withOther.dispatchTaesan,
+      "준비 오류: dispatch_send_other 뒤에 배태산 부재 상태가 아니다",
+    ).toBe(false);
+    expect(
+      withOther.broadcast,
+      "배태산이 없는 회차에서 방송이 열리면 상실 신호가 사라지고 잠긴 경로가 무단으로 열린다",
+    ).toBe(false);
   });
 });
 

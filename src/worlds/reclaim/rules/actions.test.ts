@@ -1,17 +1,10 @@
-// 액션 가드 표 계약 테스트 — total성, 배치가 갈라는 유일한 간선, 관문 단계 술어, 본부 방문 상한.
+// 액션 가드 표 계약 테스트 — 배치가 갈라는 유일한 간선, 관문 단계 술어, 본부 방문 상한.
+// 키 집합 일치는 ACTION_SPECS: Readonly<Record<ActionId, ActionSpec>> 타입이 컴파일로 이미
+// 강제하므로 런타임 단언을 두지 않는다(W2 리뷰 발견 4 — 공허 통과).
 
 import { describe, expect, test } from "vitest";
-import { ACTION_IDS } from "../ids";
 import { ACTION_SPECS, REVIEW_LIMIT } from "./actions";
 import { makeRun } from "./testContent";
-
-describe("ACTION_SPECS", () => {
-  test("키 집합이 ACTION_IDS와 정확히 일치한다 — 하나도 빠지거나 더하지 않는다", () => {
-    const keys = Object.keys(ACTION_SPECS);
-    expect(keys).toHaveLength(ACTION_IDS.length);
-    expect([...keys].sort()).toEqual([...ACTION_IDS].sort());
-  });
-});
 
 describe("배치 delta — 교차 대조 뒤의 목적지", () => {
   test("ru_first는 gate로, dusik_first는 venue로 갈라진다", () => {
