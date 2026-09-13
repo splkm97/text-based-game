@@ -125,3 +125,5 @@ flowchart LR
 - [스킬 지도](reference/skill-map.html) — 스킬별 "왜 필요한가 / 무엇이 다른가"
 - [게이트 색인](reference/gate-index.html) — G01~G30이 실제로 묻는 질문
 - [MISSION.md](MISSION.md) · [lessons/](lessons/) · [RESOURCES.md](RESOURCES.md)
+- [GLOSSARY.md](GLOSSARY.md) — 이 코스가 쓰는 표준 어휘
+- [NOTES.md](NOTES.md) — 세션 조정·개정 이력·열린 질문
