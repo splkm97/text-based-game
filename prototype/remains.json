@@ -160,9 +160,15 @@
   ],
   "narrativeRules": {
     "characterVoice": {
-      "status": "별도 규칙 필요",
+      "status": "확정",
       "requirement": "등장인물 네 명의 문장만 읽어도 서로 구별되도록 독특한 말투를 부여한다.",
-      "characters": ["dusik", "ru", "banjang", "taesan"]
+      "characters": ["dusik", "ru", "banjang", "taesan"],
+      "rules": {
+        "dusik": "정의감은 있으나 만성적으로 피로하다 — 옳고 그름을 말할 때도 단정하지 않고 한숨처럼 흘리며, 자기 희생을 선언하지 않는다.",
+        "ru": "말을 더듬는다 — 문장이 중간에 끊기고 같은 음절이 반복되며, 다급할수록 심해진다.",
+        "banjang": "숨기는 것이 많고 말수가 적다 — 필요한 최소한만 말하고, 자기 속내를 묻는 질문에는 다른 사실로 답을 돌린다.",
+        "taesan": "유머러스하고 호탕하다 — 농담으로 핵심을 말하고, 감정이 상하는 자리에서도 분위기를 띄운다."
+      }
     },
     "trueEnding": {
       "status": "확정",
