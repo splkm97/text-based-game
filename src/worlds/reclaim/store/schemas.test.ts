@@ -87,6 +87,9 @@ describe("parseRun", () => {
         characters: { ...midRun.characters, dusik: { ...midRun.characters.dusik, injured: "no" } },
       },
       { ...midRun, pendingChain: ["church"] }, // 체인 enum 이탈
+      { ...midRun, cleanupPicks: ["sign", "sign"] }, // 뒷정리 중복 선택
+      { ...midRun, cleanupPicks: ["sign", "power", "search", "search"] }, // 길이는 4지만 중복 — 교착 회차
+      { ...midRun, cleanupPicks: ["sign", "power", "search", "photo", "sign"] }, // 상한 초과
       { ...midRun, chainStep: "church" },
       { ...midRun, terminal: "bankruptcy" }, // 미구현 종결
       { ...midRun, terminal: 0 },

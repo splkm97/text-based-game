@@ -59,7 +59,12 @@ const runState = z.object({
     taesan: characterState,
   }),
   // 뒷정리 미니게임의 선택 순서 — 작업 넷을 중복 없이 고른 차례 그대로(전부 고르면 4).
-  cleanupPicks: z.array(z.enum(CLEANUP_TASK_IDS)).max(CLEANUP_TASK_IDS.length),
+  // 중복까지 여기서 막는 이유: 마침 조건이 `길이 === 4`라, 중복이 실린 페이로드는 빠진 작업을
+  // 채우는 순간 길이가 5가 되어 그 회차가 영영 현장으로 넘어가지 못한다(반쯤 로드하지 않는다).
+  cleanupPicks: z
+    .array(z.enum(CLEANUP_TASK_IDS))
+    .max(CLEANUP_TASK_IDS.length)
+    .refine((picks) => new Set(picks).size === picks.length, "중복된 뒷정리 작업"),
   pendingChain: z.array(chainStepId),
   chainStep: chainStepId.nullable(),
   terminal: endingId.nullable(),
