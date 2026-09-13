@@ -28,6 +28,7 @@ description: "장면 설계가 필요하거나 장면 목표 정하기를 요청
 
 - 이미 작성된 장면의 사후 검토에는 G01~G27 게이트와 `narrative-scene-after-generation`을 사용한다.
 - 이미 작성된 원고의 인과·삭제 가능성·반복 같은 구조 문제를 진단할 때는 `structural-critic`을 사용한다. 이 스킬은 앞으로 쓸 장면의 사양을 만든다.
+- 확정된 카드를 실행 가능한 그래프로 옮길 때는 `story-graph-compiler`를 사용한다. 이 스킬은 카드까지고, 카드는 그래프의 `entry_state`·`exit_state` 입력이 된다.
 - 원장 항목의 추가·수정·삭제와 캐논 반영에는 `remains-ledger-maintenance`를 사용한다.
 - 산문·대사 초안 작성에는 `narrative-rewriter`를, 여러 단계를 조합한 작업 순서 결정에는 `novel-workflow`를 사용한다.
 

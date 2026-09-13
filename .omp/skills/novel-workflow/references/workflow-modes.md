@@ -4,10 +4,11 @@
 
 ## 상류와 검수의 경계
 
-- 상류 담당: `divergent-ideator`, `character-simulator`, `scene-architect`, `reverse-outliner`, `structural-critic`, `continuity-auditor`, `dialogue-variator`, `red-team-reader`.
+- 상류 담당: `divergent-ideator`, `character-simulator`, `scene-architect`, `reverse-outliner`, `structural-critic`, `continuity-auditor`, `dialogue-variator`, `red-team-reader`, `story-graph-compiler`, `route-replay-runner`. 뒤의 둘은 그래프와 실행 증거를 만들 뿐 판정하지 않는다.
 - 검수 담당: G01~G27 specialist, `narrative-scene-after-generation`, `narrative-ending-route-review`, `narrative-multi-ending-integration`, `narrative-score-synthesis`, `narrative-final-verdict`, `narrative-report-assembly`.
 - 상류 스킬은 후보·진단·제안까지만 낸다. 전체 품질 등급, 출시 준비도, 점수는 검수 surface만 낸다. 두 surface가 같은 대상을 두고 서로 다른 판정을 내면 검수 판정을 신뢰하고 상류 산출물은 참고 자료로 내린다.
 - 캐논 쓰기는 `remains-ledger-maintenance` 하나로 유지한다. 상류 스킬과 이 라우터는 원장을 쓰지 않는다.
+- 검수 위임 전제: `draft-review`·`revision`에서 검수 surface에 위임할 때, 경로·엔딩 검사(`ENDING_ROUTE`·`MULTI_ENDING`)에는 `story-graph-compiler`의 그래프와 `route-replay-runner`의 runtime evidence가 먼저 필요하다. 없으면 검수는 mechanics를 `UNVERIFIABLE`로 둔다.
 - G28→G29→G30 synthesis 체인은 이 라우터의 모드가 아니다. 그 순서는 synthesis 스킬이 직접 지키고, 이 라우터는 그 체인을 계획에 넣지 않는다.
 
 ## 모드 선택 판정표

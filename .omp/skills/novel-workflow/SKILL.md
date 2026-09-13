@@ -31,6 +31,7 @@ description: "여러 창작·진단 스킬을 순서대로 조합해 소설 작�
 - 전체 서사 품질 판정과 등급은 G01~G27 게이트와 synthesis 스킬이 담당한다. 이 스킬은 판정하지 않는다.
 - G28~G30 synthesis 체인은 순서가 이미 고정되어 있으므로 해당 synthesis 스킬을 직접 호출한다.
 - 원장 항목의 추가·수정·삭제는 `remains-ledger-maintenance`가 담당한다.
+- 그래프 컴파일과 실행 증거 생성은 `story-graph-compiler`·`route-replay-runner`가 담당한다. 이 라우터는 그 둘을 단계로 배치할 뿐 실행하지 않는다.
 - 산문 생성 자체는 담당하지 않는다.
 
 ## 입력

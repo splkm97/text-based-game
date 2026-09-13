@@ -27,6 +27,7 @@ description: "작성된 원고에서 실제로 존재하는 장면 구조를 역
 
 - 원고·원장 수정이나 캐논 반영 요청. 이 스킬은 읽고 추출하고 진단까지만 한다.
 - 추출 표 없이 구조적 문제만 판정할 때는 `structural-critic`을 사용한다.
+- 기계가 실행할 수 있는 그래프(노드·guard·effect·route·앵커)가 필요할 때는 `story-graph-compiler`를 사용한다. 이 스킬의 장면 표는 사람이 읽는 진단이지 실행 형식이 아니다.
 - 인물이 왜 그렇게 행동하는지를 판단할 때는 `character-simulator`를, 원장·원고의 사실 모순을 대조할 때는 `continuity-auditor`를 사용한다.
 - 독자 반응 후보를 뽑을 때는 `red-team-reader`를, 문장 교정·리라이팅·장면 재배열은 `narrative-rewriter`를 사용한다.
 - 새 설정·새 사건 제안, 다음 전개 후보 생성에는 이 스킬을 쓰지 않는다.

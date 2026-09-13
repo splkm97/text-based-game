@@ -21,7 +21,7 @@
 
 ## Authoring surface
 
-상류(authoring) 스킬은 후보·설계·시뮬레이션·진단까지만 내고, 전체 품질 판정과 등급은 검수 surface가 담당한다. 이 9개 스킬은 `prototype/remains.json`, `prototype/stories/example.md`, `docs/ideation/`을 읽기 전용으로 직접 읽고 `RUN_DIR/inputs/`에 스냅샷을 남긴다. 위 「공통 실행 계약」의 "외부 프로젝트 경로는 읽지 않는다"는 검수 스킬에만 적용한다. 원장·원고 쓰기는 `remains-ledger-maintenance` 하나로 유지한다.
+상류(authoring) 스킬은 후보·설계·시뮬레이션·진단까지만 내고, 전체 품질 판정과 등급은 검수 surface가 담당한다. 이 11개 스킬은 `prototype/remains.json`, `prototype/stories/example.md`, `docs/ideation/`을 읽기 전용으로 직접 읽고 `RUN_DIR/inputs/`에 스냅샷을 남긴다. 위 「공통 실행 계약」의 "외부 프로젝트 경로는 읽지 않는다"는 검수 스킬에만 적용한다. 원장·원고 쓰기는 `remains-ledger-maintenance` 하나로 유지한다.
 
 | Label | 호출 시점 | 담당 skill | 출력 |
 |---|---|---|---|
@@ -34,10 +34,12 @@
 | `RED_TEAM` | 가혹한 독자 반응을 시뮬레이션할 때 | `red-team-reader` | `RUN_DIR/outputs/red-team/<scope>.md` |
 | `REVERSE_OUTLINE` | 작성된 원고에서 실제 구조를 추출할 때 | `reverse-outliner` | `RUN_DIR/outputs/outline/<manuscript>.md` |
 | `WORKFLOW` | 두 단계 이상을 조합하고 사람 게이트를 확정할 때 | `novel-workflow` | `RUN_DIR/outputs/workflow/<mode>.md` |
+| `GRAPH_COMPILE` | 승인된 산출물에서 기계 검증 가능한 이야기 그래프가 필요할 때 | `story-graph-compiler` | `RUN_DIR/outputs/graph/story-graph.json` + `routes.json` + `compile-report.md` |
+| `ROUTE_REPLAY` | `ENDING_ROUTE`·`MULTI_ENDING` 검수 직전에 runtime evidence가 필요할 때 | `route-replay-runner` | `RUN_DIR/outputs/replay/<ROUTE_ID>.json` + `graph-evidence.md` |
 
 사람 게이트: Idea Selection, Story Premise Approval, Major Character Motivation, Major Plot Turn, Ending, Theme, Major Canon Change, Structural Rewrite, Final Voice, Final Manuscript. 게이트를 통과하지 않은 단계는 다음 단계로 넘기지 않는다.
 
-위임: 상류 스킬은 G01~G27, `narrative-*`, synthesis 스킬의 판정을 대체하지 않는다. 같은 대상을 두고 판정이 갈리면 검수 판정을 신뢰한다.
+위임: 상류 스킬은 G01~G27, `narrative-*`, synthesis 스킬의 판정을 대체하지 않는다. 같은 대상을 두고 판정이 갈리면 검수 판정을 신뢰한다. 위임 전제: `ENDING_ROUTE`·`MULTI_ENDING`을 위임하려면 `GRAPH_COMPILE` 산출물(그래프·route·앵커)과 `ROUTE_REPLAY` 산출물(runtime evidence)이 먼저 있어야 한다. 없으면 검수는 mechanics·도달성·배타성을 `UNVERIFIABLE`로 둔다.
 
 ## Lifecycle skills
 

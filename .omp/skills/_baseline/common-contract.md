@@ -17,6 +17,8 @@
 - `red-team-reader`
 - `reverse-outliner`
 - `novel-workflow`
+- `story-graph-compiler`
+- `route-replay-runner`
 
 ## 불릿
 
