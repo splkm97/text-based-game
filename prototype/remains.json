@@ -162,9 +162,9 @@
       "types": ["진엔딩", "일반 엔딩", "파산 엔딩", "사망 엔딩"],
       "rule": "진엔딩은 인물별 플래그 비교로 도달한다. 조건을 충족하지 못하면 일반 엔딩으로 종결되고, 파산과 사망은 별도의 종결 상태다."
     },
-    "branchEventRule": {
+    "gameMechanics": {
       "status": "확정",
-      "rule": "이야기의 분기점이 되는 지점에서는 선택한 인물 조합에 대응하는 이벤트가 반드시 발생한다. 분기점이 아닌 현장에서는 미리 정의된 이벤트 풀에서 무작위로 이벤트를 뽑는다."
+      "reference": "docs/design/game-mechanics.md"
     }
   },
   "trueEndingRoutes": {
