@@ -45,11 +45,7 @@ export const applyAction = (run: RunState, id: ActionId, content: Content): Acti
     return { run, ok: false, reason: content.actions[id].deny };
   }
   const delta = spec.apply(run);
-  const entry: LogEntry = {
-    step: run.log.length + 1,
-    stage: delta.stage ?? run.stage,
-    text: content.actions[id].result,
-  };
+  const entry: LogEntry = { stage: delta.stage ?? run.stage, text: content.actions[id].result };
   return {
     run: {
       ...run,

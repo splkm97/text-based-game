@@ -18,8 +18,8 @@ const midRun = makeRun({
   reviews: 2,
   chances: 1,
   log: [
-    { step: 1, stage: "archive", text: "문서와 대조했다" },
-    { step: 2, stage: "venue", text: "대회장에 도착했다" },
+    { stage: "archive", text: "문서와 대조했다" },
+    { stage: "venue", text: "대회장에 도착했다" },
   ],
 });
 

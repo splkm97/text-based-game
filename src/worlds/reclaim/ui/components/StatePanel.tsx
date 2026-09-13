@@ -25,8 +25,9 @@ export function StatePanel({ run }: StatePanelProps) {
       <h2 className="text-base text-parchment">{content.stages[run.stage].title}</h2>
       {recent.length === 0 ? null : (
         <ol aria-label="회차 기록" className="flex flex-col gap-1 text-xs leading-prose text-ash">
-          {recent.map((entry) => (
-            <li key={entry.step}>{entry.text}</li>
+          {recent.map((entry, index) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: 기록은 append-only 고정 순서이고 항목에 자식 상태가 없다. 반복 행동은 같은 result 문면을 남기므로 문면 키는 충돌한다.
+            <li key={index}>{entry.text}</li>
           ))}
         </ol>
       )}

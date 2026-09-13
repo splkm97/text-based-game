@@ -260,6 +260,30 @@ describe("문면 총체성 — 콘텐츠 리터럴", () => {
     });
     expect(blanks, `빈 문면이 있는 종결: ${blanks.join(", ") || "없음"}`).toEqual([]);
   });
+
+  test("문서 줄·번호 항목·에필로그·동행 대사에 중복 문면이 없다 — 목록 키가 문면이다", () => {
+    const dupes: string[] = [];
+    for (const [id, card] of Object.entries(CONTENT.stages)) {
+      for (const [field, lines] of [
+        ["meta", card.document.meta],
+        ["items", card.document.items],
+      ] as const) {
+        const seen = new Set<string>();
+        for (const line of lines) {
+          if (seen.has(line)) dupes.push(`${id}.${field}: ${line}`);
+          seen.add(line);
+        }
+      }
+      const characters = card.partyLines.map((line) => line.character);
+      if (new Set(characters).size !== characters.length) {
+        dupes.push(`${id}.partyLines: 인물이 중복된다`);
+      }
+    }
+    for (const [id, card] of Object.entries(CONTENT.endings)) {
+      if (new Set(card.epilogue).size !== card.epilogue.length) dupes.push(`${id}.epilogue`);
+    }
+    expect(dupes, `중복 문면: ${dupes.join(", ") || "없음"}`).toEqual([]);
+  });
 });
 
 // ---------------------------------------------------------------------------
