@@ -14,6 +14,13 @@ export const ACTIONS_TEXT: Readonly<Record<ActionId, ActionText>> = {
     result: "두식이 자기 압류 통지서를 꺼냈다. 협회 공문은 여전히 매일 아침 온다.",
   },
 
+  office_printer: {
+    id: "office_printer",
+    label: "프린터에서 공문을 뽑는다",
+    deny: "이미 당겨 낸 공문이 책상 위에 놓여 있다",
+    result: "프린터가 남은 절반을 밀어 냈다. 오늘의 공문이 책상 위에서 한 장이 되었다.",
+  },
+
   dispatch_send_taesan: {
     id: "dispatch_send_taesan",
     label: "지방 파견에 배태산을 보낸다",
@@ -29,21 +36,65 @@ export const ACTIONS_TEXT: Readonly<Record<ActionId, ActionText>> = {
 
   obs_send_ru_alone: {
     id: "obs_send_ru_alone",
-    label: "관측소에 루를 단독으로 보낸다",
-    deny: "관측소 건이 진행 중이 아니어서 루를 단독으로 보낼 수 없다",
+    label: "루가 파편의 문양을 읽게 한다",
+    deny: "루가 이번 현장의 동행이 아니다 — 문양을 읽을 눈이 잔해 밖에 서 있다",
     result: "루가 파편의 문양과 구조를 읽었다. 나는 특이사항 없음을 썼다.",
   },
   obs_boss_joins: {
     id: "obs_boss_joins",
-    label: "직접 관측소에 함께 간다",
-    deny: "관측소 건이 열려 있지 않아 함께 갈 수 없다",
+    label: "파편을 내가 먼저 기록한다",
+    deny: "루가 동행에 있다 — 파편의 첫 기록은 루의 몫이다",
     result: "내가 파편을 먼저 기록했다. 루는 아무것도 읽지 못했다.",
   },
   obs_send_other: {
     id: "obs_send_other",
-    label: "관측소에 다른 직원을 보낸다",
-    deny: "관측소 인원이 이미 배정되어 다른 직원을 보낼 수 없다",
+    label: "루 없이 다른 사람에게 파편을 넘긴다",
+    deny: "루가 함께 왔다 — 다른 사람에게 넘길 파편이 아니다",
     result: "돌아온 보고서에 특이사항이 없다.",
+  },
+
+  briefing_ack: {
+    id: "briefing_ack",
+    label: "공문을 접어 챙긴다",
+    deny: "접을 공문이 아직 책상에 오르지 않았다",
+    result: "공문을 세로로 접어 안주머니에 넣었다. 마감 줄은 접혀도 그대로였다.",
+  },
+
+  party_pick_dusik: {
+    id: "party_pick_dusik",
+    label: "강두식을 동행으로 세운다",
+    deny: "두식이 이미 배차표에 있거나, 빈 칸이 없거나, 부상으로 이번 일감까지 결장이다",
+    result: "두식이 배차표에 이름을 올렸다. 그는 헬멧을 먼저 들어 뒀다.",
+  },
+  party_pick_ru: {
+    id: "party_pick_ru",
+    label: "루를 동행으로 세운다",
+    deny: "루가 이미 배차표에 있거나, 빈 칸이 없거나, 부상으로 이번 일감까지 결장이다",
+    result: "루가 배차표에 이름을 올렸다. 도면을 접는 손이 먼저 움직였다.",
+  },
+  party_pick_banjang: {
+    id: "party_pick_banjang",
+    label: "최 반장을 동행으로 세운다",
+    deny: "최 반장이 이미 배차표에 있거나, 빈 칸이 없거나, 부상으로 이번 일감까지 결장이다",
+    result: "최 반장이 배차표에 이름을 올렸다. 명부 봉투는 이미 챙겨 둔 뒤였다.",
+  },
+  party_pick_taesan: {
+    id: "party_pick_taesan",
+    label: "배태산을 동행으로 세운다",
+    deny: "배태산이 이미 배차표에 있거나, 빈 칸이 없거나, 부상으로 이번 일감까지 결장이다",
+    result: "배태산이 배차표에 이름을 올렸다. 로비의 아는 얼굴부터 줄을 세워 뒀다.",
+  },
+  party_reset: {
+    id: "party_reset",
+    label: "동행을 모두 지운다",
+    deny: "비울 이름이 배차표에 없다",
+    result: "올려 둔 이름을 모두 지웠다. 배차표의 빈 칸이 다시 열렸다.",
+  },
+  party_go: {
+    id: "party_go",
+    label: "선택한 인원과 현장으로 나선다",
+    deny: "배차표가 비어 있다 — 아무도 정하지 않은 채로는 현장에 나서지 않는다",
+    result: "정해진 이름과 함께 출동 대장에 서명했다. 현장으로 나섰다.",
   },
 
   radio_morning_on: {
@@ -61,26 +112,26 @@ export const ACTIONS_TEXT: Readonly<Record<ActionId, ActionText>> = {
 
   archive_with_dusik: {
     id: "archive_with_dusik",
-    label: "두식과 본부 조사에 나선다",
-    deny: "본부 방문이 모두 끝난 뒤라 두식과 들어갈 수 없다",
+    label: "두식이 문서 사본을 손에 넣는다",
+    deny: "두식이 이번 방문의 동행이 아니다 — 서가에서 사본을 찾을 손이 없다",
     result: "두식이 문서 사본을 손에 넣었다. 방송이 말한 예측 시스템에 대한 대목은 없었다.",
   },
   archive_with_ru: {
     id: "archive_with_ru",
-    label: "루와 본부 조사에 나선다",
-    deny: "루를 데리고 들어갈 방문이 남지 않았다",
+    label: "루가 목록 밖의 물건을 찾아낸다",
+    deny: "루가 이번 방문의 동행이 아니다 — 목록 밖을 읽는 눈이 없다",
     result: "루가 목록 밖의 물건 앞에서 걸음을 멈췄다.",
   },
   archive_with_taesan: {
     id: "archive_with_taesan",
-    label: "배태산과 본부 조사에 나선다",
-    deny: "배태산과 나갈 본부 일정이 더 없다",
+    label: "배태산이 핵심 문서를 빼돌린다",
+    deny: "배태산이 이번 방문의 동행이 아니다 — 빼돌릴 손이 서가에 없다",
     result: "배태산이 핵심 문서를 빼돌렸다.",
   },
   archive_alone: {
     id: "archive_alone",
-    label: "최 반장을 혼자 본부에 들여보낸다",
-    deny: "최 반장을 혼자 보내기엔 방문이 닫혀 있다",
+    label: "최 반장이 별도 보고를 남긴다",
+    deny: "최 반장이 이번 방문의 동행이 아니다 — 별도 보고를 쓸 사람이 없다",
     result: "최 반장의 별도 보고가 회사 기록과 어긋났다.",
   },
   archive_leave: {

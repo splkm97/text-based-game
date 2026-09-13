@@ -1,293 +1,244 @@
-// 콘텐츠 무결성 테스트 — prototype/game-mechanics.md 「콘텐츠 무결성 규칙 (테스트 대상)」의
-// reclaim 대응(계획 §6). 실제 CONTENT를 두 배치로 열거해 콘텐츠 레코드와 가드 표(ACTION_SPECS)를
-// 대조한다. 단언값은 열거 리포트와 콘텐츠에서 읽는다 — 수치 하드코딩 금지. 실패 시 문제 id를
-// 메시지로 보인다.
+// 콘텐츠 무결성 테스트 — 일감 구조(2026-09-14 재편)의 콘텐츠 레이어 검사.
+// 실제 CONTENT를 훑어 ① (일감 × 순서)·체인·액션·종결·인물 카드의 존재와 id 정합
+// ② 빈 문면 0 ③ 목록 내·전역 중복 문면 0 ④ 액션 집합 일치(ids.ts ↔ content)를 단언한다.
+// 단언값은 콘텐츠에서 읽는다 — 수치 하드코딩 금지. 종결 도달·배치별 무대·막다른 상태 같은
+// 열거 기반 검사는 별도 태스크(rules/enumerate 계열)가 담당한다 — 여기서 중복 구현하지 않는다.
 import { describe, expect, test } from "vitest";
-import type { ActionId, EndingId, StageId } from "../ids";
-import { ACTION_IDS, ENDING_IDS, STAGE_IDS } from "../ids";
-import { ACTION_SPECS } from "../rules/actions";
-import type { EnumerationReport } from "../rules/enumerate";
-import { enumerateRuns } from "../rules/enumerate";
-import { applyAction, availableActions, REVIEW_LIMIT, startRun } from "../rules/run";
-import type { Placement, RunState } from "../types";
+import {
+  ACTION_IDS,
+  CHARACTER_IDS,
+  CHAIN_STEP_IDS,
+  ENDING_IDS,
+  JOB_IDS,
+  JOB_STEP_IDS,
+  type ActionId,
+  type ChainStepId,
+  type CharacterId,
+  type EndingId,
+  type JobId,
+} from "../ids";
+import type { StageDocument, TalkLine } from "../types";
 import { CONTENT } from "./index";
 
-const PLACEMENTS: readonly Placement[] = ["ru_first", "dusik_first"];
 /** 진엔딩 두 종 — 맞은편 체인의 잠금 서술을 끊는 종결(계획 §3.5). */
 const TRUE_ENDINGS: readonly EndingId[] = ["true_ru", "true_dusik"];
-/** 고유 상태 상한 — 열거기(enumerate.ts)와 같은 폭발 가드. */
-const STATE_LIMIT = 20_000;
 
 const isBlank = (text: string): boolean => text.trim() === "";
+const talkTexts = (lines: readonly TalkLine[]): readonly string[] => lines.map((l) => l.text);
 
 // ---------------------------------------------------------------------------
-// 열거 리포트 — 구조 무결성·종결 도달은 enumerateRuns의 리포트로 판정한다.
+// 문면 목록화 — 빈 문면·중복을 한 번에 훑기 위한 [위치, 문면들] 목록.
 // ---------------------------------------------------------------------------
 
-const reports: Readonly<Record<Placement, EnumerationReport>> = {
-  ru_first: enumerateRuns(CONTENT, "ru_first"),
-  dusik_first: enumerateRuns(CONTENT, "dusik_first"),
+/** [위치, 문면 목록] 한 쌍. 목록 단위 검사(빈 문면·목록 내 중복)의 단위다. */
+type Probe = readonly [where: string, lines: readonly string[]];
+
+const documentProbes = (where: string, doc: StageDocument): Probe[] => [
+  [`${where}.document.heading`, [doc.heading]],
+  [`${where}.document.meta`, doc.meta],
+  [`${where}.document.items`, doc.items],
+  // document.tail은 서식상 생략된다(끝 줄 없는 자체 문서·지시서) — 검사에서 뺀다.
+];
+
+const jobProbes = (job: JobId): Probe[] => {
+  const card = CONTENT.jobs[job];
+  const w = `jobs.${job}`;
+  return [
+    [`${w}.title`, [card.title]],
+    [`${w}.office.prompt`, [card.office.prompt]],
+    [`${w}.office.news`, [card.office.news]],
+    [`${w}.office.printer`, [card.office.printer]],
+    [`${w}.office.chatter`, talkTexts(card.office.chatter)],
+    ...documentProbes(`${w}.briefing`, card.briefing.document),
+    [`${w}.briefing.prompt`, [card.briefing.prompt]],
+    [`${w}.briefing.talk`, talkTexts(card.briefing.talk)],
+    [`${w}.party.prompt`, [card.party.prompt]],
+    [`${w}.party.notes`, talkTexts(card.party.notes)],
+    [`${w}.site.title`, [card.site.title]],
+    [`${w}.site.prompt`, [card.site.prompt]],
+    ...documentProbes(`${w}.site`, card.site.document),
+    [`${w}.site.partyLines`, talkTexts(card.site.partyLines)],
+  ];
 };
 
-const aux = (placement: Placement): string => {
-  const report = reports[placement];
-  const counts = ENDING_IDS.map((id) => `${id}:${report.terminalCounts[id]}`).join(" ");
-  return `부가 지표(단언 아님) ${placement} states=${report.states} bothChainsReady=${report.bothChainsReady} terminalCounts={${counts}}`;
+const chainProbes = (id: ChainStepId): Probe[] => {
+  const card = CONTENT.chains[id];
+  const w = `chains.${id}`;
+  return [
+    [`${w}.title`, [card.title]],
+    ...documentProbes(w, card.document),
+    [`${w}.prompt`, [card.prompt]],
+    [`${w}.partyLines`, talkTexts(card.partyLines)],
+  ];
 };
 
-// ---------------------------------------------------------------------------
-// 도달 상태 순회 — 단계·선택지 무결성은 규칙의 공개 API(availableActions·applyAction)로
-// 시작 상태부터 직접 돌려 수집한다. 서명(log 제외) 재방문은 건너뛴다.
-// ---------------------------------------------------------------------------
-
-type Reachability = {
-  readonly stages: ReadonlySet<StageId>;
-  readonly nonTerminal: readonly RunState[];
-  readonly actionsOffered: ReadonlySet<ActionId>;
+const actionProbes = (id: ActionId): Probe[] => {
+  const card = CONTENT.actions[id];
+  return [
+    [`actions.${id}.label`, [card.label]],
+    [`actions.${id}.deny`, [card.deny]],
+    [`actions.${id}.result`, [card.result]],
+  ];
 };
 
-const signature = (run: RunState): string =>
-  [
-    run.placement,
-    run.stage,
-    run.terminal,
-    run.dispatchTaesan,
-    run.broadcast,
-    run.documents,
-    run.coord,
-    run.gunLocked,
-    run.clue,
-    run.relic,
-    run.banjangSeed,
-    run.reviews,
-    run.chances,
-    run.contact,
-  ].join("|");
-
-const reachable = (placement: Placement): Reachability => {
-  const stages = new Set<StageId>();
-  const nonTerminal: RunState[] = [];
-  const actionsOffered = new Set<ActionId>();
-  const seen = new Set<string>();
-  const queue: RunState[] = [startRun(CONTENT, placement)];
-  while (queue.length > 0) {
-    const run = queue.shift();
-    if (run === undefined) break;
-    const sig = signature(run);
-    if (seen.has(sig)) continue;
-    seen.add(sig);
-    if (seen.size > STATE_LIMIT) {
-      throw new Error(`도달 순회가 고유 상태 상한 ${STATE_LIMIT}개를 넘었다 — 상태 공간 폭발`);
-    }
-    stages.add(run.stage);
-    if (run.terminal !== null) continue;
-    nonTerminal.push(run);
-    for (const id of availableActions(run)) {
-      actionsOffered.add(id);
-      const outcome = applyAction(run, id, CONTENT);
-      if (outcome.ok) queue.push(outcome.run);
-    }
-  }
-  return { stages, nonTerminal, actionsOffered };
+const endingProbes = (id: EndingId): Probe[] => {
+  const card = CONTENT.endings[id];
+  return [
+    [`endings.${id}.title`, [card.title]],
+    [`endings.${id}.text`, [card.text]],
+    [`endings.${id}.epilogue`, card.epilogue],
+  ];
 };
 
-const reach: Readonly<Record<Placement, Reachability>> = {
-  ru_first: reachable("ru_first"),
-  dusik_first: reachable("dusik_first"),
+const characterProbes = (id: CharacterId): Probe[] => {
+  const card = CONTENT.characters[id];
+  return [
+    [`characters.${id}.name`, [card.name]],
+    [`characters.${id}.role`, [card.role]],
+    [`characters.${id}.voice`, [card.voice]],
+    [`characters.${id}.card`, [card.card]],
+  ];
 };
 
-/** 두 배치 도달 상태의 합집합으로 본 단계·액션 집합. */
-const unionStages = (): ReadonlySet<StageId> =>
-  new Set<StageId>([...reach.ru_first.stages, ...reach.dusik_first.stages]);
+/** 콘텐츠 전체의 문면 목록. */
+const allProbes = (): Probe[] => [
+  ...JOB_IDS.flatMap(jobProbes),
+  ...CHAIN_STEP_IDS.flatMap(chainProbes),
+  ...ACTION_IDS.flatMap(actionProbes),
+  ...ENDING_IDS.flatMap(endingProbes),
+  ...CHARACTER_IDS.flatMap(characterProbes),
+];
 
-const unionActionsOffered = (): ReadonlySet<ActionId> =>
-  new Set<ActionId>([...reach.ru_first.actionsOffered, ...reach.dusik_first.actionsOffered]);
+/**
+ * 산문 문면 목록 — 문서 얼굴(heading·meta·items)을 뺀다. 발신명의·인사말 같은
+ * 공문 서식어는 문서마다 반복되는 것이 정답이고, 산문은 한 번밖에 쓰이지 않는다.
+ */
+const proseProbes = (): Probe[] => allProbes().filter(([where]) => !where.includes(".document."));
 
 // ---------------------------------------------------------------------------
-// 1. 도달성 — 잠긴 상태를 요구하지 않고 시작 상태에서 만족 가능한 경로가 있다.
+// 1. 카드 존재 — (일감 × 순서) 16장과 체인 6장, 집합 정합.
 // ---------------------------------------------------------------------------
 
-describe("도달성 — 시작 상태에서 만족 가능한 경로", () => {
-  test("도달 상태에 등장하는 단계는 12 전부다(두 배치 합집합)", () => {
-    const seen = unionStages();
-    const missing = STAGE_IDS.filter((id) => !seen.has(id));
-    const perPlacement = PLACEMENTS.map(
-      (placement) => `${placement}={${[...reach[placement].stages].sort().join(", ")}}`,
-    ).join(" · ");
-    expect(
-      missing,
-      `도달하지 못한 단계: ${missing.join(", ") || "없음"} — 배치별 도달 단계 ${perPlacement}`,
-    ).toEqual([]);
+describe("카드 존재 — (일감 × 순서)와 체인", () => {
+  test.each(JOB_IDS.flatMap((job) => JOB_STEP_IDS.map((step) => ({ job, step }))))(
+    "$job × $step — 카드가 있다",
+    ({ job, step }) => {
+      expect(CONTENT.jobs[job][step], `jobs.${job}.${step} 카드가 없다`).toBeTypeOf("object");
+    },
+  );
+
+  test.each(CHAIN_STEP_IDS)("%s — 체인 카드가 있다", (id) => {
+    expect(CONTENT.chains[id], `chains.${id} 카드가 없다`).toBeTypeOf("object");
   });
 
-  test("모든 액션이 어느 도달 상태에선가 목록에 올라온다(두 배치 합집합)", () => {
-    const offered = unionActionsOffered();
-    const missing = ACTION_IDS.filter((id) => !offered.has(id));
-    expect(missing, `한 번도 목록에 오르지 않은 액션: ${missing.join(", ") || "없음"}`).toEqual([]);
+  test("일감·체인·종결·인물 집합이 ids.ts와 같다", () => {
+    expect(Object.keys(CONTENT.jobs).sort()).toEqual([...JOB_IDS].sort());
+    expect(Object.keys(CONTENT.chains).sort()).toEqual([...CHAIN_STEP_IDS].sort());
+    expect(Object.keys(CONTENT.endings).sort()).toEqual([...ENDING_IDS].sort());
+    expect(Object.keys(CONTENT.characters).sort()).toEqual([...CHARACTER_IDS].sort());
   });
 
-  test("모든 종결에 도달 경로가 있다 — 두 배치 각각 terminalCounts 1 이상", () => {
-    for (const placement of PLACEMENTS) {
-      for (const id of ENDING_IDS) {
-        expect(
-          reports[placement].terminalCounts[id],
-          `종결 ${id}의 도달 경로 수(${placement}). ${aux(placement)}`,
-        ).toBeGreaterThanOrEqual(1);
-      }
-    }
+  test("모든 카드의 id 필드가 키와 같다", () => {
+    const offenders: string[] = [];
+    for (const job of JOB_IDS) if (CONTENT.jobs[job].id !== job) offenders.push(`jobs.${job}`);
+    for (const id of CHAIN_STEP_IDS) if (CONTENT.chains[id].id !== id) offenders.push(`chains.${id}`);
+    for (const id of ACTION_IDS) if (CONTENT.actions[id].id !== id) offenders.push(`actions.${id}`);
+    for (const id of ENDING_IDS) if (CONTENT.endings[id].id !== id) offenders.push(`endings.${id}`);
+    for (const id of CHARACTER_IDS)
+      if (CONTENT.characters[id].id !== id) offenders.push(`characters.${id}`);
+    expect(offenders, `id 불일치: ${offenders.join(", ") || "없음"}`).toEqual([]);
+  });
+
+  test("일감 site마다 인물 네 명의 줄이 모두 있다 — 현장은 동행만 말한다", () => {
+    const missing = JOB_IDS.flatMap((job) => {
+      const speakers = new Set(CONTENT.jobs[job].site.partyLines.map((line) => line.character));
+      return CHARACTER_IDS.filter((id) => !speakers.has(id)).map((id) => `${job}: ${id}`);
+    });
+    expect(missing, `site.partyLines에 없는 인물: ${missing.join(", ") || "없음"}`).toEqual([]);
   });
 });
 
 // ---------------------------------------------------------------------------
-// 2. 구조 무결성 — 실제 콘텐츠 기준 재확인(열거기의 TEST_CONTENT 검증과 별개).
+// 2. 액션 집합 일치 — ids.ts의 액션 집합과 콘텐츠 카드 집합이 양방향으로 같다.
 // ---------------------------------------------------------------------------
 
-describe("구조 무결성 — 실제 콘텐츠 기준 재확인", () => {
-  test.each(PLACEMENTS)("%s — 막다른 비종결 상태 0, 순환 0", (placement) => {
-    const report = reports[placement];
-    expect(report.deadEnds, `비종결 상태에서 선택지가 막히지 않는다. ${aux(placement)}`).toEqual(
-      [],
-    );
-    expect(report.cycles, `경로 내 상태 재방문이 없다. ${aux(placement)}`).toEqual([]);
+describe("액션 집합 일치 — ids.ts와 콘텐츠", () => {
+  test("선언된 액션마다 카드가 있고, 카드 밖의 액션은 없다", () => {
+    const written = new Set<string>(Object.keys(CONTENT.actions));
+    const missing = ACTION_IDS.filter((id) => !written.has(id));
+    const declared = new Set<string>(ACTION_IDS);
+    const extra = [...written].filter((id) => !declared.has(id));
+    expect(
+      { missing, extra },
+      `빠진 액션: ${missing.join(", ") || "없음"} / 선언 밖 카드: ${extra.join(", ") || "없음"}`,
+    ).toEqual({ missing: [], extra: [] });
   });
 });
 
 // ---------------------------------------------------------------------------
-// 3. 잠금 무결성 — 신호 없는 잠금 0: require가 있으면 거부 문면이 명시 신호다.
-//    radio_morning_on의 상태 의존 전이(배태산 파견에만 broadcast)도 여기서 명시 판정한다.
-// ---------------------------------------------------------------------------
-
-describe("잠금 무결성 — 조용한 잠금 0", () => {
-  test("require가 있는 액션은 모두 빈 문자열이 아닌 deny를 가진다", () => {
-    const quiet = ACTION_IDS.filter(
-      (id) => ACTION_SPECS[id].require !== undefined && isBlank(CONTENT.actions[id].deny),
-    );
-    expect(
-      quiet,
-      `require가 있는데 거부 문면(deny)이 빈 액션: ${quiet.join(", ") || "없음"}`,
-    ).toEqual([]);
-  });
-
-  test("radio_morning_on은 배태산 파견 회차에서만 방송을 남긴다 — 다른 파견은 상실 신호로 false", () => {
-    // office에서 라디오까지 실제 경로로 걸어 간다: 출동 → 파견 → 관측소 → 아침 라디오.
-    const radio = (dispatch: ActionId): RunState => {
-      let run = startRun(CONTENT);
-      for (const id of [
-        "call_respond",
-        dispatch,
-        "obs_send_other",
-        "radio_morning_on",
-      ] as ActionId[]) {
-        const outcome = applyAction(run, id, CONTENT);
-        expect(
-          outcome.ok,
-          `${id} 적용이 거부되었다(사유: ${outcome.reason}) — 라디오 도달 경로가 깨졌다`,
-        ).toBe(true);
-        run = outcome.run;
-      }
-      return run;
-    };
-
-    // 배태산이 파견된 회차: 발표를 받아 적는 손이 있다 — broadcast가 true가 된다.
-    const withTaesan = radio("dispatch_send_taesan");
-    expect(
-      withTaesan.broadcast,
-      "배태산 파견 회차에서 라디오가 방송을 남기지 못했다 — 군·진두식 경로의 전제가 깨진다",
-    ).toBe(true);
-
-    // 다른 사람이 파견된 회차: 발표는 흘렀지만 숫자를 받아 적을 사람이 없다 —
-    // broadcast는 false로 남아 이번 회차의 군·진두식 경로가 닫힌다(상실 신호).
-    const withOther = radio("dispatch_send_other");
-    expect(
-      withOther.dispatchTaesan,
-      "준비 오류: dispatch_send_other 뒤에 배태산 부재 상태가 아니다",
-    ).toBe(false);
-    expect(
-      withOther.broadcast,
-      "배태산이 없는 회차에서 방송이 열리면 상실 신호가 사라지고 잠긴 경로가 무단으로 열린다",
-    ).toBe(false);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// 4. 선택지 최소 수 — 비종결 상태는 목록이 2개 이상이다. 설계된 강제 이동은 예외 둘뿐이다
-// (계획 §3.3, 데모 route-combined-demo.html:150-158과 같다): 도입 단계 field(출동 하나),
-// 본부 방문 소진(reviews가 상한에 닿으면 with_*가 닫히고 남은 수는 퇴장뿐). 그 외 어떤
-// 비종결 상태도 선택지를 1개로 좁히면 액션 id와 함께 실패한다.
-// ---------------------------------------------------------------------------
-
-describe("선택지 최소 수 — 비종결 상태의 선택지", () => {
-  test.each(PLACEMENTS)("%s — 2개 미만 상태는 설계된 강제 이동뿐이다", (placement) => {
-    const thin = reach[placement].nonTerminal
-      .filter((run) => availableActions(run).length < 2)
-      .map((run) => ({ run, offered: availableActions(run) }));
-    const unexplained = thin
-      .filter(
-        ({ run }) =>
-          run.stage !== "field" && !(run.stage === "archive" && run.reviews >= REVIEW_LIMIT),
-      )
-      .map(({ run, offered }) => `${run.stage}:${offered.length}개(${offered.join(", ")})`);
-    expect(
-      unexplained,
-      `선택지가 2개 미만인 비종결 상태(field·본부 방문 소진 제외, 단계:목록 수(액션)). ${aux(placement)}`,
-    ).toEqual([]);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// 5. 문면 총체성 — 콘텐츠 리터럴은 전부 채워져 있다(빈 문면·공백만 있는 문면 0).
+// 3. 문면 총체성 — 콘텐츠 리터럴은 전부 채워져 있다(빈 문면·공백만 있는 문면 0).
 // ---------------------------------------------------------------------------
 
 describe("문면 총체성 — 콘텐츠 리터럴", () => {
-  test("모든 액션의 label·deny·result가 비어 있지 않다", () => {
-    const blanks = ACTION_IDS.flatMap((id) => {
-      const card = CONTENT.actions[id];
-      const fields = (["label", "deny", "result"] as const).filter((field) => isBlank(card[field]));
-      return fields.length === 0 ? [] : [`${id}(${fields.join(", ")})`];
-    });
-    expect(blanks, `빈 문면이 있는 액션: ${blanks.join(", ") || "없음"}`).toEqual([]);
-  });
-
-  test("모든 종결 카드의 title·text·epilogue 첫 문단이 비어 있지 않다", () => {
-    const blanks = ENDING_IDS.flatMap((id) => {
-      const card = CONTENT.endings[id];
-      const firstEpilogue = card.epilogue[0];
-      const fields: string[] = [];
-      if (isBlank(card.title)) fields.push("title");
-      if (isBlank(card.text)) fields.push("text");
-      if (firstEpilogue === undefined || isBlank(firstEpilogue)) fields.push("epilogue[0]");
-      return fields.length === 0 ? [] : [`${id}(${fields.join(", ")})`];
-    });
-    expect(blanks, `빈 문면이 있는 종결: ${blanks.join(", ") || "없음"}`).toEqual([]);
-  });
-
-  test("문서 줄·번호 항목·에필로그·동행 대사에 중복 문면이 없다 — 목록 키가 문면이다", () => {
-    const dupes: string[] = [];
-    for (const [id, card] of Object.entries(CONTENT.stages)) {
-      for (const [field, lines] of [
-        ["meta", card.document.meta],
-        ["items", card.document.items],
-      ] as const) {
-        const seen = new Set<string>();
-        for (const line of lines) {
-          if (seen.has(line)) dupes.push(`${id}.${field}: ${line}`);
-          seen.add(line);
-        }
-      }
-      const characters = card.partyLines.map((line) => line.character);
-      if (new Set(characters).size !== characters.length) {
-        dupes.push(`${id}.partyLines: 인물이 중복된다`);
-      }
-    }
-    for (const [id, card] of Object.entries(CONTENT.endings)) {
-      if (new Set(card.epilogue).size !== card.epilogue.length) dupes.push(`${id}.epilogue`);
-    }
-    expect(dupes, `중복 문면: ${dupes.join(", ") || "없음"}`).toEqual([]);
+  test("모든 문면이 비어 있지 않다 — 문서 끝 줄(tail)만 서식상 생략을 허용한다", () => {
+    const blanks = allProbes().flatMap(([where, lines]) =>
+      lines.flatMap((line, i) => (isBlank(line) ? [`${where}[${i}]`] : [])),
+    );
+    expect(blanks, `빈 문면: ${blanks.join(", ") || "없음"}`).toEqual([]);
   });
 });
 
 // ---------------------------------------------------------------------------
-// 6. 종결의 잠금 서술 — 형식 단언: 실패 시 실제 길이를 메시지로 보인다.
+// 4. 중복 문면 — 목록 안에서 같은 문면이 반복되지 않고, 산문은 전체에서 하나뿐이다.
+// ---------------------------------------------------------------------------
+
+describe("중복 문면 — 목록 키가 문면이다", () => {
+  test("한 목록 안에 같은 문면이 없다", () => {
+    const dupes = allProbes().flatMap(([where, lines]) => {
+      const seen = new Set<string>();
+      const found: string[] = [];
+      for (const line of lines) {
+        if (seen.has(line)) found.push(`${where}: ${line}`);
+        seen.add(line);
+      }
+      return found;
+    });
+    expect(dupes, `중복 문면: ${dupes.join(", ") || "없음"}`).toEqual([]);
+  });
+
+  test("대사 목록에 같은 인물이 두 번 나오지 않는다", () => {
+    const dupes: string[] = [];
+    const check = (where: string, lines: readonly TalkLine[]) => {
+      const speakers = lines.map((line) => line.character);
+      if (new Set(speakers).size !== speakers.length) dupes.push(where);
+    };
+    for (const job of JOB_IDS) {
+      const card = CONTENT.jobs[job];
+      check(`jobs.${job}.office.chatter`, card.office.chatter);
+      check(`jobs.${job}.briefing.talk`, card.briefing.talk);
+      check(`jobs.${job}.party.notes`, card.party.notes);
+      check(`jobs.${job}.site.partyLines`, card.site.partyLines);
+    }
+    for (const id of CHAIN_STEP_IDS) check(`chains.${id}.partyLines`, CONTENT.chains[id].partyLines);
+    expect(dupes, `인물 중복: ${dupes.join(", ") || "없음"}`).toEqual([]);
+  });
+
+  test("산문 문면이 콘텐츠 전체에서 겹치지 않는다", () => {
+    const seen = new Map<string, string>();
+    const dupes: string[] = [];
+    for (const [where, lines] of proseProbes()) {
+      for (const line of lines) {
+        const owner = seen.get(line);
+        if (owner === undefined) seen.set(line, where);
+        else dupes.push(`"${line}" — ${owner} · ${where}`);
+      }
+    }
+    expect(dupes, `전역 중복 산문: ${dupes.join(" / ") || "없음"}`).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 5. 종결의 잠금 서술 — 형식 단언: 실패 시 실제 길이를 메시지로 보인다.
 // ---------------------------------------------------------------------------
 
 describe("종결의 잠금 서술 — 형식 단언(길이 진단)", () => {
