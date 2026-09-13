@@ -2,6 +2,7 @@
 // demand so a world's code is fetched only when it is chosen.
 
 import { META as ADVENTURER } from "../worlds/adventurer/meta";
+import { META as RECLAIM } from "../worlds/reclaim/meta";
 import { META as VOYAGE } from "../worlds/voyage/meta";
 import type { WorldMeta, WorldModule } from "./world";
 
@@ -15,5 +16,9 @@ export const WORLDS: readonly WorldEntry[] = [
   {
     meta: VOYAGE,
     load: () => import("../worlds/voyage/world").then((module) => module.default),
+  },
+  {
+    meta: RECLAIM,
+    load: () => import("../worlds/reclaim/world").then((module) => module.default),
   },
 ];

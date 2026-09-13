@@ -7,7 +7,7 @@ import { contentEditor } from "./tools/content-editor/vitePlugin.ts";
 // The hub reads a world's meta, theme, and cover statically, so those files ship with the host
 // chunk. Everything else under a world directory loads only when `import("./world")` runs.
 const HUB_STATIC =
-  /\/src\/worlds\/(adventurer\/(meta\.ts|theme\.ts|sprites\/portraits\.ts)|voyage\/(meta\.ts|theme\.ts|sprites\/cover\.ts))$/;
+  /\/src\/worlds\/(adventurer\/(meta\.ts|theme\.ts|sprites\/portraits\.ts)|voyage\/(meta\.ts|theme\.ts|sprites\/cover\.ts)|reclaim\/(meta\.ts|theme\.ts|sprites\/cover\.ts))$/;
 const isHost = (id: string): boolean => /\/src\/(host|shared)\//.test(id) || HUB_STATIC.test(id);
 const isWorld =
   (world: string) =>
@@ -47,6 +47,7 @@ export default defineConfig({
             { name: "host", test: isHost },
             { name: "world-adventurer", test: isWorld("adventurer") },
             { name: "world-voyage", test: isWorld("voyage") },
+            { name: "world-reclaim", test: isWorld("reclaim") },
           ],
         },
       },
