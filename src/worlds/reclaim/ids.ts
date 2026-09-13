@@ -1,24 +1,19 @@
 // Fixed id catalog of 복구 기록. Rules never hard-code an id: flow and guards live in rules/.
 // The trailing comment on each id is its Korean display name — the demo's own wording
-// (prototype/route-combined-demo.html) is the anchor for stage meaning, so keep them aligned.
-
-export const STAGE_IDS = [
-  "field", // 첫 출동
-  "office", // 지방 파견 결정
-  "obs", // 천체관측소 (회사 자체 업무)
-  "radio", // 사무실 아침 라디오
-  "archive", // 협회 본부 문서고·보관고 (방문 ≤3)
-  "xcheck", // 교차 대조
-  "gate", // 분기 — 루 관문
-  "site", // 최종 정리 폐허
-  "night", // 심야 재통합
-  "venue", // 수신자 선택
-  "gun", // 군 접점
-  "submit", // 제출
-] as const;
-export type StageId = (typeof STAGE_IDS)[number];
+// (prototype/route-combined-demo.html) is the anchor for each place's meaning, so keep
+// them aligned. 화면 단계는 JobStepId | ChainStepId로 표현된다(2026-09-14 일감 재편).
 
 export const ACTION_IDS = [
+  "office_printer", // 프린터에서 공문을 뽑는다 (사무실 → 공문)
+  "briefing_ack", // 공문을 접어 챙긴다 (공문 → 인원 선택)
+
+  "party_pick_dusik", // 동행: 강두식
+  "party_pick_ru", // 동행: 루
+  "party_pick_banjang", // 동행: 최 반장
+  "party_pick_taesan", // 동행: 배태산
+  "party_reset", // 동행 선택을 비운다
+  "party_go", // 선택한 인원과 현장으로 간다 (인원 선택 → 현장)
+
   "call_respond", // 긴급 피해 조사에 나간다 (강두식 동행)
 
   "dispatch_send_taesan", // 지방 파견에 배태산을 보낸다 (라디오 조건)

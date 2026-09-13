@@ -1,20 +1,20 @@
 // 슬롯 계약: 없으면 null, 있으면 파싱해 돌려주고, clear는 키를 지운다. 스토리지가
 // 없으면(null) 전부 no-op다. 검증은 schemas.ts가 이미 하므로 여기서는 키 이름과
-// 왕복·강등 동작만 본다.
+// 왕복·강등 동작만 본다. run 키는 v2다 — 구 v1 키는 다른 세이브 슬롯처럼 무시된다.
 
 import { describe, expect, test } from "vitest";
 import { memoryStorage } from "../../../shared/storage";
 import { makeRun } from "../rules/testContent";
 import { createMetaPersistence, createPersistence } from "./persistence";
 
-const RUN_KEY = "lia.reclaim.run.v1";
+const RUN_KEY = "lia.reclaim.run.v2";
 const META_KEY = "lia.reclaim.meta.v1";
 
 describe("run slot", () => {
   test("저장한 회차를 버전 키에 저장하고 그대로 돌려준다", () => {
     const storage = memoryStorage();
     const slot = createPersistence(storage);
-    const run = makeRun({ stage: "gate", clue: true });
+    const run = makeRun({ jobIndex: 3, jobStep: "site", clue: true });
 
     slot.save(run);
     expect(storage.data.has(RUN_KEY)).toBe(true);
@@ -38,6 +38,13 @@ describe("run slot", () => {
     storage.setItem(RUN_KEY, "{oops");
 
     expect(slot.load()).toBeNull();
+  });
+
+  test("구 v1 키의 세이브는 읽지 않는다 — 마이그레이션 없이 버린다", () => {
+    const storage = memoryStorage();
+    storage.setItem("lia.reclaim.run.v1", "{}");
+
+    expect(createPersistence(storage).load()).toBeNull();
   });
 
   test("스토리지가 없으면 저장도 읽기도 조용히 무시된다", () => {

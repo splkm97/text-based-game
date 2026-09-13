@@ -4,17 +4,57 @@
 // 대입 가능함을 증명한다 — id union이 늘면 누락된 키가 컴파일 오류로 돌아온다.
 
 import { z } from "zod";
-import { ENDING_IDS, type EndingId, STAGE_IDS } from "../ids";
+import {
+  CHAIN_STEP_IDS,
+  CHARACTER_IDS,
+  ENDING_IDS,
+  JOB_IDS,
+  JOB_STEP_IDS,
+  type EndingId,
+} from "../ids";
 import { RECHANCE_LIMIT, REVIEW_LIMIT } from "../rules/run";
 import type { RunState } from "../types";
 
-const stageId = z.enum(STAGE_IDS);
+const jobId = z.enum(JOB_IDS);
+const jobStepId = z.enum(JOB_STEP_IDS);
+const chainStepId = z.enum(CHAIN_STEP_IDS);
+const characterId = z.enum(CHARACTER_IDS);
 const endingId = z.enum(ENDING_IDS);
 const count = z.number().int().nonnegative();
 
+/** 인물 상태 4축 — fatigue·suspicion·trust는 음수가 없고 injured는 플래그다. */
+const characterState = z.object({
+  fatigue: count,
+  injured: z.boolean(),
+  suspicion: count,
+  trust: count,
+});
+
+/**
+ * 로그 위치 판별 유니온 — kind는 "job" | "chain" 둘뿐이다(union total). 일감 로그는
+ * JOB_IDS enum으로, 체인 로그는 CHAIN_STEP_IDS enum으로 각각 닫힌다.
+ */
+const logPlace = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("job"), job: jobId }),
+  z.object({ kind: z.literal("chain"), chain: chainStepId }),
+]);
+const logEntry = z.object({ place: logPlace, text: z.string() });
+
 const runState = z.object({
   placement: z.enum(["ru_first", "dusik_first"]),
-  stage: stageId,
+  jobIndex: z.number().int().min(0).max(JOB_IDS.length - 1), // JOB_IDS 위치 전체
+  jobStep: jobStepId,
+  // 인원 선택은 1~2명(설계 §5) — 선택 전 빈 배열까지 포함해 최대 2다.
+  party: z.array(characterId).max(2),
+  // characters: CHARACTER_IDS 네 키를 리터럴로 전부 나열 — union total이 컴파일로 강제된다.
+  characters: z.object({
+    dusik: characterState,
+    ru: characterState,
+    banjang: characterState,
+    taesan: characterState,
+  }),
+  pendingChain: z.array(chainStepId),
+  chainStep: chainStepId.nullable(),
   terminal: endingId.nullable(),
   dispatchTaesan: z.boolean(),
   broadcast: z.boolean(),
@@ -27,7 +67,7 @@ const runState = z.object({
   reviews: z.number().int().min(0).max(REVIEW_LIMIT),
   chances: z.number().int().min(0).max(RECHANCE_LIMIT),
   contact: z.boolean(),
-  log: z.array(z.object({ stage: stageId, text: z.string() })),
+  log: z.array(logEntry),
 });
 
 /** `MetaState`의 저장 형태. 회차 간 기록: 종결별 도달 수와 시작한 회차 수. */
@@ -37,6 +77,7 @@ export type MetaState = {
   readonly updatedAt: string;
 };
 
+// endingsSeen: ENDING_IDS 일곱 키를 리터럴로 전부 나열 — union total이 컴파일로 강제된다.
 const metaState = z.object({
   endingsSeen: z.object({
     true_ru: count,
