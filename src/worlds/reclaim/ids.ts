@@ -86,3 +86,36 @@ export const CHARACTER_IDS = [
   "taesan", // 배태산
 ] as const;
 export type CharacterId = (typeof CHARACTER_IDS)[number];
+
+// ---------------------------------------------------------------------------
+// 일감 구조 (2026-09-14 재편) — 장소는 선형 1회씩, 처리 순서는 모든 일감에 동일하다.
+// ---------------------------------------------------------------------------
+
+/** 일감 = 장소. 목록 순서가 곧 회차의 순서다(랜덤 인카운터가 아니다). */
+export const JOB_IDS = [
+  "gwanak", // 관악구 현장 — 첫 출동
+  "observatory", // 천체관측소 잔해 — 회사 자체 업무
+  "hq", // 협회 본부 문서고·보관고
+  "ruins", // 최종 정리 폐허 — 잔당
+] as const;
+export type JobId = (typeof JOB_IDS)[number];
+
+/** 일감 하나를 처리하는 순서. 모든 일감이 같은 순서를 탄다. */
+export const JOB_STEP_IDS = [
+  "office", // 사무실 — 뉴스·잡담·프린터 클릭
+  "briefing", // 전체화면 공문
+  "party", // 인원 선택 1~2명
+  "site", // 현장 — 사건·이벤트
+] as const;
+export type JobStepId = (typeof JOB_STEP_IDS)[number];
+
+/** 조건이 서면 일감 사이에 끼어드는 체인 절차(현 12단계의 나머지). */
+export const CHAIN_STEP_IDS = [
+  "xcheck", // 교차 대조 — 좌표와 실험 기록
+  "gate", // 루 관문 — 파견/미파견/재등장
+  "night", // 심야 재통합 (폐허 현장 뒤)
+  "venue", // 수신자 선택
+  "gun", // 군 접점
+  "submit", // 제출
+] as const;
+export type ChainStepId = (typeof CHAIN_STEP_IDS)[number];

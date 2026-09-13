@@ -1,7 +1,7 @@
 // Domain types of 복구 기록. Every field is readonly; state changes produce new objects.
 // Content files may import only this file and ./ids.
 
-import type { ActionId, CharacterId, EndingId, StageId } from "./ids";
+import type { ActionId, ChainStepId, CharacterId, EndingId, JobStepId, StageId } from "./ids";
 
 // ---------------------------------------------------------------------------
 // Run
@@ -31,6 +31,27 @@ export type RunState = {
   readonly chances: number;
   readonly contact: boolean;
   readonly log: readonly LogEntry[];
+};
+
+/** 인물 상태 — 화면에는 숫자로 나오지 않는다(설계 §4.1). 규칙 내부 값이며 문면·사유로만 드러난다. */
+export type CharacterState = {
+  /** 일감에 동행하면 오르고, 동행하지 않은 일감에서 내린다. 한계에 닿으면 현장 선택지 일부가 닫힌다. */
+  readonly fatigue: number;
+  /** 위험 선택의 결과. 다음 일감 인원 선택에서 제외되고, 1디스패치 뒤 복귀한다(사망 아님). */
+  readonly injured: boolean;
+  /** 자기가 모르는 것을 목격한 정도. 문턱을 넘으면 체인 절차에서 이탈 행동이 열린다. */
+  readonly suspicion: number;
+  /** 함께 일감을 마친 누적. 체인 절차의 협조 조건이 된다. */
+  readonly trust: number;
+};
+
+/** 일감 구조의 회차 상태 — 일감 목록 위치와 처리 순서, 이번 일감의 동행, 인물 상태. */
+export type JobRun = {
+  readonly jobIndex: number;
+  readonly jobStep: JobStepId;
+  readonly party: readonly CharacterId[];
+  readonly characters: Readonly<Record<CharacterId, CharacterState>>;
+  readonly pendingChain: readonly ChainStepId[];
 };
 
 // ---------------------------------------------------------------------------
