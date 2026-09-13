@@ -2,7 +2,8 @@
 // in the behavior.
 
 import type { ComponentType } from "react";
-import type { TokenName, WorldId } from "../host/world";
+import type { TokenName } from "../host/world";
+import type { SaveRequest } from "./textPathSchema";
 
 /** Property names and array indices from the object that carries `id`. */
 export type TextPath = readonly (string | number)[];
@@ -29,7 +30,10 @@ export type ContentGraph = {
   readonly edges: readonly GraphEdge[];
 };
 export type EditorModel<R> = {
-  readonly worldId: WorldId;
+  /** The save endpoint's own world key: only worlds with an editor model appear here, so this is
+   * deliberately narrower than `WorldId` — a playable world without an editor must not typecheck
+   * as an editable one. */
+  readonly worldId: SaveRequest["world"];
   readonly registry: R;
   readonly graph: (registry: R) => ContentGraph;
   /** `[]` for nodes with no editable text. */
