@@ -8,8 +8,8 @@
 // 배태산이 파견 중일 때만 좌표를 받아 적을 손이 있다(broadcast = dispatchTaesan). gate_to_venue는
 // A(ru_first)의 관문에서 단서 없이 수신자 무대로 넘어가는 안전 밸브다.
 
-import type { ActionId, ChainStepId, CharacterId, JobStepId } from "../ids";
-import { CHARACTER_IDS, JOB_IDS } from "../ids";
+import type { ActionId, ChainStepId, CharacterId, CleanupGrade, JobStepId } from "../ids";
+import { CHARACTER_IDS, CLEANUP_TASK_IDS, JOB_IDS } from "../ids";
 import type { CharacterState, RunState } from "../types";
 
 /** 협회 본부 방문 상한. */
@@ -85,6 +85,24 @@ const partySuspecting = (run: RunState): Record<CharacterId, CharacterState> => 
   }
   return next;
 };
+
+/**
+ * 뒷정리 등급 — 작업 넷을 다 고른 회차만 등급을 받는다(그 전엔 null: 현장에 설 수 없다).
+ * 지침서 순서(안전 → 차단 → 확인 → 기록) 그대로면 perfect, 앞 둘(안전·차단)이 제자리면
+ * partial, 그 밖엔 poor. 순서 미니게임의 결과이며 위험 선택의 부상을 가르는 값이다.
+ */
+export const cleanupGrade = (run: RunState): CleanupGrade | null => {
+  const picks = run.cleanupPicks;
+  if (picks.length !== CLEANUP_TASK_IDS.length) return null;
+  const [first, second] = CLEANUP_TASK_IDS;
+  if (picks[0] !== first || picks[1] !== second) return "poor";
+  return CLEANUP_TASK_IDS.every((task, index) => picks[index] === task) ? "perfect" : "partial";
+};
+
+/** 위험 선택의 인물 쪽 — 안전 조치를 먼저 세운 현장(perfect 뒷정리)에서는 다치지 않는다.
+ * 상실 신호(동행자 전원 suspicion+1·trust−1)는 등급과 무관하게 그대로 남는다. */
+const riskCharacters = (run: RunState): Record<CharacterId, CharacterState> =>
+  cleanupGrade(run) === "perfect" ? partySuspecting(run) : injureFirstOfParty(run);
 
 /**
  * 일감 완료(표 「공통」·마지막 절). 동행 증감 → 체인 대기 조건 평가 → 대기가 있으면 그
@@ -198,6 +216,32 @@ export const ACTION_SPECS: Readonly<Record<ActionId, ActionSpec>> = {
   party_go: {
     when: (run) => atStep(run, "party"),
     require: (run) => run.party.length >= 1,
+    // 현장 앞에는 뒷정리(지침서 순서 맞추기)가 있다 — 새 일감의 순서는 빈 목록에서 시작한다.
+    apply: () => ({ jobStep: "cleanup", cleanupPicks: [] }),
+  },
+
+  // 뒷정리 cleanup — 작업 넷 중 아직 고르지 않은 것만 목록에 선다(지침서에서 한 줄씩 지워
+  // 나간다). 고른 차례가 그대로 등급이 되고, 완료 버튼은 넷을 다 고르기 전에도 남아 있어
+  // 클릭이 카드의 거부 문면으로 답한다(닫힌 선택지에 사유를 붙이는 표의 방식).
+  cleanup_pick_sign: {
+    when: (run) => atStep(run, "cleanup") && !run.cleanupPicks.includes("sign"),
+    apply: (run) => ({ cleanupPicks: [...run.cleanupPicks, "sign"] }),
+  },
+  cleanup_pick_power: {
+    when: (run) => atStep(run, "cleanup") && !run.cleanupPicks.includes("power"),
+    apply: (run) => ({ cleanupPicks: [...run.cleanupPicks, "power"] }),
+  },
+  cleanup_pick_search: {
+    when: (run) => atStep(run, "cleanup") && !run.cleanupPicks.includes("search"),
+    apply: (run) => ({ cleanupPicks: [...run.cleanupPicks, "search"] }),
+  },
+  cleanup_pick_photo: {
+    when: (run) => atStep(run, "cleanup") && !run.cleanupPicks.includes("photo"),
+    apply: (run) => ({ cleanupPicks: [...run.cleanupPicks, "photo"] }),
+  },
+  cleanup_finish: {
+    when: (run) => atStep(run, "cleanup"),
+    require: (run) => run.cleanupPicks.length === CLEANUP_TASK_IDS.length,
     apply: () => ({ jobStep: "site" }),
   },
 
@@ -223,8 +267,9 @@ export const ACTION_SPECS: Readonly<Record<ActionId, ActionSpec>> = {
     when: (run) => atStep(run, "site") && run.jobIndex === 1,
     require: (run) => !run.party.includes("ru"),
     // 상실 신호(chances −1·동행자 전원 suspicion+1·trust−1)를 깐 뒤 완료 처리(표의 화살표 순서).
+    // 부상은 지침서 순서를 지킨 현장(perfect 뒷정리)에서만 면제된다 — 안전 조치가 먼저 서 있다.
     apply: (run) => {
-      const after = { ...run, chances: run.chances - 1, characters: injureFirstOfParty(run) };
+      const after = { ...run, chances: run.chances - 1, characters: riskCharacters(run) };
       return { chances: run.chances - 1, ...completeJob(after) };
     },
   },
@@ -243,10 +288,11 @@ export const ACTION_SPECS: Readonly<Record<ActionId, ActionSpec>> = {
   archive_with_taesan: {
     when: hqArchiveOpen,
     require: (run) => run.party.includes("taesan"),
+    // 본부 일감이라 이 자리의 등급은 **이 일감의** 뒷정리 결과다(party_go가 일감마다 순서를 비운다).
     apply: (run) => ({
       chances: run.chances - 1,
       reviews: run.reviews + 1,
-      characters: injureFirstOfParty(run),
+      characters: riskCharacters(run),
     }),
   },
   archive_alone: {

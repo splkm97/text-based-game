@@ -97,6 +97,39 @@ export const ACTIONS_TEXT: Readonly<Record<ActionId, ActionText>> = {
     result: "정해진 이름과 함께 출동 대장에 서명했다. 현장으로 나섰다.",
   },
 
+  cleanup_pick_sign: {
+    id: "cleanup_pick_sign",
+    label: "통제선을 세우고 표지를 건다",
+    deny: "이미 표지와 통제선이 서 있다 — 같은 줄을 두 번 세우지는 않는다",
+    result: "통제선을 세우고 표지를 걸었다. 지나가던 사람들이 선 밖에서 멈춘다.",
+  },
+  cleanup_pick_power: {
+    id: "cleanup_pick_power",
+    label: "전원과 가스관을 끊는다",
+    deny: "차단은 이미 끝났다 — 손댈 배선과 관이 남아 있지 않다",
+    result: "전원과 가스관을 끊었다. 잔해 쪽에서 돌던 소리 하나가 멎었다.",
+  },
+  cleanup_pick_search: {
+    id: "cleanup_pick_search",
+    label: "잔해 안쪽을 확인한다",
+    deny: "안쪽은 이미 확인했다 — 같은 자리를 두 번 뒤지지 않는다",
+    result:
+      "잔해 안쪽을 확인했다. 안쪽에서는 대답이 나오지 않았고, 나는 그 자리를 보고용지의 빈칸에 적었다.",
+  },
+  cleanup_pick_photo: {
+    id: "cleanup_pick_photo",
+    label: "위치와 수치를 적는다",
+    deny: "기록은 이미 남겼다 — 같은 자리를 두 번 찍지 않는다",
+    result: "위치를 적고 사진을 남겼다. 마감이 지나면 이 기록이 청구를 받친다.",
+  },
+  cleanup_finish: {
+    id: "cleanup_finish",
+    label: "뒷정리를 마치고 현장으로 들어선다",
+    deny: "지침의 작업이 남아 있다 — 네 작업을 모두 마쳐야 현장에 선다",
+    result:
+      "뒷정리를 마치고 현장 안쪽으로 들어선다. 손에 남은 것은 지침서 사본과, 아직 아무것도 적히지 않은 보고용지다.",
+  },
+
   radio_morning_on: {
     id: "radio_morning_on",
     label: "라디오를 켠 채 아침을 시작한다",

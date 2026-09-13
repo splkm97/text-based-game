@@ -10,9 +10,9 @@
 import type { ActionId, JobId } from "../ids";
 import { ACTION_IDS, JOB_IDS } from "../ids";
 import type { ActionOutcome, Content, LogPlace, Placement, RunState } from "../types";
-import { ACTION_SPECS, RECHANCE_LIMIT, REVIEW_LIMIT } from "./actions";
+import { ACTION_SPECS, cleanupGrade, RECHANCE_LIMIT, REVIEW_LIMIT } from "./actions";
 
-export { RECHANCE_LIMIT, REVIEW_LIMIT };
+export { cleanupGrade, RECHANCE_LIMIT, REVIEW_LIMIT };
 
 const TERMINAL_GUIDE = "회차가 이미 종결되었다";
 
@@ -22,6 +22,7 @@ export const startRun = (_content: Content, placement: Placement = "ru_first"): 
   jobIndex: 0,
   jobStep: "office",
   party: [],
+  cleanupPicks: [],
   characters: {
     dusik: { fatigue: 0, injured: false, suspicion: 0, trust: 0 },
     ru: { fatigue: 0, injured: false, suspicion: 0, trust: 0 },

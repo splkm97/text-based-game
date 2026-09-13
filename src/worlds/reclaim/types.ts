@@ -1,7 +1,15 @@
 // Domain types of 복구 기록. Every field is readonly; state changes produce new objects.
 // Content files may import only this file and ./ids.
 
-import type { ActionId, ChainStepId, CharacterId, EndingId, JobId, JobStepId } from "./ids";
+import type {
+  ActionId,
+  ChainStepId,
+  CharacterId,
+  CleanupTaskId,
+  EndingId,
+  JobId,
+  JobStepId,
+} from "./ids";
 
 // ---------------------------------------------------------------------------
 // Run
@@ -31,6 +39,8 @@ export type RunState = {
   readonly party: readonly CharacterId[];
   readonly characters: Readonly<Record<CharacterId, CharacterState>>;
   /** 조건이 서서 대기 중인 체인 절차(선입선출) — 일감 사이에 끼어든다. */
+  /** 이번 일감의 뒷정리 작업 순서(고른 차례대로). 미니게임의 상태다. */
+  readonly cleanupPicks: readonly CleanupTaskId[];
   readonly pendingChain: readonly ChainStepId[];
   /** 지금 진행 중인 체인 절차. null이면 일감 단계 위에 있다. */
   readonly chainStep: ChainStepId | null;
@@ -116,13 +126,19 @@ export type SiteCard = {
   readonly partyLines: readonly TalkLine[];
 };
 
-/** 일감 하나의 카드 — 네 단계(office → briefing → party → site)의 콘텐츠 한 묶음. */
+/** 뒷정리 단계 카드 — 그 일감의 지침 앞에서의 장면 지문. */
+export type CleanupCard = {
+  readonly prompt: string;
+};
+
+/** 일감 하나의 카드 — 다섯 단계(office → briefing → party → cleanup → site)의 콘텐츠 한 묶음. */
 export type JobCard = {
   readonly id: JobId;
   readonly title: string;
   readonly office: OfficeCard;
   readonly briefing: BriefingCard;
   readonly party: PartyCard;
+  readonly cleanup: CleanupCard;
   readonly site: SiteCard;
 };
 
@@ -165,6 +181,8 @@ export type Content = {
   readonly actions: Readonly<Record<ActionId, ActionText>>;
   readonly endings: Readonly<Record<EndingId, EndingCard>>;
   readonly characters: Readonly<Record<CharacterId, CharacterCard>>;
+  /** 뒷정리 작업 넷의 이름 — 세계 공통 절차라 일감이 아니라 세계가 소유한다. */
+  readonly cleanupTasks: Readonly<Record<CleanupTaskId, string>>;
 };
 
 // ---------------------------------------------------------------------------

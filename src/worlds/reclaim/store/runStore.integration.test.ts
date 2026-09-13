@@ -9,7 +9,7 @@ import type { ActionId, EndingId } from "../ids";
 import { createPersistence } from "./persistence";
 import { createRunStore } from "./runStore";
 
-const RUN_KEY = "lia.reclaim.run.v2";
+const RUN_KEY = "lia.reclaim.run.v3";
 
 test("실제 규칙으로: 시작 → 저장 → 거부(문면) → 종결 → 세이브 비움 + onEnding", () => {
   const storage = memoryStorage();
@@ -40,16 +40,34 @@ test("실제 규칙으로: 시작 → 저장 → 거부(문면) → 종결 → �
     "briefing_ack",
     "party_pick_dusik",
     "party_go",
+    // 뒷정리 미니게임 — 지침 순서대로 작업 넷을 고르고 현장을 연다.
+    "cleanup_pick_sign",
+    "cleanup_pick_power",
+    "cleanup_pick_search",
+    "cleanup_pick_photo",
+    "cleanup_finish",
     "call_respond", // 관악구 완료
     "office_printer",
     "briefing_ack",
     "party_pick_dusik",
     "party_go",
+    // 뒷정리 미니게임 — 지침 순서대로 작업 넷을 고르고 현장을 연다.
+    "cleanup_pick_sign",
+    "cleanup_pick_power",
+    "cleanup_pick_search",
+    "cleanup_pick_photo",
+    "cleanup_finish",
     "obs_boss_joins", // 관측소 완료(단서 없음)
     "radio_business_only", // 본부 사무실 — 라디오를 업무로만 처리한다
     "briefing_ack",
     "party_pick_banjang",
     "party_go",
+    // 뒷정리 미니게임 — 지침 순서대로 작업 넷을 고르고 현장을 연다.
+    "cleanup_pick_sign",
+    "cleanup_pick_power",
+    "cleanup_pick_search",
+    "cleanup_pick_photo",
+    "cleanup_finish",
     "archive_alone", // 최 반장의 조사 재료만 챙긴다(문서 사본 없음)
     "archive_leave",
     "venue_no_stage", // 수신자 허브 — 무대 미개방

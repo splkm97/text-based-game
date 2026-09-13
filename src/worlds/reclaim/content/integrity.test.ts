@@ -1,6 +1,8 @@
 // 콘텐츠 무결성 테스트 — 일감 구조(2026-09-14 재편)의 콘텐츠 레이어 검사.
-// 실제 CONTENT를 훑어 ① (일감 × 순서)·체인·액션·종결·인물 카드의 존재와 id 정합
+// 실제 CONTENT를 훑어 ① (일감 × 순서)·체인·액션·종결·인물·뒷정리 작업의 존재와 id 정합
 // ② 빈 문면 0 ③ 목록 내·전역 중복 문면 0 ④ 액션 집합 일치(ids.ts ↔ content)를 단언한다.
+// 여기에 둘을 더한다 — ⑤ 뒷정리: 지침서(site.document)가 작업 넷을 지침 순서대로 싣고
+// 작업 이름은 차례를 흘리지 않는다(지침서가 유일한 단서다) ⑥ 장면 묘사의 문단 하한.
 // 단언값은 콘텐츠에서 읽는다 — 수치 하드코딩 금지. 종결 도달·배치별 무대·막다른 상태 같은
 // 열거 기반 검사는 별도 태스크(rules/enumerate 계열)가 담당한다 — 여기서 중복 구현하지 않는다.
 import { describe, expect, test } from "vitest";
@@ -11,6 +13,8 @@ import {
   CHARACTER_IDS,
   type ChainStepId,
   type CharacterId,
+  CLEANUP_TASK_IDS,
+  type CleanupTaskId,
   ENDING_IDS,
   type EndingId,
   JOB_IDS,
@@ -54,6 +58,7 @@ const jobProbes = (job: JobId): Probe[] => {
     [`${w}.briefing.talk`, talkTexts(card.briefing.talk)],
     [`${w}.party.prompt`, [card.party.prompt]],
     [`${w}.party.notes`, talkTexts(card.party.notes)],
+    [`${w}.cleanup.prompt`, [card.cleanup.prompt]],
     [`${w}.site.title`, [card.site.title]],
     [`${w}.site.prompt`, [card.site.prompt]],
     ...documentProbes(`${w}.site`, card.site.document),
@@ -100,6 +105,11 @@ const characterProbes = (id: CharacterId): Probe[] => {
   ];
 };
 
+/** 뒷정리 작업 이름 — 세계 공통 절차라 일감이 아니라 세계가 소유한다. */
+const cleanupTaskProbes = (id: CleanupTaskId): Probe[] => [
+  [`cleanupTasks.${id}`, [CONTENT.cleanupTasks[id]]],
+];
+
 /** 콘텐츠 전체의 문면 목록. */
 const allProbes = (): Probe[] => [
   ...JOB_IDS.flatMap(jobProbes),
@@ -107,6 +117,7 @@ const allProbes = (): Probe[] => [
   ...ACTION_IDS.flatMap(actionProbes),
   ...ENDING_IDS.flatMap(endingProbes),
   ...CHARACTER_IDS.flatMap(characterProbes),
+  ...CLEANUP_TASK_IDS.flatMap(cleanupTaskProbes),
 ];
 
 /**
@@ -136,6 +147,7 @@ describe("카드 존재 — (일감 × 순서)와 체인", () => {
     expect(Object.keys(CONTENT.chains).sort()).toEqual([...CHAIN_STEP_IDS].sort());
     expect(Object.keys(CONTENT.endings).sort()).toEqual([...ENDING_IDS].sort());
     expect(Object.keys(CONTENT.characters).sort()).toEqual([...CHARACTER_IDS].sort());
+    expect(Object.keys(CONTENT.cleanupTasks).sort()).toEqual([...CLEANUP_TASK_IDS].sort());
   });
 
   test("모든 카드의 id 필드가 키와 같다", () => {
@@ -260,5 +272,106 @@ describe("종결의 잠금 서술 — 형식 단언(길이 진단)", () => {
       offenders,
       `종결 본문 길이: ${table.join(", ")} — 빈 본문 또는 나머지 종결의 최소 길이(${floor})보다 짧은 진엔딩`,
     ).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 6. 뒷정리 — 지침서가 유일한 단서다.
+// 작업 이름(버튼 문면)은 차례를 흘리지 않고, 순서 교리는 일감의 지침서(site.document)에만
+// 산다. 지침서는 작업 이름을 지침 순서(안전 → 차단 → 확인 → 기록)대로 싣는다 — 화면이
+// 버튼을 섞어 그려도 그 단서가 남는다.
+// ---------------------------------------------------------------------------
+
+describe("뒷정리 — 지침서가 유일한 단서다", () => {
+  /** 지침서가 작업 이름을 실은 차례. 없는 작업은 빼고 센다. */
+  const sheetOrder = (job: JobId): readonly CleanupTaskId[] =>
+    CLEANUP_TASK_IDS.map((task) => ({
+      task,
+      at: CONTENT.jobs[job].site.document.items.findIndex((line) =>
+        line.includes(CONTENT.cleanupTasks[task]),
+      ),
+    }))
+      .filter((entry) => entry.at >= 0)
+      .sort((a, b) => a.at - b.at)
+      .map((entry) => entry.task);
+
+  test("작업 이름이 넷이고 서로 다르며, 차례를 흘리는 낱말이 없다", () => {
+    expect(Object.keys(CONTENT.cleanupTasks).sort()).toEqual([...CLEANUP_TASK_IDS].sort());
+    const names = CLEANUP_TASK_IDS.map((id) => CONTENT.cleanupTasks[id]);
+    expect(new Set(names).size, `작업 이름이 겹친다: ${names.join(" / ")}`).toBe(names.length);
+    const leaking = CLEANUP_TASK_IDS.filter((id) =>
+      /먼저|첫째|둘째|셋째|넷째|순서/.test(CONTENT.cleanupTasks[id]),
+    );
+    expect(leaking, `차례를 흘리는 작업 이름: ${leaking.join(", ") || "없음"}`).toEqual([]);
+  });
+
+  test.each(JOB_IDS)("%s — 지침서가 작업 넷을 지침 순서대로 싣는다", (job) => {
+    expect(sheetOrder(job), `jobs.${job}.site.document가 지침 순서를 담지 않는다`).toEqual([
+      ...CLEANUP_TASK_IDS,
+    ]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 7. 장면 묘사 — 문단 하한(사용자 지시: 사무실·공문·뒷정리·현장은 3문단 이상, 체인 절차는
+// 2문단 이상). 한 필드가 하나의 플레인 리터럴이고, 문단은 빈 줄(`\n\n`)로만 가른다.
+// ---------------------------------------------------------------------------
+
+/** 장면 묘사를 가진 일감 단계 — 사무실·공문·뒷정리·현장. */
+const JOB_PROSE_STEPS = ["office", "briefing", "cleanup", "site"] as const;
+/** 일감 장면의 문단 하한 — 3~5문단 지시의 아래끝. */
+const JOB_SCENE_FLOOR = 3;
+/** 체인 절차 장면의 문단 하한 — 2~4문단 지시의 아래끝. */
+const CHAIN_SCENE_FLOOR = 2;
+
+/** 빈 줄로 가른 문단 수 — 빈 조각(연속 빈 줄)은 세지 않는다. */
+const paragraphCount = (text: string): number =>
+  text.split("\n\n").filter((part) => !isBlank(part)).length;
+
+/** 문단 분할 자체의 결함 — 한 줄바꿈·빈 문단·문단 앞뒤 공백. */
+const paragraphDefects = (where: string, text: string): readonly string[] => {
+  const parts = text.split("\n\n");
+  const defects: string[] = [];
+  if (parts.some((part) => isBlank(part))) defects.push(`${where}: 빈 문단`);
+  if (parts.some((part) => part.includes("\n"))) defects.push(`${where}: 한 줄바꿈`);
+  if (parts.some((part) => part.trim() !== part)) defects.push(`${where}: 문단 앞뒤 공백`);
+  return defects;
+};
+
+/** 장면 묘사 전부 — 일감 네 단계와 체인 절차. */
+const scenes = (): readonly { readonly where: string; readonly text: string }[] => [
+  ...JOB_IDS.flatMap((job) =>
+    JOB_PROSE_STEPS.map((step) => ({
+      where: `jobs.${job}.${step}.prompt`,
+      text: CONTENT.jobs[job][step].prompt,
+    })),
+  ),
+  ...CHAIN_STEP_IDS.map((id) => ({
+    where: `chains.${id}.prompt`,
+    text: CONTENT.chains[id].prompt,
+  })),
+];
+
+describe("장면 묘사 — 문단", () => {
+  test.each(JOB_IDS.flatMap((job) => JOB_PROSE_STEPS.map((step) => ({ job, step }))))(
+    "$job × $step — 장면 묘사가 문단으로 나뉘어 있다",
+    ({ job, step }) => {
+      const count = paragraphCount(CONTENT.jobs[job][step].prompt);
+      expect(count, `jobs.${job}.${step}.prompt 문단 수: ${count}`).toBeGreaterThanOrEqual(
+        JOB_SCENE_FLOOR,
+      );
+    },
+  );
+
+  test.each(CHAIN_STEP_IDS)("%s — 절차 묘사가 문단으로 나뉘어 있다", (id) => {
+    const count = paragraphCount(CONTENT.chains[id].prompt);
+    expect(count, `chains.${id}.prompt 문단 수: ${count}`).toBeGreaterThanOrEqual(
+      CHAIN_SCENE_FLOOR,
+    );
+  });
+
+  test("문단을 가르는 것은 빈 줄뿐이다 — 한 줄바꿈·빈 문단·앞뒤 공백 0", () => {
+    const defects = scenes().flatMap((scene) => paragraphDefects(scene.where, scene.text));
+    expect(defects, `문단 분할 결함: ${defects.join(", ") || "없음"}`).toEqual([]);
   });
 });

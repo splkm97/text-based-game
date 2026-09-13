@@ -28,7 +28,7 @@ export function BriefingScreen({ job }: BriefingScreenProps) {
   return (
     <section aria-label="공문" className="flex flex-1 flex-col gap-3 p-3">
       <h2 className="text-base text-parchment">{job.title}</h2>
-      {lead && <p className="text-sm leading-prose text-parchment">{lead}</p>}
+      {lead && <p className="whitespace-pre-line text-sm leading-prose text-parchment">{lead}</p>}
       <BriefingPanel document={job.briefing.document} fill />
       {job.briefing.talk.length > 0 && (
         <ul aria-label="공문 대사" className="flex flex-col gap-2">

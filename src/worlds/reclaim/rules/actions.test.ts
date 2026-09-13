@@ -1,4 +1,4 @@
-// 액션 가드 표 계약 테스트 — 43개 액션 각각에 대해 열리는 상태가 최소 하나 존재함을
+// 액션 가드 표 계약 테스트 — 48개 액션 각각에 대해 열리는 상태가 최소 하나 존재함을
 // 확인하는 총체성 테스트가 본체다. 키 집합 일치는 ACTION_SPECS: Readonly<Record<ActionId,
 // ActionSpec>> 타입이, 열림 상태 표는 Record<ActionId, RunState> 타입이 컴파일로 강제한다
 // — 하나라도 빠지면 런타임이 아니라 타입이 먼저 막는다. 열림 여부는 when·require를
@@ -6,7 +6,7 @@
 
 import { describe, expect, test } from "vitest";
 import type { ActionId } from "../ids";
-import { ACTION_IDS } from "../ids";
+import { ACTION_IDS, CLEANUP_TASK_IDS } from "../ids";
 import type { RunState } from "../types";
 import { ACTION_SPECS, REVIEW_LIMIT } from "./actions";
 import { applyAction } from "./run";
@@ -22,6 +22,11 @@ const OPEN_STATES: Readonly<Record<ActionId, RunState>> = {
   party_pick_taesan: makeRun({ jobStep: "party" }),
   party_reset: makeRun({ jobStep: "party" }),
   party_go: makeRun({ jobStep: "party", party: ["dusik"] }),
+  cleanup_pick_sign: makeRun({ jobStep: "cleanup" }),
+  cleanup_pick_power: makeRun({ jobStep: "cleanup" }),
+  cleanup_pick_search: makeRun({ jobStep: "cleanup" }),
+  cleanup_pick_photo: makeRun({ jobStep: "cleanup" }),
+  cleanup_finish: makeRun({ jobStep: "cleanup", cleanupPicks: [...CLEANUP_TASK_IDS] }),
   call_respond: makeRun({ jobIndex: 0, jobStep: "site" }),
   dispatch_send_taesan: makeRun({ jobIndex: 1, jobStep: "office" }),
   dispatch_send_other: makeRun({ jobIndex: 1, jobStep: "office" }),
@@ -59,8 +64,8 @@ const OPEN_STATES: Readonly<Record<ActionId, RunState>> = {
   submit_copy: makeRun({ chainStep: "submit" }),
 };
 
-test("43개 액션 전체에 열리는 상태가 존재하고 실제로 적용까지 통과한다", () => {
-  expect(ACTION_IDS).toHaveLength(43);
+test("48개 액션 전체에 열리는 상태가 존재하고 실제로 적용까지 통과한다", () => {
+  expect(ACTION_IDS).toHaveLength(48);
   for (const id of ACTION_IDS) {
     const run = OPEN_STATES[id];
     const spec = ACTION_SPECS[id];

@@ -12,10 +12,10 @@
 // pick↔reset)는 진행 순환이 아니다. jobIndex는 gate_reopen으로 되돌아가지만 chances가
 // 단조 감소하므로 되돌아간 경로는 유한하다.
 
-import type { EndingId } from "../ids";
-import { ENDING_IDS, JOB_IDS } from "../ids";
+import type { CleanupTaskId, EndingId } from "../ids";
+import { CLEANUP_TASK_IDS, ENDING_IDS, JOB_IDS } from "../ids";
 import type { Content, Placement, RunState } from "../types";
-import { applyAction, availableActions, startRun } from "./run";
+import { applyAction, availableActions, cleanupGrade, startRun } from "./run";
 
 export type EnumerationReport = {
   /** 서명 기준 고유 상태 수. 서명 = RunState의 원시 필드 + terminal(log 제외, placement 포함). */
@@ -35,13 +35,16 @@ export type EnumerationReport = {
 };
 
 /** 고유 상태 수 안전 상한 — 상태 공간 폭발을 테스트 실패(throw)로 만든다.
- * 실측(2026-09-14, TEST_CONTENT): ru_first 5,847 · dusik_first 25,698 상태, 각 19ms·74ms.
- * 폐허 일감이 실제로 도달 가능해지면서 공간이 커졌으므로 상한을 실측의 약 8배로 둔다. */
-const STATE_LIMIT = 100_000;
+ * 실측(2026-09-14, TEST_CONTENT, 뒷정리 축 투영 후): ru_first 44,671 · dusik_first 222,940 상태,
+ * 각 155ms·765ms. 뒷정리 미니게임이 현장의 등급을 셋으로 갈라 상태가 약 8배가 됐으므로,
+ * 상한을 실측 최대의 약 4.5배로 둔다(그 이상은 새 축이 곱해진 폭발로 본다). */
+const STATE_LIMIT = 1_000_000;
 
 /** 상태 서명 — 데모 sig()와 같은 역할의 축. log는 경로의 함수라 서명에서 뺀다.
  * 인물 상태 축(fatigue·injured·suspicion·trust)도 뺀다: 가드가 읽는 유일한 인물 축인
- * injured의 분기는 party 축에 대표되므로, 같은 서명의 미래 분기는 동일하게 보존된다. */
+ * injured의 분기는 party 축에 대표되므로, 같은 서명의 미래 분기는 동일하게 보존된다.
+ * 뒷정리 순서도 단계별로 접어 넣는다(cleanupAxis) — 원시 배열을 그대로 넣으면 순서 24가지가
+ * 전 단계에 곱해져 열거가 실측 267k/1.24M로 폭발한다(2026-09-14). */
 const signature = (run: RunState): string =>
   [
     run.placement,
@@ -50,6 +53,7 @@ const signature = (run: RunState): string =>
     run.chainStep,
     run.terminal,
     run.party.join(","),
+    cleanupAxis(run),
     run.pendingChain.join(","),
     run.dispatchTaesan,
     run.broadcast,
@@ -63,6 +67,40 @@ const signature = (run: RunState): string =>
     run.chances,
     run.contact,
   ].join("|");
+
+/**
+ * 서명의 뒷정리 축 — 가드와 **등급 전이**를 보존하는 만큼만 담는다(행동 등가 quotient).
+ * - 뒷정리 단계에서 가드가 읽는 것은 **고른 집합**(재선택 금지 = includes, 완료 조건 = length)과
+ *   **지침 접두 일치 수**(pfx)다. pfx가 곧 완주 시의 등급을 정한다: pfx < 2면 poor,
+ *   pfx == 4면 perfect, 그 밖은 partial. 집합만 담으면 같은 집합의 두 순서
+ *   ([sign,power,search] 대 [search,sign,power])가 한 서명으로 접혀, 메모이즈가 대표 하나만
+ *   확장해 탐험되는 등급이 ACTION_IDS 반복 순서에 종속된다(리뷰 실측: 48순열 중 44런에서
+ *   site 등급이 poor만 발견됨, 2026-09-14). pfx를 더한 뒤에는 48순열 전부가 등급 3종을 덮는다
+ *   (실측 ru_first 57,855 · dusik_first 298,332 — 상한 내).
+ * - 넷을 다 고른 뒤·현장에서는 **등급**만이 미래를 가른다(위험 선택의 부상).
+ * - 그 밖의 단계에서는 어떤 가드도 순서를 읽지 않는다: 다음 뒷정리는 party_go가 비우고 시작한다.
+ * 원시 순서 배열을 그대로 넣으면 순서 24가지가 전 단계에 곱해져 열거가 폭발한다
+ * (실측 2026-09-14: ru_first 267,321 · dusik_first 1,244,331, 4.1s).
+ */
+/**
+ * 지침 접두 일치 수 — picks[0..n-1]이 CLEANUP_TASK_IDS와 같고 그다음이 다른 최대 n.
+ * 전부 일치하면 길이 자체다. 완주 등급(perfect/partial/poor)이 이 값과 집합만으로 정해진다.
+ */
+const prefixMatches = (picks: readonly CleanupTaskId[]): number => {
+  const mismatch = picks.findIndex((task, index) => task !== CLEANUP_TASK_IDS[index]);
+  return mismatch === -1 ? picks.length : mismatch;
+};
+
+export const cleanupAxis = (run: RunState): string => {
+  if (run.chainStep !== null) return "-";
+  if (run.jobStep === "cleanup") {
+    return run.cleanupPicks.length === CLEANUP_TASK_IDS.length
+      ? `grade:${cleanupGrade(run)}`
+      : `set:${[...run.cleanupPicks].sort().join(",")}:pfx${prefixMatches(run.cleanupPicks)}`;
+  }
+  if (run.jobStep === "site") return `grade:${cleanupGrade(run) ?? "none"}`;
+  return "-";
+};
 
 /** 흐름 위치 — 체인 절차거나 (일감, 순서)다. 같은 위치 안의 백 에지는 화면 루프다. */
 const position = (run: RunState): string =>

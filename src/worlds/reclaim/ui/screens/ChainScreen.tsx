@@ -26,7 +26,7 @@ export function ChainScreen({ run, chain }: ChainScreenProps) {
     <section aria-label="절차" className="flex flex-1 flex-col gap-3 p-3">
       <h2 className="text-base text-parchment">{chain.title}</h2>
       <BriefingPanel document={chain.document} />
-      <p className="text-sm leading-prose text-parchment">{chain.prompt}</p>
+      <p className="whitespace-pre-line text-sm leading-prose text-parchment">{chain.prompt}</p>
       {chain.partyLines.length > 0 && (
         <ul aria-label="방 대사" className="flex flex-col gap-2">
           {chain.partyLines.map((line) => (

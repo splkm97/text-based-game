@@ -29,6 +29,7 @@ const jobCard = (id: JobId): JobCard => ({
   office: { prompt: `지문 ${id}`, news: `뉴스 ${id}`, printer: `프린터 ${id}`, chatter: [] },
   briefing: { prompt: `지문 ${id}`, document: documentOf(id), talk: [] },
   party: { prompt: `인원 ${id}`, notes: [] },
+  cleanup: { prompt: `지침 ${id}` },
   site: { title: `현장 ${id}`, document: documentOf(id), prompt: `지시 ${id}`, partyLines: [] },
 });
 
@@ -86,6 +87,11 @@ export const TEST_CONTENT: Content = {
     party_pick_taesan: actionText("party_pick_taesan"),
     party_reset: actionText("party_reset"),
     party_go: actionText("party_go"),
+    cleanup_pick_sign: actionText("cleanup_pick_sign"),
+    cleanup_pick_power: actionText("cleanup_pick_power"),
+    cleanup_pick_search: actionText("cleanup_pick_search"),
+    cleanup_pick_photo: actionText("cleanup_pick_photo"),
+    cleanup_finish: actionText("cleanup_finish"),
     call_respond: actionText("call_respond"),
     dispatch_send_taesan: actionText("dispatch_send_taesan"),
     dispatch_send_other: actionText("dispatch_send_other"),
@@ -137,6 +143,12 @@ export const TEST_CONTENT: Content = {
     banjang: characterCard("banjang"),
     taesan: characterCard("taesan"),
   },
+  cleanupTasks: {
+    sign: "작업 sign",
+    power: "작업 power",
+    search: "작업 search",
+    photo: "작업 photo",
+  },
 };
 
 /** 4명 균일 초기 인물 상태(0/0/false) — startRun과 같은 기본값이다. */
@@ -153,6 +165,7 @@ export const makeRun = (overrides: Partial<RunState> = {}): RunState => ({
   jobIndex: 0,
   jobStep: "office",
   party: [],
+  cleanupPicks: [],
   characters: zeroCharacters(),
   pendingChain: [],
   chainStep: null,

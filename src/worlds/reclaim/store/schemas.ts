@@ -7,6 +7,7 @@ import { z } from "zod";
 import {
   CHAIN_STEP_IDS,
   CHARACTER_IDS,
+  CLEANUP_TASK_IDS,
   ENDING_IDS,
   type EndingId,
   JOB_IDS,
@@ -57,6 +58,8 @@ const runState = z.object({
     banjang: characterState,
     taesan: characterState,
   }),
+  // 뒷정리 미니게임의 선택 순서 — 작업 넷을 중복 없이 고른 차례 그대로(전부 고르면 4).
+  cleanupPicks: z.array(z.enum(CLEANUP_TASK_IDS)).max(CLEANUP_TASK_IDS.length),
   pendingChain: z.array(chainStepId),
   chainStep: chainStepId.nullable(),
   terminal: endingId.nullable(),

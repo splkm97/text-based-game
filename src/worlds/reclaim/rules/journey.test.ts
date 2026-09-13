@@ -4,14 +4,17 @@
 
 import { describe, expect, test } from "vitest";
 import { CONTENT } from "../content";
-import type { ActionId, ChainStepId, CharacterId, JobId, JobStepId } from "../ids";
-import { CHARACTER_IDS, JOB_IDS, JOB_STEP_IDS } from "../ids";
+import type { ActionId, ChainStepId, CharacterId, CleanupTaskId, JobId, JobStepId } from "../ids";
+import { CHARACTER_IDS, CLEANUP_TASK_IDS, JOB_IDS, JOB_STEP_IDS } from "../ids";
 import type { Placement, RunState } from "../types";
+import { cleanupAxis } from "./enumerate";
 import { applyAction, availableActions, startRun } from "./run";
 
 const PLACEMENTS: readonly Placement[] = ["ru_first", "dusik_first"];
-/** 상태 폭발 방어 — 실측(dusik_first 약 2.6만)의 여유 배수. */
-const STATE_LIMIT = 200_000;
+/** 상태 폭발 방어 — 실측(2026-09-14, 실 CONTENT, 뒷정리 축 투영 후) ru_first 39,446 ·
+ * dusik_first 258,305 상태(0.14s·0.84s)의 여유 배수(약 4배). 뒷정리 미니게임이 현장 등급을
+ * 셋으로 갈라 이전 실측(2.6만)의 약 10배가 됐다. */
+const STATE_LIMIT = 1_000_000;
 
 type Signature = string;
 
@@ -23,6 +26,9 @@ const signature = (run: RunState): Signature =>
     run.chainStep,
     run.terminal,
     run.party.join(","),
+    // 뒷정리 축은 열거와 같은 투영을 쓴다 — 순서 24가지를 그대로 넣으면 서명이 폭발한다(순서가
+    // 아니라 집합·등급만이 미래를 가른다). 부상 축은 여기서는 남긴다: 이 테스트의 불변식이다.
+    cleanupAxis(run),
     run.pendingChain.join(","),
     run.dispatchTaesan,
     run.broadcast,
@@ -95,14 +101,21 @@ const playRun = (run: RunState, script: readonly ActionId[]): RunState => {
   return next;
 };
 
-/** 실 CONTENT에서 일감 하나를 office → briefing → party(동행) → site까지 지나 현장에 세운다.
- * `office`를 주면 그 일감의 사무실 액션으로 대신한다(파견 결정·라디오처럼 일감별 갈래). */
+/** 실 CONTENT에서 일감 하나를 office → briefing → party(동행) → cleanup → site까지 지나 현장에
+ * 세운다. `office`를 주면 그 일감의 사무실 액션으로 대신한다(파견 결정·라디오처럼 일감별 갈래).
+ * 뒷정리는 지침서 순서대로 마친다 — 이 워크의 등급은 perfect다. */
 const intoJob = (run: RunState, party: readonly CharacterId[], office?: ActionId): RunState => {
   const picks: Readonly<Record<CharacterId, ActionId>> = {
     dusik: "party_pick_dusik",
     ru: "party_pick_ru",
     banjang: "party_pick_banjang",
     taesan: "party_pick_taesan",
+  };
+  const cleanupPicks: Readonly<Record<CleanupTaskId, ActionId>> = {
+    sign: "cleanup_pick_sign",
+    power: "cleanup_pick_power",
+    search: "cleanup_pick_search",
+    photo: "cleanup_pick_photo",
   };
   // hq(jobIndex 2)의 사무실은 라디오 아침이라 프린터가 닫혀 있다.
   const openOffice: ActionId =
@@ -112,6 +125,8 @@ const intoJob = (run: RunState, party: readonly CharacterId[], office?: ActionId
     "briefing_ack",
     ...party.map((id) => picks[id]),
     "party_go",
+    ...CLEANUP_TASK_IDS.map((task) => cleanupPicks[task]),
+    "cleanup_finish",
   ];
   let next = run;
   for (const id of script) {
@@ -122,8 +137,8 @@ const intoJob = (run: RunState, party: readonly CharacterId[], office?: ActionId
   return next;
 };
 
-describe("실제 콘텐츠 도달성 — (일감 × 순서)가 전부 열리고, 43개 액션이 전부 제공된다", () => {
-  test.each(PLACEMENTS)("%s: 네 일감 × 네 순서가 모두 도달한다", (placement) => {
+describe("실제 콘텐츠 도달성 — (일감 × 순서)가 전부 열리고, 48개 액션이 전부 제공된다", () => {
+  test.each(PLACEMENTS)("%s: 네 일감 × 다섯 순서가 모두 도달한다", (placement) => {
     const missing: string[] = [];
     for (const job of JOB_IDS) {
       for (const step of JOB_STEP_IDS) {
@@ -276,14 +291,22 @@ describe("인물 축 불변식 — 하한, 부상 결장, 인원 선택의 막�
   const partyStates = allStates.filter((run) => run.chainStep === null && run.jobStep === "party");
 
   test("네 축은 0 아래로 내려가지 않는다", () => {
+    // 상태 수가 수십만이라 단언을 상태마다 걸면 시간이 터진다 — 위반만 모아 한 번에 단언한다.
+    const below: string[] = [];
     for (const run of allStates) {
       for (const id of CHARACTER_IDS) {
         const c = run.characters[id];
-        expect(c.fatigue, `${id}.fatigue`).toBeGreaterThanOrEqual(0);
-        expect(c.suspicion, `${id}.suspicion`).toBeGreaterThanOrEqual(0);
-        expect(c.trust, `${id}.trust`).toBeGreaterThanOrEqual(0);
+        const axes = [
+          ["fatigue", c.fatigue],
+          ["suspicion", c.suspicion],
+          ["trust", c.trust],
+        ] as const;
+        for (const [axis, value] of axes) {
+          if (value < 0) below.push(`${run.jobIndex}:${run.jobStep} ${id}.${axis}=${value}`);
+        }
       }
     }
+    expect(below, `0 아래로 내려간 인물 축 ${below.length}개`).toEqual([]);
   });
 
   test("인원 선택 단계에서는 언제나 나갈 수 있다 — 이미 고른 사람으로 가거나, 새로 고를 수 있다", () => {

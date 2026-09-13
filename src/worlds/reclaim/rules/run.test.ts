@@ -1,12 +1,19 @@
-// 리듀서 계약 테스트 — 일감 구조(2026-09-14): 시작 상태, office→briefing→party→site 전이,
-// 인원 선택 가드, 일감 완료의 인물 증감, 체인 대기 FIFO와 배치 라우팅, 라디오 아침,
-// 종결 단방향, 상한·하한 단조성.
+// 리듀서 계약 테스트 — 일감 구조(2026-09-14): 시작 상태, office→briefing→party→cleanup→site
+// 전이, 뒷정리 미니게임의 순서 등급, 인원 선택 가드, 일감 완료의 인물 증감, 체인 대기 FIFO와
+// 배치 라우팅, 라디오 아침, 종결 단방향, 상한·하한 단조성.
 
 import { describe, expect, test } from "vitest";
-import type { ActionId } from "../ids";
-import { ACTION_IDS } from "../ids";
+import type { ActionId, CleanupTaskId } from "../ids";
+import { ACTION_IDS, CLEANUP_TASK_IDS } from "../ids";
 import type { RunState } from "../types";
-import { applyAction, availableActions, RECHANCE_LIMIT, REVIEW_LIMIT, startRun } from "./run";
+import {
+  applyAction,
+  availableActions,
+  cleanupGrade,
+  RECHANCE_LIMIT,
+  REVIEW_LIMIT,
+  startRun,
+} from "./run";
 import { makeRun, TEST_CONTENT, zeroCharacters } from "./testContent";
 
 /** 성공을 가정한 액션 적용 — 실패하면 사유와 함께 테스트를 때린다. */
@@ -14,6 +21,24 @@ const act = (run: RunState, id: ActionId): RunState => {
   const outcome = applyAction(run, id, TEST_CONTENT);
   expect(outcome.ok, `${id}: ${outcome.reason ?? ""}`).toBe(true);
   return outcome.run;
+};
+
+/** 뒷정리 작업 → 그 작업을 세우는 액션 id. */
+const CLEANUP_PICKS: Readonly<Record<CleanupTaskId, ActionId>> = {
+  sign: "cleanup_pick_sign",
+  power: "cleanup_pick_power",
+  search: "cleanup_pick_search",
+  photo: "cleanup_pick_photo",
+};
+
+/** 뒷정리 미니게임을 순서대로 마친다 — 현장 앞의 필수 절차다. `order`를 주면 그 순서로 고른다. */
+const cleanupThrough = (
+  run: RunState,
+  order: readonly CleanupTaskId[] = CLEANUP_TASK_IDS,
+): RunState => {
+  let next = run;
+  for (const task of order) next = act(next, CLEANUP_PICKS[task]);
+  return act(next, "cleanup_finish");
 };
 
 describe("startRun — 시작 상태 계약(표 「공통」)", () => {
@@ -42,8 +67,8 @@ describe("startRun — 시작 상태 계약(표 「공통」)", () => {
   });
 });
 
-describe("사무실 → 공문 → 인원 선택 → 현장 — 모든 일감이 같은 순서를 탄다", () => {
-  test("첫 일감의 네 단계를 지나 완료하면 다음 일감 사무실에 선다", () => {
+describe("사무실 → 공문 → 인원 선택 → 뒷정리 → 현장 — 모든 일감이 같은 순서를 탄다", () => {
+  test("첫 일감의 다섯 단계를 지나 완료하면 다음 일감 사무실에 선다", () => {
     let run = startRun(TEST_CONTENT);
     expect(availableActions(run)).toEqual(["office_printer"]);
     run = act(run, "office_printer");
@@ -61,6 +86,16 @@ describe("사무실 → 공문 → 인원 선택 → 현장 — 모든 일감이
     ]);
     run = act(run, "party_pick_dusik");
     run = act(run, "party_go");
+    expect(run.jobStep).toBe("cleanup");
+    expect(run.cleanupPicks).toEqual([]);
+    expect(availableActions(run)).toEqual([
+      "cleanup_pick_sign",
+      "cleanup_pick_power",
+      "cleanup_pick_search",
+      "cleanup_pick_photo",
+      "cleanup_finish",
+    ]);
+    run = cleanupThrough(run);
     expect(run.jobStep).toBe("site");
     expect(availableActions(run)).toEqual(["call_respond"]);
     run = act(run, "call_respond");
@@ -84,11 +119,17 @@ describe("사무실 → 공문 → 인원 선택 → 현장 — 모든 일감이
     run = act(run, "briefing_ack");
     run = act(run, "party_pick_ru");
     run = act(run, "party_go");
+    run = act(run, "cleanup_pick_sign");
+    run = cleanupThrough(run, ["power", "search", "photo"]);
     run = act(run, "call_respond");
-    expect(run.log).toHaveLength(5);
+    expect(run.log).toHaveLength(10);
     expect(run.log[0]).toEqual({
       place: { kind: "job", job: "gwanak" },
       text: "결과 office_printer",
+    });
+    expect(run.log[4]).toEqual({
+      place: { kind: "job", job: "gwanak" },
+      text: "결과 cleanup_pick_sign",
     });
     expect(run.log.at(-1)).toEqual({
       place: { kind: "job", job: "gwanak" },
@@ -124,17 +165,90 @@ describe("인원 선택 가드", () => {
     expect(applyAction(run, "party_pick_dusik", TEST_CONTENT).ok).toBe(false);
   });
 
-  test("빈 동행으로는 출발할 수 없다 — 한 명 이상이면 현장으로 간다", () => {
+  test("빈 동행으로는 출발할 수 없다 — 한 명 이상이면 뒷정리로 간다", () => {
     const run = makeRun({ jobStep: "party" });
     expect(applyAction(run, "party_go", TEST_CONTENT).ok).toBe(false);
     const ready = act(run, "party_pick_banjang");
     expect(availableActions(ready)).toContain("party_go");
-    expect(act(ready, "party_go").jobStep).toBe("site");
+    expect(act(ready, "party_go").jobStep).toBe("cleanup");
   });
 
   test("초기화하면 동행이 비워진다", () => {
     const run = makeRun({ jobStep: "party", party: ["taesan", "ru"] });
     expect(act(run, "party_reset").party).toEqual([]);
+  });
+});
+
+describe("뒷정리 미니게임 — 지침서 순서 맞추기", () => {
+  test("지침서 순서대로 넷을 고르면 perfect로 현장에 선다", () => {
+    let run = makeRun({ jobStep: "party", party: ["dusik"] });
+    run = act(run, "party_go");
+    expect(run.jobStep).toBe("cleanup");
+    expect(run.cleanupPicks).toEqual([]);
+    expect(cleanupGrade(run)).toBeNull(); // 아직 등급이 없다 — 다 고르기 전에는 null
+
+    for (const [index, task] of CLEANUP_TASK_IDS.entries()) {
+      run = act(run, CLEANUP_PICKS[task]);
+      expect(run.cleanupPicks).toEqual(CLEANUP_TASK_IDS.slice(0, index + 1));
+      // 지침서에서 한 줄씩 지워 나간다 — 남은 작업 셋·둘·하나 + 완료 버튼.
+      expect(availableActions(run)).toHaveLength(CLEANUP_TASK_IDS.length - index);
+    }
+    expect(cleanupGrade(run)).toBe("perfect");
+    run = act(run, "cleanup_finish");
+    expect(run.jobStep).toBe("site");
+    expect(run.cleanupPicks).toEqual([...CLEANUP_TASK_IDS]); // 등급은 현장까지 따라간다
+  });
+
+  test("고른 작업은 목록에서 사라진다 — 같은 줄을 두 번 세우지 않는다", () => {
+    const atCleanup = makeRun({ jobStep: "cleanup" });
+    const afterSign = act(atCleanup, "cleanup_pick_sign");
+    expect(availableActions(afterSign)).not.toContain("cleanup_pick_sign");
+    expect(availableActions(afterSign)).toEqual([
+      "cleanup_pick_power",
+      "cleanup_pick_search",
+      "cleanup_pick_photo",
+      "cleanup_finish",
+    ]);
+    // 그래도 직접 두드리면 그 카드의 거부 문면으로 답한다(숨은 버튼도 사유를 갖는다).
+    const again = applyAction(afterSign, "cleanup_pick_sign", TEST_CONTENT);
+    expect(again.ok).toBe(false);
+    expect(again.reason).toBe(TEST_CONTENT.actions.cleanup_pick_sign.deny);
+    expect(again.run).toBe(afterSign);
+  });
+
+  test("순서를 섞으면 등급이 내려간다 — 앞 둘이 제자리면 partial, 아니면 poor", () => {
+    const graded = (picks: readonly CleanupTaskId[]) =>
+      cleanupGrade(makeRun({ cleanupPicks: picks }));
+    expect(graded(["sign", "power", "search"])).toBeNull(); // 셋만 고른 회차는 등급이 없다
+    expect(graded(["sign", "power", "search", "photo"])).toBe("perfect");
+    expect(graded(["sign", "power", "photo", "search"])).toBe("partial");
+    expect(graded(["power", "sign", "search", "photo"])).toBe("poor");
+    expect(graded(["sign", "search", "power", "photo"])).toBe("poor");
+  });
+
+  test("cleanup_finish는 작업 넷을 다 고르기 전에는 거부된다", () => {
+    const run = makeRun({ jobStep: "cleanup", cleanupPicks: ["sign", "power", "search"] });
+    const outcome = applyAction(run, "cleanup_finish", TEST_CONTENT);
+    expect(outcome.ok).toBe(false);
+    expect(outcome.reason).toBe(TEST_CONTENT.actions.cleanup_finish.deny);
+    expect(outcome.run).toBe(run); // 상태를 그대로 돌려준다
+    expect(availableActions(run)).toContain("cleanup_finish"); // 그래도 목록에는 남는다(사유가 붙는다)
+  });
+
+  test("gate_reopen으로 돌아온 뒤 party_go가 순서를 비운다", () => {
+    const atVenue = makeRun({
+      placement: "dusik_first",
+      chainStep: "venue",
+      documents: true,
+      chances: 1,
+      cleanupPicks: [...CLEANUP_TASK_IDS],
+    });
+    const reopened = act(atVenue, "gate_reopen");
+    expect(reopened.jobStep).toBe("party");
+    expect(reopened.cleanupPicks).toEqual([...CLEANUP_TASK_IDS]); // 복귀 시점에는 이전 일감의 순서가 남아 있다
+    const going = act(act(reopened, "party_pick_ru"), "party_go");
+    expect(going.jobStep).toBe("cleanup");
+    expect(going.cleanupPicks).toEqual([]); // 새 일감의 뒷정리는 빈 순서에서 시작한다
   });
 });
 
@@ -353,6 +467,41 @@ describe("상실 신호 — 위험 선택은 동행자 전원에게 소문난다
       suspicion: 1,
       trust: 0,
     });
+  });
+
+  test("부상은 뒷정리 등급이 가른다 — perfect면 안전 조치가 먼저 서 있어 다치지 않는다", () => {
+    const perfect: readonly CleanupTaskId[] = [...CLEANUP_TASK_IDS];
+    const partial: readonly CleanupTaskId[] = ["sign", "power", "photo", "search"];
+    const poor: readonly CleanupTaskId[] = ["power", "sign", "search", "photo"];
+    const atObs = (cleanupPicks: readonly CleanupTaskId[]) =>
+      makeRun({
+        jobIndex: 1,
+        jobStep: "site",
+        party: ["dusik", "banjang"],
+        chances: 2,
+        cleanupPicks,
+      });
+
+    // perfect — 상실 신호(의심·신뢰)는 그대로 남고 부상만 면제된다.
+    const safe = act(atObs(perfect), "obs_send_other");
+    expect(safe.characters.dusik).toEqual({ fatigue: 1, injured: false, suspicion: 1, trust: 1 });
+    expect(safe.chances).toBe(1);
+    // partial·poor — 같은 위험 선택이 동행의 첫 사람을 다치게 한다.
+    for (const cleanupPicks of [partial, poor]) {
+      const risky = act(atObs(cleanupPicks), "obs_send_other");
+      expect(risky.characters.dusik).toEqual({
+        fatigue: 1,
+        injured: true,
+        suspicion: 1,
+        trust: 1,
+      });
+    }
+    // 본부의 위험 선택도 그 자리의 등급(이 일감의 뒷정리 결과)을 따른다.
+    const atArchive = (cleanupPicks: readonly CleanupTaskId[]) =>
+      makeRun({ jobIndex: 2, jobStep: "site", party: ["taesan"], cleanupPicks });
+    expect(act(atArchive(perfect), "archive_with_taesan").characters.taesan.injured).toBe(false);
+    expect(act(atArchive(partial), "archive_with_taesan").characters.taesan.injured).toBe(true);
+    expect(act(atArchive(poor), "archive_with_taesan").characters.taesan.injured).toBe(true);
   });
 });
 

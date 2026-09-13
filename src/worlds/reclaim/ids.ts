@@ -12,7 +12,13 @@ export const ACTION_IDS = [
   "party_pick_banjang", // 동행: 최 반장
   "party_pick_taesan", // 동행: 배태산
   "party_reset", // 동행 선택을 비운다
-  "party_go", // 선택한 인원과 현장으로 간다 (인원 선택 → 현장)
+  "party_go", // 선택한 인원과 현장으로 간다 (인원 선택 → 뒷정리)
+
+  "cleanup_pick_sign", // 뒷정리: 안전 표지와 통제선
+  "cleanup_pick_power", // 뒷정리: 전원·가스관 차단
+  "cleanup_pick_search", // 뒷정리: 잔해 안쪽 확인
+  "cleanup_pick_photo", // 뒷정리: 위치와 수치 기록
+  "cleanup_finish", // 뒷정리를 마치고 현장으로 (뒷정리 → 현장)
 
   "call_respond", // 긴급 피해 조사에 나간다 (강두식 동행)
 
@@ -100,9 +106,21 @@ export const JOB_STEP_IDS = [
   "office", // 사무실 — 뉴스·잡담·프린터 클릭
   "briefing", // 전체화면 공문
   "party", // 인원 선택 1~2명
+  "cleanup", // 뒷정리 — 지침서 순서 맞추기(미니게임)
   "site", // 현장 — 사건·이벤트
 ] as const;
 export type JobStepId = (typeof JOB_STEP_IDS)[number];
+
+/** 뒷정리 작업 — 지침서가 정한 순서는 안전 → 차단 → 확인 → 기록이다. */
+export const CLEANUP_TASK_IDS = [
+  "sign", // 안전 표지와 통제선을 먼저 세운다
+  "power", // 전원과 가스관을 차단한다
+  "search", // 잔해 안쪽의 사람과 위험을 확인한다
+  "photo", // 위치와 수치를 기록한다
+] as const;
+export type CleanupTaskId = (typeof CLEANUP_TASK_IDS)[number];
+/** 뒷정리 등급 — 완벽(지침 순서 그대로) / 부분(안전·차단까지) / 어긋남. */
+export type CleanupGrade = "perfect" | "partial" | "poor";
 
 /** 조건이 서면 일감 사이에 끼어드는 체인 절차(현 12단계의 나머지). */
 export const CHAIN_STEP_IDS = [

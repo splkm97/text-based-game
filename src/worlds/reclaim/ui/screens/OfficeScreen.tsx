@@ -29,7 +29,9 @@ export function OfficeScreen({ run, job }: OfficeScreenProps) {
   return (
     <section aria-label="사무실" className="flex flex-1 flex-col gap-3 p-3">
       <h2 className="text-base text-parchment">{job.title}</h2>
-      <p className="text-sm leading-prose text-parchment">{job.office.prompt}</p>
+      <p className="whitespace-pre-line text-sm leading-prose text-parchment">
+        {job.office.prompt}
+      </p>
       <section aria-label="뉴스" className="border-2 border-slate bg-ink-deep p-2">
         <p className="text-sm leading-prose text-ash">{job.office.news}</p>
       </section>

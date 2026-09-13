@@ -1,9 +1,9 @@
 // One ChainCard per ChainStepId — 조건이 서면 일감 사이에 끼어드는 절차.
-// Migrated verbatim from the old stages of the same id (rules/placement.ts:
-// xcheck·gate·night·venue·gun·submit → chain). Guards stay in rules/; these cards
-// are the paper face (variant-A form, never first person) and the room's first-person
-// narration. Documents are state-free: conditional lines belong to actions.ts results
-// and ending bodies.
+// Carried over from the old procedure stages of the same id; the migration table lived in
+// rules/placement.ts, which the 일감 재편 deleted — nothing here points at it. Guards stay
+// in rules/; these cards are the paper face (variant-A form, never first person) and the
+// room's first-person narration. Documents are state-free: conditional lines belong to
+// actions.ts results and ending bodies.
 
 import type { ChainStepId } from "../ids";
 import type { ChainCard } from "../types";
@@ -23,7 +23,7 @@ export const CHAINS: Readonly<Record<ChainStepId, ChainCard>> = {
       tail: "",
     },
     prompt:
-      "회의실 책상 위에 두 종이를 나란히 놓는다. 방송이 발표한 좌표와 문서가 적은 유입 좌표. 대조가 끝나기 전까지는 어느 쪽도 기록이 아니라 발표다. 나는 대조표 칸을 비워 둔 채 펜 끝만 돌린다.",
+      "회의실 책상 위에 두 종이를 나란히 놓는다. 방송이 발표한 좌표와 문서가 적은 유입 좌표. 창문을 닫아 두었는데도 방송 소리가 벽을 타고 들어와 종이 끝을 흔든다.\n\n대조가 끝나기 전까지는 어느 쪽도 기록이 아니라 발표다. 나는 대조표의 빈칸을 보며 펜 끝만 돌린다 — 같은 지점이 나오면 다음 문장을 쓸 손이 필요하고, 다른 지점이 나오면 쓸 문장이 없다.\n\n두 종이의 여백에는 서로 다른 사람의 필체가 남아 있다. 한쪽은 방송이 읽은 것을 옮겨 적은 글씨이고, 다른 쪽은 실험 기록을 옮긴 글씨다. 글씨는 다르고, 적힌 숫자는 아직 다르지 않다.",
     partyLines: [
       {
         character: "dusik",
@@ -51,7 +51,7 @@ export const CHAINS: Readonly<Record<ChainStepId, ChainCard>> = {
       tail: "도시재건협회장 직인생략 · 끝.",
     },
     prompt:
-      "협회에서 최종 정리 공문이 왔다. 잔당 1건, 관악구 일대, 그리고 늘 그렇듯 붙는 마감. 최종 정리라는 이름은 무겁고, 그 무게만큼 보고서에 책임지는 이름도 무거워진다. 나는 배차표 위에서 펜을 멈춘 채 공문을 다시 읽는다.",
+      "협회에서 최종 정리 공문이 왔다. 잔당 1건, 관악구 일대, 그리고 늘 그렇듯 붙는 마감. 공문을 든 손이 무거워지는 것은 종이 두께 때문이 아니다.\n\n최종 정리라는 이름은 무겁고, 그 무게만큼 보고서에 책임지는 이름도 무거워진다. 밖에서는 배차 대기 중인 차가 시동을 걸었다 껐다 한다.\n\n나는 배차표 위에서 펜을 멈춘 채 공문을 다시 읽는다. 읽을수록 문장이 짧아지고, 짧아진 자리에 남는 것은 마감뿐이다.\n\n공문에는 지침 일부가 함께 왔다. 지침서의 줄과 같은 문장이 있다는 것을 확인하고, 나는 그 줄을 손끝으로 짚는다.",
     partyLines: [
       {
         character: "ru",
@@ -67,7 +67,7 @@ export const CHAINS: Readonly<Record<ChainStepId, ChainCard>> = {
       },
       {
         character: "banjang",
-        text: "지침은 이미 받아 뒀습니다. 구역 표지와 안전 구역부터 확인하겠습니다.",
+        text: "지침은 이미 받아 뒀습니다. 구역 경계와 안전 구역을 확인하겠습니다.",
       },
     ],
   },
@@ -87,7 +87,7 @@ export const CHAINS: Readonly<Record<ChainStepId, ChainCard>> = {
       tail: "",
     },
     prompt:
-      "심야 작업 구역에는 조명 세 대와 잔당 하나, 그리고 밤 전체가 남는다. 야간 작업은 수당 항목이 없어 청구도 안 되고, 중지 시각은 새벽 네 시로 적혀 있다. 잔당은 가만히 서 있고, 서 있는 쪽이 먼저 지치는 밤이다. 나는 보고용지에 관찰 시작 시각을 적는다.",
+      "심야 작업 구역에는 조명 세 대와 잔당 하나, 그리고 밤 전체가 남는다. 조명은 발전기 위에 서 있어서 낮게 웅웅거리고, 그 소리가 멎으면 어둠이 한 걸음 가까워진다.\n\n야간 작업은 수당 항목이 없어 청구도 안 되고, 중지 시각은 지침에 적힌 대로다. 안개가 잔해 위로 내려앉아 조명 사이의 거리를 감춘다.\n\n잔당은 가만히 서 있고, 서 있는 쪽이 먼저 지치는 밤이다. 나는 보고용지에 관찰 시작 시각을 적는다 — 적는 순간 이 시간이 청구되지 않는 시간에서 회사 시간이 된다.",
     partyLines: [
       {
         character: "ru",
@@ -122,7 +122,7 @@ export const CHAINS: Readonly<Record<ChainStepId, ChainCard>> = {
       tail: "어디에 알리든 기록이 남는 자리가 하나 생긴다.",
     },
     prompt:
-      "사본의 행선을 정할 차례다. 등록과 청구를 쥔 창구, 감사 창구, 방송, 그리고 군. 어디에 알리느냐에 따라 기록이 남는 자리가 달라지고, 남은 기록이 다음 청구를 바꾼다. 나는 수첩에 후보 넷을 적고 그 아래에 마감 시각을 적는다.",
+      "사본의 행선을 정할 차례다. 등록과 청구를 쥔 창구, 감사 창구, 방송, 그리고 군. 수첩은 얇고, 후보는 그보다 두껍다.\n\n어디에 알리느냐에 따라 기록이 남는 자리가 달라지고, 남은 기록이 다음 청구를 바꾼다. 밖에서는 오후 비가 오려는지 사무실 창이 서서히 어두워진다.\n\n나는 수첩에 후보 넷을 적고 그 아래에 마감 시각을 적는다. 마감을 적어 두면 후보가 줄어들고, 줄어든 만큼 고르는 손이 빨라진다.",
     partyLines: [
       {
         character: "dusik",
@@ -155,7 +155,7 @@ export const CHAINS: Readonly<Record<ChainStepId, ChainCard>> = {
       tail: "메모 · 출입 통제 구역: 통행을 열 사람이 필요하다.",
     },
     prompt:
-      "군 현장은 작전 구역 표지판부터 우리 것이 아니다. 지휘관 앞에 공문을 내밀었더니 협회 경유 절차를 요구하며 그대로 돌아온다. 접점을 열 사람이 필요하다. 서 있는 시간도 인건비로 나가니, 장비차는 입구에 세워 둔 채 먼저 이름을 정한다.",
+      "군 현장은 작전 구역 표지판부터 우리 것이 아니다. 통제선 안쪽은 소리부터 다르다 — 장비 소리만 있고 사람 소리는 없다.\n\n지휘관 앞에 공문을 내밀었더니 협회 경유 절차를 요구하며 그대로 돌아온다. 표지판 뒤에서 병사 하나가 우리 차를 두 번 확인하고, 다시 초소 안으로 들어간다.\n\n접점을 열 사람이 필요하다. 서 있는 시간도 인건비로 나가니, 장비차는 입구에 세워 둔 채 먼저 이름을 정한다.",
     partyLines: [
       {
         character: "taesan",
@@ -187,7 +187,7 @@ export const CHAINS: Readonly<Record<ChainStepId, ChainCard>> = {
       tail: "",
     },
     prompt:
-      "접수 창구가 원본 대조와 사본 접수 중 무엇을 받을지 물어본다. 원본에는 대조 기록이 남고, 사본에는 접수 번호만 남는다. 협회가 지울 수 없는 형태가 무엇인지는 이 창구 앞에서 갈린다. 나는 접수용지를 펴서 서명란부터 확인한다.",
+      "접수 창구 유리 앞에 섰다. 창구 안쪽 형광등은 하얗고, 그 빛에 종이의 접힌 선이 다 보인다. 뒤쪽에서는 대기 번호를 부르는 소리가 한 번씩 들린다.\n\n창구가 원본 대조와 사본 접수 중 무엇을 받을지 물어본다. 원본에는 대조 기록이 남고, 사본에는 접수 번호만 남는다.\n\n협회가 지울 수 없는 형태가 무엇인지는 이 창구 앞에서 갈린다. 나는 접수용지를 펴서 서명란부터 확인한다 — 서명을 하는 순간 이 회차의 마지막 이름이 정해진다.",
     partyLines: [
       {
         character: "dusik",

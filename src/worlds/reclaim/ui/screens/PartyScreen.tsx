@@ -28,7 +28,7 @@ export function PartyScreen({ run, job }: PartyScreenProps) {
   return (
     <section aria-label="인원 선택" className="flex flex-1 flex-col gap-3 p-3">
       <h2 className="text-base text-parchment">{job.title}</h2>
-      <p className="text-sm leading-prose text-parchment">{job.party.prompt}</p>
+      <p className="whitespace-pre-line text-sm leading-prose text-parchment">{job.party.prompt}</p>
       <ul aria-label="인물" className="flex flex-col gap-2">
         {CHARACTER_IDS.map((character) => (
           <PartyPick

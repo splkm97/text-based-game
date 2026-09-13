@@ -27,7 +27,7 @@ export function SiteScreen({ run, job }: SiteScreenProps) {
     <section aria-label="현장" className="flex flex-1 flex-col gap-3 p-3">
       <h2 className="text-base text-parchment">{job.site.title}</h2>
       <BriefingPanel document={job.site.document} />
-      <p className="text-sm leading-prose text-parchment">{job.site.prompt}</p>
+      <p className="whitespace-pre-line text-sm leading-prose text-parchment">{job.site.prompt}</p>
       {partyLines.length > 0 && (
         <ul aria-label="동행" className="flex flex-col gap-2">
           {partyLines.map((line) => (

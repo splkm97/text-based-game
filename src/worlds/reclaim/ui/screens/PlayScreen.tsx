@@ -1,5 +1,5 @@
 // 플레이 화면 — 지금 상태가 어느 화면인지 고르는 배선만 한다. 체인 절차가 끼어 있으면
-// 절차 화면, 아니면 일감의 순서(office → briefing → party → site)가 화면을 정한다.
+// 절차 화면, 아니면 일감의 순서(office → briefing → party → cleanup → site)가 화면을 정한다.
 //
 // 가드는 규칙의 것이다: 화면은 availableActions·lastReason·act만 쓰고 판정하지 않는다
 // (거부도 예외가 아니라 문면이다). 종결 상태에서는 null을 돌려준다 — 종결 화면은 App의
@@ -10,6 +10,7 @@ import { useContent } from "../contentContext";
 import { useRunStore } from "../runStoreContext";
 import { BriefingScreen } from "./BriefingScreen";
 import { ChainScreen } from "./ChainScreen";
+import { CleanupScreen } from "./CleanupScreen";
 import { OfficeScreen } from "./OfficeScreen";
 import { PartyScreen } from "./PartyScreen";
 import { SiteScreen } from "./SiteScreen";
@@ -38,6 +39,9 @@ export function PlayScreen() {
   }
   if (run.jobStep === "party") {
     return <PartyScreen run={run} job={job} />;
+  }
+  if (run.jobStep === "cleanup") {
+    return <CleanupScreen run={run} job={job} />;
   }
   return <SiteScreen run={run} job={job} />;
 }

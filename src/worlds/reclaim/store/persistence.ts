@@ -8,7 +8,7 @@ import type { RunState } from "../types";
 import type { MetaState } from "./schemas";
 import { parseMeta, parseRun } from "./schemas";
 
-const RUN_KEY = "lia.reclaim.run.v2";
+const RUN_KEY = "lia.reclaim.run.v3";
 const META_KEY = "lia.reclaim.meta.v1";
 
 export type RunPersistence = Slot<RunState>;
