@@ -14,7 +14,6 @@ const ZERO_SEEN: Readonly<Record<EndingId, number>> = {
   death: 0,
   gov: 0,
   press: 0,
-  taesan: 0,
   general: 0,
   routine: 0,
 };

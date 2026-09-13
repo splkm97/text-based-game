@@ -124,11 +124,11 @@ export const ACTION_SPECS: Readonly<Record<ActionId, ActionSpec>> = {
   },
   site_process: {
     when: (run) => run.stage === "site",
-    apply: () => ({ terminal: "taesan" }),
+    apply: () => ({ terminal: "general" }),
   },
   site_with_taesan: {
     when: (run) => run.stage === "site",
-    apply: () => ({ terminal: "taesan" }),
+    apply: () => ({ terminal: "general" }),
   },
 
   night_use: {

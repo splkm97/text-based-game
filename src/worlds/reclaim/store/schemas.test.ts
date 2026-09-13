@@ -30,7 +30,6 @@ const meta: MetaState = {
     death: 2,
     gov: 0,
     press: 0,
-    taesan: 0,
     general: 1,
     routine: 0,
   },

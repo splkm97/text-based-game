@@ -245,13 +245,13 @@ describe("종결 매핑 — 실제 CONTENT로 종결 액션을 돌린다", () =>
     },
     {
       action: "site_process",
-      terminal: "taesan",
+      terminal: "general",
       prep: makeRun({ stage: "site" }),
       why: "처리 요청은 site 단계에서만 고른다",
     },
     {
       action: "site_with_taesan",
-      terminal: "taesan",
+      terminal: "general",
       prep: makeRun({ stage: "site" }),
       why: "배태산 동행도 site 단계에서만 고른다",
     },

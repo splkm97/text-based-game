@@ -2,8 +2,9 @@
 // Every card narrates the fate of the locked opposing chain as an explicit signal —
 // no chain closes quietly (plan.md §3.5). Secret disclosures follow plan.md §4:
 // the association's summoning is named in true_dusik, ru's identity and origin
-// literacy in true_ru, the covert method in death, the government tie in gov,
-// and taesan's identity and scheme in taesan only.
+// literacy in true_ru, the covert method in death, the government tie in gov.
+// 배태산(시퍼 제거·루 확보)과 최 반장의 결말은 루트가 기획되지 않아 집합에서 제외했다
+// (사용자 결정 2026-09-14) — 두 인물의 비밀은 이 월드에서 공개되지 않는다.
 
 import type { EndingId } from "../ids";
 import type { EndingCard } from "../types";
@@ -68,24 +69,12 @@ export const ENDINGS: Readonly<Record<EndingId, EndingCard>> = {
     ],
   },
 
-  taesan: {
-    id: "taesan",
-    title: "이탈 · 시퍼 제거 · 루 확보",
-    text: "시퍼의 제거와 루의 인계는 같은 날 진행되었다. 인계 서류의 사유란은 공란이었고, 판정을 넘겨받은 것은 배태산이었다. 그제야 세어 보았다 — 매일 아침 누구보다 먼저 꺼내던 뉴스 이야기, 웃음소리 뒤로 넘어가던 판정들. 그는 협회의 실세였다. 도래 소환은 처음부터 루를 실험실로 보내 생체실험을 하려는 일이었고, 그러려면 루시퍼의 힘을 빼놓아야 했으며, 그 도구로 강두식이 이용되었다. 시퍼는 제거되었고 힘을 잃은 루는 실험실로 끌려갔다 — 루의 진엔딩은 이번 회차에서 성립하지 않는다.",
-    epilogue: [
-      "루 — 보호 명목의 인계 서류와 함께 실험실로 간다. 배차표에서 그의 이름이 빠진다.",
-      "강두식 — 청구 항목과 압류는 그대로 남는다. 자격 회복은 이번 회차에서 성립하지 않는다.",
-      "최 반장 — 그날의 출입 명부를 끝까지 협회에 보낸다. 무슨 일이 있었는지 묻지 않는다.",
-      "사장 — 다음 주 배차표를 짜다가 '배태식'을 적었다 지운다. 부서지지 않는 산이 어느 쪽 산이었는지, 이제 알 것 같다.",
-    ],
-  },
-
   general: {
     id: "general",
     title: "이탈 · 일반 엔딩",
-    text: "심야의 접점은 아무 결과도 남기지 못했다. 루는 잔당 앞에 오래 서 있었지만, 그 밤에 일어난 일은 없었다. 다음 날 처리 요청이 올라갔고, 잔당 1건은 처리 완료로 닫혔다. 추가 관찰 대상 목록에 오른 이름은 없었다. 루는 어제와 같은 자리에서 배차표를 받았고, 무슨 일이 있었는지 묻는 사람도 없었다. 두식의 청구 항목은 그대로 유지되었다 — 급여의 절반은 이번 달에도 빠져 나간다.",
+    text: "잔당 1건은 처리 완료로 닫혔다. 추가 관찰 대상 목록에 오른 이름은 없었고, 재통합은 열리지 않았다 — 루와 시퍼 사이에는 아무 일도 일어나지 않았다. 루는 어제와 같은 자리에서 배차표를 받았고, 무슨 일이 있었는지 묻는 사람도 없었다. 두식의 청구 항목은 그대로 유지되었다 — 급여의 절반은 이번 달에도 빠져 나간다.",
     epilogue: [
-      "루 — 어제와 같은 자리에서 배차표를 받는다. 그 밤의 접점에 대해 묻는 사람은 없다.",
+      "루 — 어제와 같은 자리에서 배차표를 받는다. 그날 현장에서 있었던 일을 묻는 사람은 없다.",
       "강두식 — 청구 항목은 그대로 유지되고, 급여의 절반은 이번 달에도 빠져 나간다.",
       "최 반장 — 처리 완료 보고를 협회에 접수한다. 그 이상의 문서는 오지 않는다.",
       "배태산 — 다음 날 아침에도 뉴스 이야기부터 꺼낸다.",

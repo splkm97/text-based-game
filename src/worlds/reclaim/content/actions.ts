@@ -138,13 +138,13 @@ export const ACTIONS_TEXT: Readonly<Record<ActionId, ActionText>> = {
     id: "site_process",
     label: "지침대로 처리 요청을 올린다",
     deny: "처리 요청을 받을 현장이 열려 있지 않다",
-    result: "시퍼가 제거되었다. 힘을 잃은 루는 실험실로 옮겨졌다.",
+    result: "처리 요청이 올라갔다. 잔당 1건이 그날로 닫혔다.",
   },
   site_with_taesan: {
     id: "site_with_taesan",
     label: "배태산이 함께 들어간다",
     deny: "이 현장에 배태산이 들어갈 때가 아니다",
-    result: "배태산이 판정을 넘겨받았다. 시퍼 제거와 루 인계가 같은 날 진행되었다.",
+    result: "배태산이 판정을 넘겨받아 처리 요청을 올렸다. 잔당 1건이 그날로 닫혔다.",
   },
 
   night_use: {

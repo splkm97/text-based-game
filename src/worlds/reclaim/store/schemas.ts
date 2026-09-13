@@ -44,7 +44,6 @@ const metaState = z.object({
     death: count,
     gov: count,
     press: count,
-    taesan: count,
     general: count,
     routine: count,
   }),

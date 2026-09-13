@@ -99,7 +99,6 @@ export const TEST_CONTENT: Content = {
     death: endingCard("death"),
     gov: endingCard("gov"),
     press: endingCard("press"),
-    taesan: endingCard("taesan"),
     general: endingCard("general"),
     routine: endingCard("routine"),
   },
