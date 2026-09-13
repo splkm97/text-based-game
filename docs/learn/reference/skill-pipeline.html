@@ -11,7 +11,7 @@
 <header class="masthead">
   <p class="eyebrow">참조 문서 · 분기 서사 스킬 surface</p>
   <h1>워크플로우 한 장</h1>
-  <p class="lede">스킬 18개와 남은 제안 5개가 <em>어디에</em> 앉고 <em>왜</em> 거기 앉는지. P0 넷은 2026-09-13에 착륙했다. 개별 스킬의 내부는 <a href="skill-map.html">스킬 지도</a>에서 본다.</p>
+  <p class="lede">스킬 18개와 남은 제안 4개가 <em>어디에</em> 앉고 <em>왜</em> 거기 앉는지. P0 넷과 P1 하나(<code>draft</code> 확장)는 2026-09-13에 착륙했다. 개별 스킬의 내부는 <a href="skill-map.html">스킬 지도</a>에서 본다.</p>
 </header>
 
 <main>
@@ -85,7 +85,7 @@
     <tr><td>게이트 specialist 경로·plan 정합 <span class="tag">P0</span> 착륙(2026-09-13)</td><td>게이트 전문 칸</td><td>판정의 전제(<code>Global Constraints</code>, 출력 주소)가 없어 리뷰어가 제약을 추론한다. <b>해소(2026-09-13, 추론 금지로; 주소는 유지).</b></td></tr>
     <tr><td><code>story-graph-architect</code> <span class="tag">P1</span></td><td>상류 칸</td><td>수렴점과 분기 예산을 정하는 주체가 없어 G05가 사후에만 문제를 본다.</td></tr>
     <tr><td><code>ending-set-architect</code> <span class="tag">P1</span></td><td>상류 칸</td><td><code>MULTI_ENDING</code> 검수의 입력(엔딩 세트·배타 상태·앵커)이 없다.</td></tr>
-    <tr><td><code>narrative-rewriter</code> + <code>draft</code> <span class="tag">P1</span></td><td>쓰기 칸</td><td>scene card를 초고로 옮기는 주체가 없어 사양만 쌓인다.</td></tr>
+    <tr><td><code>narrative-rewriter</code> + <code>draft</code> <span class="tag">P1</span> 착륙(2026-09-13)</td><td>쓰기 칸</td><td>scene card를 초고로 옮기는 주체가 없어 사양만 쌓인다. <b>해소(2026-09-13, <code>draft</code> 입력·승인 카드 게이트).</b></td></tr>
     <tr><td><code>revelation-plan</code> <span class="tag">P2</span></td><td>상류 칸</td><td>G09·G19가 계획 없이 사후 진단만 한다.</td></tr>
     <tr><td><code>voice-bible</code> <span class="tag">P2</span></td><td>상류 → 쓰기</td><td>4인 말투 정본이 없어 대사 변주가 <code>[HYPOTHESIS]</code>로만 남는다.</td></tr>
   </tbody>
@@ -93,7 +93,7 @@
 
 <div class="callout callout--warn">
   <span class="callout__label">순서를 지키는 이유</span>
-  <p>그래프 칸을 먼저 채우지 않으면 검수 칸은 영원히 <code>UNVERIFIABLE</code>이고, 캐논 칸을 먼저 열지 않으면 그래프가 정본 밖에서 논다. <b>P0 넷은 한 덩어리로 착륙했다(2026-09-13).</b> 남은 것은 P1 셋(설계 주체와 초고 작성)과 P2 둘이다.</p>
+  <p>그래프 칸을 먼저 채우지 않으면 검수 칸은 영원히 <code>UNVERIFIABLE</code>이고, 캐논 칸을 먼저 열지 않으면 그래프가 정본 밖에서 논다. <b>P0 넷은 한 덩어리로 착륙했다(2026-09-13).</b> 남은 것은 P1 둘(<code>story-graph-architect</code>·<code>ending-set-architect</code>)과 P2 둘이다.</p>
 </div>
 
 <h2>이 그림에서 읽어야 할 세 가지</h2>
