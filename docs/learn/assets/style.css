@@ -1,0 +1,394 @@
+/* 분기 서사 스킬 surface 코스 — 공유 스타일시트
+   프로젝트의 커밋된 디자인 방향을 따른다: radius 0, 2px 테두리, box-shadow 없음,
+   gradient 없음, named property 전환 120ms. 인쇄와 가독성을 먼저 본다. */
+
+:root {
+  --ink: #14161a;
+  --ink-deep: #000000;
+  --slate: #3c424b;
+  --ash: #6b7280;
+  --parchment: #f6f4ef;
+  --sand: #e7e2d6;
+  --ember: #b4531f;
+  --blood: #8c2f2f;
+  --moss: #2f6b4f;
+  --sky: #1f4e79;
+  --gold: #8a6a12;
+  --dusk: #4a3f63;
+  --rule: #c9c3b6;
+  --code-bg: #ece8de;
+  --measure: 44rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 2rem 1.25rem 6rem;
+  background: var(--parchment);
+  color: var(--ink);
+  font-family:
+    Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  font-size: 17px;
+  line-height: 1.75;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+main,
+header.masthead {
+  max-width: var(--measure);
+  margin: 0 auto;
+}
+
+a {
+  color: var(--sky);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 120ms linear;
+}
+a:hover {
+  color: var(--ember);
+}
+a:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.35;
+  margin: 2.2rem 0 0.7rem;
+  font-weight: 700;
+}
+h1 {
+  font-size: 1.8rem;
+  margin-top: 0;
+}
+h2 {
+  font-size: 1.3rem;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 0.35rem;
+}
+h3 {
+  font-size: 1.08rem;
+}
+h4 {
+  font-size: 1rem;
+  color: var(--slate);
+}
+
+p,
+ul,
+ol,
+table,
+pre,
+figure,
+blockquote {
+  margin: 0 0 1.1rem;
+}
+li {
+  margin: 0.3rem 0;
+}
+li > ul,
+li > ol {
+  margin-bottom: 0.3rem;
+}
+
+hr {
+  border: 0;
+  border-top: 2px solid var(--rule);
+  margin: 2.5rem 0;
+}
+
+header.masthead {
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+header.masthead .eyebrow {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin: 0 0 0.4rem;
+}
+header.masthead p.lede {
+  color: var(--slate);
+  margin-bottom: 0;
+}
+
+code,
+kbd,
+samp {
+  font-family: "SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.86em;
+  background: var(--code-bg);
+  padding: 0.1em 0.32em;
+  border: 1px solid var(--rule);
+}
+
+pre {
+  background: var(--code-bg);
+  border: 2px solid var(--rule);
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: 1em;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  display: block;
+  overflow-x: auto;
+}
+th,
+td {
+  border: 2px solid var(--rule);
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  background: var(--sand);
+  font-weight: 700;
+}
+tbody tr:nth-child(even) td {
+  background: #fbfaf6;
+}
+
+blockquote {
+  border-left: 4px solid var(--rule);
+  padding: 0.2rem 0 0.2rem 0.9rem;
+  color: var(--slate);
+}
+
+.callout {
+  border: 2px solid var(--ink);
+  padding: 0.9rem 1rem;
+  margin: 1.4rem 0;
+  background: #fbfaf6;
+}
+.callout > :last-child {
+  margin-bottom: 0;
+}
+.callout__label {
+  display: block;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin-bottom: 0.35rem;
+}
+.callout--warn {
+  border-color: var(--blood);
+}
+.callout--warn .callout__label {
+  color: var(--blood);
+}
+.callout--ok {
+  border-color: var(--moss);
+}
+.callout--ok .callout__label {
+  color: var(--moss);
+}
+.callout--task {
+  border-color: var(--sky);
+  background: #f2f6fa;
+}
+.callout--task .callout__label {
+  color: var(--sky);
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  border: 2px solid var(--slate);
+  padding: 0 0.35rem;
+  color: var(--slate);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.tag--fact {
+  border-color: var(--moss);
+  color: var(--moss);
+}
+.tag--inference {
+  border-color: var(--sky);
+  color: var(--sky);
+}
+.tag--hypothesis {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.tag--conflict {
+  border-color: var(--blood);
+  color: var(--blood);
+}
+.tag--pass {
+  border-color: var(--moss);
+  color: var(--moss);
+}
+.tag--fail {
+  border-color: var(--blood);
+  color: var(--blood);
+}
+.tag--unverifiable {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.quiz {
+  counter-reset: q;
+}
+.quiz details {
+  border: 2px solid var(--rule);
+  padding: 0.7rem 0.9rem;
+  margin: 0 0 0.9rem;
+  background: #fbfaf6;
+}
+.quiz details[open] {
+  border-color: var(--ink);
+}
+.quiz summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.quiz summary::marker {
+  color: var(--ember);
+}
+.quiz ol {
+  margin-top: 0.5rem;
+}
+.answer {
+  border-top: 2px solid var(--rule);
+  margin-top: 0.7rem;
+  padding-top: 0.6rem;
+}
+.answer p:first-child {
+  margin-top: 0;
+}
+
+.cards {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: 1fr;
+  margin: 1.2rem 0;
+}
+@media (min-width: 42rem) {
+  .cards--two {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.card {
+  border: 2px solid var(--rule);
+  padding: 0.8rem 0.9rem;
+  background: #fbfaf6;
+}
+.card h4 {
+  margin-top: 0;
+}
+.card p:last-child,
+.card ul:last-child {
+  margin-bottom: 0;
+}
+
+figure {
+  margin: 1.4rem 0;
+}
+figure pre {
+  margin-bottom: 0.4rem;
+}
+figcaption {
+  font-size: 0.85rem;
+  color: var(--ash);
+}
+
+/* 넓은 도식은 본문 폭을 넘어서라도 라벨이 읽히게 한다. */
+figure.wide {
+  width: min(1250px, calc(100vw - 2.5rem));
+  margin-left: calc(50% - min(625px, calc(50vw - 1.25rem)));
+}
+figure.wide img,
+figure.wide svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.next-steps {
+  border-top: 2px solid var(--ink);
+  margin-top: 3rem;
+  padding-top: 1rem;
+  font-size: 0.95rem;
+  color: var(--slate);
+}
+.next-steps h2 {
+  border: 0;
+  font-size: 1.05rem;
+  margin-top: 0;
+}
+
+footer.colophon {
+  max-width: var(--measure);
+  margin: 3rem auto 0;
+  border-top: 2px solid var(--rule);
+  padding-top: 0.8rem;
+  font-size: 0.82rem;
+  color: var(--ash);
+}
+
+@media print {
+  body {
+    background: #fff;
+    font-size: 11pt;
+    padding: 0;
+  }
+  a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: var(--ash);
+  }
+  .quiz details {
+    break-inside: avoid;
+  }
+  .quiz details:not([open]) {
+    display: none;
+  }
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+  table,
+  pre,
+  .callout,
+  .card {
+    break-inside: avoid;
+  }
+  .next-steps {
+    break-before: page;
+  }
+}

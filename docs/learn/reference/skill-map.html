@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>스킬 지도 — 각 스킬은 왜 있고 무엇이 다른가</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <p class="eyebrow">참조 문서 · 분기 서사 스킬 surface</p>
+  <h1>스킬 지도 — 왜 있고, 무엇이 다른가</h1>
+  <p class="lede">스킬 목록이 아니라 <em>경계</em>를 외운다. 각 항목은 "왜 이 스킬이 존재하는가"와 "가장 가까운 이웃과 무엇이 다른가"로만 적었다. 어디에 앉는지는 <a href="skill-pipeline.html">워크플로우 한 장</a>을 본다.</p>
+</header>
+
+<main>
+
+<h2>3초 판정 — 증상에서 스킬로</h2>
+
+<table>
+  <thead><tr><th>증상</th><th>스킬</th><th>그 스킬이 보는 것 / 보지 않는 것</th></tr></thead>
+  <tbody>
+    <tr><td>"이 인물이 왜 이래?"</td><td><code>character-simulator</code></td><td>인물 상태에서 나온 행동 후보 3개 / 플롯에 협조하는 해석</td></tr>
+    <tr><td>"설정이 안 맞는다"</td><td><code>continuity-auditor</code></td><td>시간·장소·소지품·관계·지식 등 11개 영역의 사실 모순 / 재미와 문체</td></tr>
+    <tr><td>"이 장면 없어도 되지 않아?"</td><td><code>structural-critic</code></td><td>삭제·변화 테스트와 수정 방향 A/B / 수정문 자체</td></tr>
+    <tr><td>"뻔하고 설명이 많다"</td><td><code>red-team-reader</code></td><td>독자 반응 후보와 <code>Confidence</code> / 재작성</td></tr>
+    <tr><td>"말투가 다 똑같다"</td><td><code>dialogue-variator</code></td><td>같은 의도의 subtext 변주 / 새 사건·설정</td></tr>
+    <tr><td>"이 장면이 규칙을 지켰나?"</td><td><code>narrative-scene-after-generation</code></td><td>장면 하나의 승인 차단 여부 / 원고 수정</td></tr>
+    <tr><td>"구조가 어떻게 생겼지?"</td><td><code>reverse-outliner</code></td><td>텍스트에 적힌 15필드 구조 / 의도한 구조(요청 시에만)</td></tr>
+    <tr><td>"다음에 뭘 먼저 하지?"</td><td><code>novel-workflow</code></td><td>모드·순서·게이트·위임 / 후보·판정·산문</td></tr>
+  </tbody>
+</table>
+
+<p>여덟 증상이 서로 다른 스킬인 이유는 하나다. <b>같은 원고를 보면서도 서로 다른 것을 판정하고, 서로 다른 것을 금지한다.</b> 그래서 진단을 하나로 합치면 각 스킬이 지키는 금지선이 사라진다.</p>
+
+<h2>한 장 요약 — 층별 역할과 금지</h2>
+
+<table>
+  <thead><tr><th>층</th><th>하는 일</th><th>하지 않는 일</th></tr></thead>
+  <tbody>
+    <tr><td>라우터</td><td>모드·순서·게이트·위임 확정</td><td>후보·진단·판정·산문</td></tr>
+    <tr><td>상류 8개</td><td>후보·설계·시뮬레이션·진단</td><td>점수·등급·출시 판정 / 캐논·원고 수정</td></tr>
+    <tr><td>쓰기 소유자 2개</td><td>승인된 변경을 원장·원고에 반영</td><td>판정·후보 생성</td></tr>
+    <tr><td>그래프·증거 2개</td><td>검수에 먹일 입력(그래프·route·runtime evidence) 생성</td><td>판정·점수·산문 / 그래프 형태 설계</td></tr>
+    <tr><td>검수 3개</td><td>장면·경로·엔딩 세트 판정</td><td>본문 수정 / <code>RUN_DIR</code> 밖 읽기</td></tr>
+    <tr><td>게이트 전문</td><td>G01~G27 중 하나를 독립 리뷰</td><td>담당 밖 채점 / 최종 등급</td></tr>
+    <tr><td>종합 3개</td><td>G28 점수 → G29 판정 → G30 보고서</td><td>점수 창작·메모 수정</td></tr>
+    <tr><td>본문 에이전트</td><td>지정 범위 리라이팅</td><td>지정 밖 편집 / 시점·문체 규칙 임의 변경</td></tr>
+  </tbody>
+</table>
+
+<h2>라우터</h2>
+
+<table>
+  <thead><tr><th>스킬</th><th>왜 필요한가</th><th>무엇이 다른가</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>novel-workflow</code></td>
+      <td>요청이 두 단계 이상을 요구할 때 순서를 즉흥적으로 정하면 게이트가 조용히 빠진다. 특히 한 요청이 두 신호를 동시에 만족할 때(그때는 <b>뒤 단계</b>를 모드로 삼고 앞 단계는 게이트만 확인한다).</td>
+      <td>다른 어떤 스킬도 하지 않는 일을 한다 — 후보·진단·판정·문장을 <b>전부</b> 만들지 않고 순서·게이트·위임만 정한다. 단일 스킬로 끝나는 요청에는 이 스킬을 쓰지 않고 그 스킬을 직접 부른다. G28~G30 체인도 이 라우터의 모드가 아니다(순서가 이미 고정).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>상류 surface — 만들고 진단하되 판정하지 않는다</h2>
+
+<table>
+  <thead><tr><th>스킬</th><th>왜 필요한가</th><th>무엇이 다른가</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>divergent-ideator</code></td>
+      <td>사람은 20개 중에서 고르는 일은 잘하지만 20개를 동시에 떠올리지는 못한다. 탐색 공간을 넓히는 일과 고르는 일을 분리한다.</td>
+      <td><code>scene-architect</code>가 장면 사양을 <b>확정</b>하는 것과 달리 후보만 낸다. <code>dialogue-variator</code>가 대사 하나를 변주하는 것과 달리 사건·선택지 규모를 다룬다. 후보에 <code>[FACT]</code>를 아예 쓸 수 없고, 최종 선택은 사람이 한다.</td>
+    </tr>
+    <tr>
+      <td><code>character-simulator</code></td>
+      <td>인물이 플롯에 협조하는 사고를 막는다. "이야기가 이렇게 흘러야 하므로"는 이 스킬에서 금지된 근거다.</td>
+      <td><code>continuity-auditor</code>가 텍스트와 정본의 <b>모순</b>을 보는 것과 달리, 이 스킬은 아직 쓰지 않은 상황에서 그 인물이 택할 <b>행동 후보 3개</b>를 만든다. 그중 최소 하나는 그 인물에게 불리해야 한다 — 플레이어가 원하는 결과를 기준으로 고르지 않는다.</td>
+    </tr>
+    <tr>
+      <td><code>scene-architect</code></td>
+      <td>산문을 먼저 쓰면 문장은 좋은데 아무것도 변하지 않는 장면이 나온다. 진입·종료 상태와 인과를 먼저 고정한다.</td>
+      <td><code>reverse-outliner</code>가 <b>이미 쓴</b> 원고에서 구조를 뽑는 것(과거)과 달리, 이 스킬은 <b>앞으로 쓸</b> 장면의 사양을 쓴다(미래). <code>structural-critic</code>은 문제만 진단하고 수정문을 쓰지 않는다. turn이 서지 않거나 상태가 변하지 않으면 완성으로 표시하지 않는다.</td>
+    </tr>
+    <tr>
+      <td><code>dialogue-variator</code></td>
+      <td>네 인물의 말투가 같아지고, 한 의도가 한 높이로만 말된다. 같은 의도를 여러 <em>subtext</em>로 다시 말하게 한다.</td>
+      <td><code>divergent-ideator</code>의 <code>branch</code> 모드가 선택지(사건)를 늘리는 것과 달리, 이 스킬은 <b>이미 정해진 표면 의도 하나</b>만 다시 말한다 — 줄거리·사건·설정을 바꾸는 대안은 금지다. 원장의 voice 규칙이 없으면 결과가 <code>[HYPOTHESIS]</code>로 낮아진다(<code>unverifiable-voice</code>).</td>
+    </tr>
+    <tr>
+      <td><code>structural-critic</code></td>
+      <td>삭제 테스트에 걸리는 장면이 쌓이면 후반이 무너진다. 장면 필요성·반복·우연 의존·클라이맥스 준비를 먼저 본다.</td>
+      <td><code>reverse-outliner</code>가 15필드 표를 뽑는 것과 달리 <b>표 없이</b> 문제만 진단하고, 수정문 대신 <b>방향 A/B</b>만 낸다. 취향 차이를 결함으로 단정하지 않고, 등급·점수도 매기지 않는다.</td>
+    </tr>
+    <tr>
+      <td><code>continuity-auditor</code></td>
+      <td>설정 모순은 사람 눈에 띄지 않고, 원고가 나간 뒤 회수하는 비용이 크다. 시간·장소·소지품·신체·관계·세계 규칙·시점·복선 등 11개 영역을 전수로 훑는다.</td>
+      <td>재미·페이싱·문체를 <b>판정하지 않는다</b>(명시적 금지). <code>character-simulator</code>가 동기의 타당성을 보는 것과 달리, 이 스킬은 사실 모순과 <b>지식 경계 위반</b>(인물이 알 수 없는 사실을 근거로 쓴 경우)만 본다. 근거가 한쪽뿐이면 <code>Held checks</code>로 보내고 단정하지 않는다.</td>
+    </tr>
+    <tr>
+      <td><code>red-team-reader</code></td>
+      <td>자기 원고는 자기에게 재미있다. 가혹한 독자를 대신 세운다 — 원고를 처음 읽는 사람이 어디서 실망하고 이탈하는지.</td>
+      <td><code>structural-critic</code>이 원리(인과·필요성)로 진단하는 것과 달리, 이 스킬은 <b>반응 후보만</b> 낸다. 칭찬·총평·재작성을 금지하고 출력에 <code>Do NOT rewrite</code>를 박는다. <code>Confidence</code>로 취향과 결함을 갈라 결함 단정을 막는다.</td>
+    </tr>
+    <tr>
+      <td><code>reverse-outliner</code></td>
+      <td>의도한 구조와 텍스트에 적힌 구조는 다르다. 후자는 표로 뽑아야 보인다.</td>
+      <td>원문에 없는 값은 <code>미기재</code>로 남기고 추측으로 채우지 않는다. 작가 의도를 대조하는 절은 <b>요청받았을 때만</b> 만든다. <code>scene-architect</code>의 반대 방향(과거 ← 미래)이고, 새 사건을 제안하지 않는다.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>쓰기 소유자 — 정본을 건드리는 유일한 지점</h2>
+
+<table>
+  <thead><tr><th>스킬</th><th>왜 필요한가</th><th>무엇이 다른가</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>remains-ledger-maintenance</code></td>
+      <td>캐논을 쓰는 주체가 둘이면 정본이 사라진다. 그래서 원장을 고치는 스킬은 하나뿐이고, 나머지 15개는 전부 읽기 전용이다.</td>
+      <td>다른 스킬은 파일을 쓰지 않거나 <code>RUN_DIR</code>에만 쓴다. 이 스킬만 <code>prototype/remains.json</code>을 제자리에서 고치고 <code>pnpm verify &amp;&amp; pnpm build</code>가 경고 없이 통과하는지 확인한 뒤 <code>완료|미완료|blocked</code>로 보고한다. <code>delete</code>는 고아 참조까지 제거한다. <code>schema</code> 모드(2026-09-13 추가)가 새 도메인을 들이는 경로를 연다 — 기존 구조·명명·공개/비밀 분리를 유지한 채 구조만 만들고, 값은 <code>add</code>가 채운다.</td>
+    </tr>
+    <tr>
+      <td><code>narrative-rewriter</code> (에이전트)</td>
+      <td>문체·시점 규칙을 매번 프롬프트로 설명하면 규칙이 흔들린다. 규칙을 에이전트 파일에 자기완결적으로 박아 둔다.</td>
+      <td>편집 범위가 <b>호출자가 지정한 원고 범위</b>뿐이고 도구도 read·grep·glob·edit·write로 제한된다. 재작성 단위도 다르다 — 논리·시점·보이스가 어긋나면 블록 전체를 다시 쓰고, 오탈자 같은 국소 결함만 문장 단위로 고친다. 판별 불가 블록은 고치지 않고 질의로 돌려준다.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>그래프·증거 — 검수에 먹일 입력을 만든다 (2026-09-13 착륙)</h2>
+
+<p>검수 surface는 <code>route manifest</code>·<code>anchor</code>·<code>compiled-content SHA-256</code>·<code>runtime evidence</code>를 입력으로 요구한다. 산문은 그 요구를 채우지 못하고, 그것을 만드는 주체가 없어서 경로·엔딩 검사가 시작부터 <code>UNVERIFIABLE</code>이었다. 아래 둘이 그 칸을 채운다.</p>
+
+<table>
+  <thead><tr><th>스킬</th><th>왜 필요한가</th><th>무엇이 다른가</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>story-graph-compiler</code></td>
+      <td>사람이 읽는 산문과 기계가 실행하는 그래프 사이에 번역자가 없었다. 검수에 위임하려면 먼저 실행 가능한 형식이 있어야 한다.</td>
+      <td><code>reverse-outliner</code>가 사람이 읽는 15필드 표를 뽑는 것과 달리, 같은 입력에서 <b>같은 바이트가 나오는</b> JSON을 낸다(<code>diff</code>가 비어야 한다). 그래프의 형태를 정하지 않고(그건 <code>story-graph-architect</code>) 원고·카드에 있는 것만 옮기며, 없는 값은 <code>미기재</code>·<code>open-edge</code>·<code>[HYPOTHESIS]</code>로 남긴다.</td>
+    </tr>
+    <tr>
+      <td><code>route-replay-runner</code></td>
+      <td>"수동 guard 읽기는 replay 증거가 아니다"가 검수 계약이다. 눈으로 훑은 추정을 계산된 기록으로 바꾼다.</td>
+      <td><code>structural-critic</code>·G05가 인과를 <em>판정</em>하는 것과 달리 "도달했다/안 했다"만 기록하고 품질을 판정하지 않는다. 그리고 <code>no-terminal-defined</code>(아직 안 씀)와 <code>unreachable-terminal</code>(도달 불가)을 구분한다 — 미완성을 결함으로 보고하면 도구를 못 믿는다.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>검수 lifecycle — 만든 사람이 채점하지 않는다</h2>
+
+<table>
+  <thead><tr><th>스킬</th><th>왜 필요한가</th><th>무엇이 다른가</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>narrative-scene-after-generation</code></td>
+      <td>장면 하나가 규칙을 어긴 채 다음 장면으로 넘어가면 뒤에서 되돌리는 비용이 커진다. 넘어가기 전에 잠근다.</td>
+      <td><code>continuity-auditor</code>보다 넓고 <code>structural-critic</code>보다 좁다 — 한 장면 안에서 1인칭 정보 경계, 선택지 4필드, 후속 장면 존재, 클라이맥스 조기 소비를 함께 보고 <b>장면 승인 차단 여부</b>를 낸다. 후속 장면이 아직 없으면 발명하지 않고 <code>UNVERIFIABLE</code>로 둔다.</td>
+    </tr>
+    <tr>
+      <td><code>narrative-ending-route-review</code></td>
+      <td>엔딩은 결말 문장이 아니라 <b>경로의 종결</b>이다. 도달 가능성은 읽어서가 아니라 실행 증거로만 알 수 있다.</td>
+      <td><code>narrative-multi-ending-integration</code>이 엔딩 <em>사이</em>를 보는 것과 달리, 이 스킬은 한 경로 <em>안</em>을 본다. 6축 종결(서사·인물·주제·감정·선택 결과·기억 이미지)과 결과 5범주를 여기서 처음 판정한다. 수동 guard 읽기는 증거로 인정하지 않는다.</td>
+    </tr>
+    <tr>
+      <td><code>narrative-multi-ending-integration</code></td>
+      <td>각 엔딩이 좋아도 세트가 서로를 무효화할 수 있다. 배타성·한 회차 누적·지배 경로는 개별 검토로는 안 보인다.</td>
+      <td>ID·manifest·앵커·본문을 <b>교차 대조</b>하고, 제목만 다른 변형 엔딩을 가려내고, 한 경로가 모든 배타 콘텐츠를 먹으면 그 엔딩을 재플레이 동기에서 <b>제외</b>한다. 균형을 자동 초엔딩이나 인공 잠금으로 맞추는 것은 금지다.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>게이트 전문 — 판정을 격리한다</h2>
+
+<table>
+  <thead><tr><th>에이전트</th><th>왜 필요한가</th><th>무엇이 다른가</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>narrative-gate-specialist</code></td>
+      <td>게이트를 한 번에 다 채점하면 판정이 서로 번지고 리뷰어 취향이 섞인다. 게이트 하나를 독립된 시야로 본다.</td>
+      <td>담당 게이트만 채점하고 <b>최종 등급·종합 점수를 내지 않는다</b>. 다른 게이트는 직접 의존이 필요할 때만 언급하고 소유 게이트를 지목한다. <code>GATE</code>가 없거나 G01~G27 밖이면 <code>input-blocked</code>이고 파일을 쓰지 않는다. 점수를 목표 등급에 맞춰 올리거나 내리는 것도 금지다.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>종합 — 흔들리지 않는 하나로 고정한다</h2>
+
+<table>
+  <thead><tr><th>스킬</th><th>왜 필요한가</th><th>무엇이 다른가</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>narrative-score-synthesis</code> (G28)</td>
+      <td>메모 27개를 점수 집합으로 고정하지 않으면 G29·G30이 매번 다른 키를 만들어 버전 비교가 불가능해진다.</td>
+      <td>등급을 매기지 않는다 — 유효성(<code>formalExportReady</code>)과 다음 단계가 쓸 점수만 남긴다. 충돌 점수는 <b>평균내지 않는다</b>: 평균은 근거를 지운다. 같은 근본 원인의 finding은 병합하고 가장 높은 severity를 보존한다.</td>
+    </tr>
+    <tr>
+      <td><code>narrative-final-verdict</code> (G29)</td>
+      <td>등급과 출시 준비도는 근거 위에서 한 번 확정돼야 하고, 상한 규칙(핵심 게이트 50 미만 → C 이하, Critical/Major 잔존 → <code>Ready</code> 금지)을 사람이 매번 재해석하면 판정이 흔들린다.</td>
+      <td>새 점수를 만들지 않고 G28 근거 위에서만 verdict 5개를 닫힌 enum으로 확정한다. 그리고 <b>서사 출시 준비도와 제품·투자 승인을 구분</b>한다 — 이 스킬은 후자를 결정하지 않는다.</td>
+    </tr>
+    <tr>
+      <td><code>narrative-report-assembly</code> (G30)</td>
+      <td>사람이 읽는 문서 하나가 필요하고, 섹션 순서·키 개수·게이트 커버리지가 흔들리면 회차 간 비교가 불가능하다.</td>
+      <td>메모를 <b>고치지 않는다</b> — 고쳐야만 보고서를 만들 수 있으면 <code>export-blocked</code>로 멈춘다. finding을 근본 원인 단위로 중복 제거해 하나의 수정 목록으로 만들고, 13개 섹션 순서와 공식 키 18개를 계약으로 고정한다.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>권한 — 그래서 누가 무엇을 쓸 수 있는가</h2>
+
+<table>
+  <thead><tr><th>대상</th><th>쓸 수 있는 것</th><th>읽기만 하는 것</th></tr></thead>
+  <tbody>
+    <tr><td><code>prototype/remains.json</code></td><td><code>remains-ledger-maintenance</code></td><td>나머지 전부</td></tr>
+    <tr><td><code>prototype/stories/example.md</code></td><td><code>narrative-rewriter</code>(지정 범위), 사람</td><td>나머지 전부</td></tr>
+    <tr><td><code>docs/ideation/</code></td><td><code>divergent-ideator</code>(신규 슬러그만, 덮어쓰기 금지)</td><td>나머지 전부</td></tr>
+    <tr><td><code>.outline/&lt;RUN_ID&gt;/</code></td><td>해당 실행의 스킬</td><td>검수 스킬, 라우터</td></tr>
+    <tr><td><code>.outline/sdd/reviews/specialists/</code></td><td><code>narrative-gate-specialist</code></td><td>—</td></tr>
+    <tr><td>소스(<code>src/</code>, <code>tools/</code>, 설정)</td><td>사람</td><td>서사 스킬 전부</td></tr>
+  </tbody>
+</table>
+
+<h2>참조 파일 — 다음 조건이 있을 때만 열린다</h2>
+
+<table>
+  <thead><tr><th>스킬</th><th>참조</th><th>여는 시점</th></tr></thead>
+  <tbody>
+    <tr><td><code>divergent-ideator</code></td><td><code>diversity-axes.md</code></td><td>6축 정의·구간 전략·중복 판정·요약 선정 기준</td></tr>
+    <tr><td><code>character-simulator</code></td><td><code>character-model.md</code></td><td>6축 도출·지식 경계 표기·충돌 판정</td></tr>
+    <tr><td><code>scene-architect</code></td><td><code>beat-grammar.md</code></td><td>beat·turn·선택지 4필드·<code>continuity_risk</code></td></tr>
+    <tr><td><code>continuity-auditor</code></td><td><code>continuity-domains.md</code></td><td>11개 영역 질문·지식 3층 스키마·심각도 사다리</td></tr>
+    <tr><td><code>structural-critic</code></td><td><code>structural-tests.md</code></td><td>12개 검사 항목·삭제·변화 테스트·A/B 제약</td></tr>
+    <tr><td><code>dialogue-variator</code></td><td><code>variation-axes.md</code></td><td>변주 축 10개·subtext 사다리·금지 패턴</td></tr>
+    <tr><td><code>red-team-reader</code></td><td><code>reader-reactions.md</code></td><td>반응별 신호·<code>Confidence</code>·정렬</td></tr>
+    <tr><td><code>reverse-outliner</code></td><td><code>extraction-schema.md</code></td><td>15필드 정의·판정 기준·정보 경계 표기</td></tr>
+    <tr><td><code>novel-workflow</code></td><td><code>workflow-modes.md</code></td><td>모드별 단계·게이트·위임 확정</td></tr>
+  </tbody>
+</table>
+
+<h2>실패 어휘 — 이 여섯 개를 알면 산출물을 읽는다</h2>
+
+<table>
+  <thead><tr><th>어휘</th><th>뜻</th></tr></thead>
+  <tbody>
+    <tr><td><code>input-blocked</code></td><td>필수 입력 누락·<code>RUN_ID</code> 충돌·경로 이탈·해시 불일치. 파일을 쓰지 않고 멈춘다.</td></tr>
+    <tr><td><code>path-escape</code></td><td>정규화 후 출력 경로가 <code>RUN_DIR</code> 밖. 쓰기를 거부한다.</td></tr>
+    <tr><td><code>stale-fingerprint</code></td><td>이전 산출물 지문이 현재 정본과 다름. 위임하지 않고 그 단계부터 다시 계획한다.</td></tr>
+    <tr><td><code>knowledge-leak</code></td><td>인물이 모르는 사실을 그 인물의 판단 근거로 씀. 후보를 폐기한다.</td></tr>
+    <tr><td><code>fake-choice</code></td><td>두 선택지의 즉시 결과·다음 상태가 같음. 장식이 된 선택.</td></tr>
+    <tr><td><code>unresolved-critical</code></td><td>해결되지 않은 Critical/Major가 남음 → <code>FAIL</code>이고 <code>Ready</code>가 금지된다.</td></tr>
+  </tbody>
+</table>
+
+<div class="next-steps">
+  <h2>같이 보기</h2>
+  <ul>
+    <li><a href="skill-pipeline.html">워크플로우 한 장</a> — 이 스킬들이 어디에 앉는가</li>
+    <li><a href="gate-index.html">게이트 색인</a> — 검수·종합이 실제로 묻는 질문</li>
+    <li><a href="candidate-skills.html">후보 스킬 제안서</a> — 이 지도에서 비어 있는 자리</li>
+    <li><a href="../lessons/0001-run-contract.html">레슨 0001</a> · <a href="../lessons/0002-request-routing.html">0002</a> · <a href="../lessons/0003-scene-card-design.html">0003</a></li>
+  </ul>
+</div>
+
+</main>
+
+<footer class="colophon">
+  <p>스킬 지도 v2 · 2026-09-13 기준 · 출처: <code>.omp/skills/*/SKILL.md</code>, <code>.omp/agents/*.md</code>, <code>.omp/NARRATIVE_REVIEW.md</code></p>
+</footer>
+
+</body>
+</html>

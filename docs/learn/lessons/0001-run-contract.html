@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>레슨 0001 — 스킬을 격리해서 실행한다</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <p class="eyebrow">분기 서사 스킬 surface · 레슨 0001</p>
+  <h1>스킬을 격리해서 실행한다</h1>
+  <p class="lede">모든 스킬이 공유하는 계약 하나를 이해한다. 이 계약을 모르면 산출물을 읽을 수 없고, 계약을 어기면 스킬은 <code>input-blocked</code>로 멈춘다.</p>
+</header>
+
+<main>
+
+<h2>이 레슨이 끝나면</h2>
+<ul>
+  <li>스킬이 왜 <code>.outline/&lt;RUN_ID&gt;/</code> 밖에 쓰지 않는지, 그 규칙이 무엇을 막는지 설명한다.</li>
+  <li><code>RUN_DIR/inputs/manifest.json</code>의 다섯 필드를 읽고 산출물의 지문을 대조한다.</li>
+  <li>네 가지 사실 범주와 세 층의 지식 주체를 구분해 원장 근거에 붙인다.</li>
+  <li>죽은 인용(저장소에 없는 경로)을 근거로 쓰지 않고 드리프트로 기록한다.</li>
+</ul>
+
+<p>선행 개념은 없다. 참조 문서는 <a href="../reference/skill-map.html">스킬 지도</a> 하나만 있으면 된다.</p>
+
+<h2>1. 문제: 스킬은 서로를 믿을 수 없다</h2>
+
+<p>이 레포의 서사 스킬은 16개다. 각각 독립 실행되어야 하고, 동시에 같은 정본(<code>prototype/remains.json</code>, <code>prototype/stories/example.md</code>)을 읽는다. 만약 스킬이 정본을 직접 고칠 수 있다면 이런 사고가 난다.</p>
+
+<ul>
+  <li><code>divergent-ideator</code>가 후보를 뽑는 동안 <code>continuity-auditor</code>가 원장을 고친다. 감사 결과가 이미 사라진 설정을 위반으로 지목한다.</li>
+  <li>두 스킬이 같은 장면을 다르게 읽고 각자 "고쳤다"고 보고한다. 어느 쪽이 정본인지 판정할 근거가 없다.</li>
+</ul>
+
+<p>그래서 계약은 두 방향으로 막는다. <strong>읽기는 기록하고, 쓰기는 격리한다.</strong></p>
+
+<div class="callout">
+  <span class="callout__label">계약 원문</span>
+  <p>"프로젝트 정본 … 과 확정이 아닌 발산 제안(<code>docs/ideation/</code>)은 읽기 전용 입력이다. 원장·원고·발산 문서를 수정하지 않는다. 승인된 변경은 <code>remains-ledger-maintenance</code>가 수행한다."<br>
+  — <a href="../../../.omp/skills/_baseline/common-contract.md"><code>.omp/skills/_baseline/common-contract.md</code></a></p>
+</div>
+
+<p>캐논을 쓰는 스킬은 정확히 하나다. 계약 가족 11개(상류 9 + 그래프·증거 2)와 검수·종합 스킬은 전부 진단·후보·계획까지만 낸다. 뒤에서 <a href="0002-request-routing.html">레슨 0002</a>에서 이 경계를 다시 쓴다.</p>
+
+<h2>2. 쓰기 격리: RUN_DIR</h2>
+
+<table>
+  <thead><tr><th>규칙</th><th>내용</th><th>어길 때</th></tr></thead>
+  <tbody>
+    <tr><td>쓰기 위치</td><td>산출물은 <code>.outline/&lt;RUN_ID&gt;/</code> 아래에만 쓴다. 호출자에게 <code>RUN_DIR</code> 경로를 돌려준다.</td><td><code>path-escape</code></td></tr>
+    <tr><td><code>RUN_ID</code> 문자</td><td><code>[A-Za-z0-9_-]+</code>만 쓴다.</td><td>거부</td></tr>
+    <tr><td><code>RUN_ID</code> 충돌</td><td>이미 존재하면 <b>덮어쓰지 않고</b> 멈춘다.</td><td><code>input-blocked</code></td></tr>
+    <tr><td>입력 기록</td><td>읽은 정본을 <code>RUN_DIR/inputs/</code>에 스냅샷으로 복사하고 manifest에 적는다.</td><td>판정 불가</td></tr>
+  </tbody>
+</table>
+
+<p><code>RUN_ID</code> 충돌을 덮어쓰기로 처리하지 않는 이유는 재현성이다. 같은 <code>RUN_ID</code>는 같은 입력을 뜻해야 한다. 이전 판정을 지우고 새로 쓰면 "이 판정이 어느 정본을 봤는가"를 영원히 알 수 없다.</p>
+
+<h2>3. 지문: manifest가 하는 일</h2>
+
+<p>manifest 항목은 다섯 필드를 가진다. <code>runId</code>, <code>role</code>, <code>relativePath</code>, <code>sha256</code>, 선택적 <code>sourceVersion</code>.</p>
+
+<pre><code>{
+  "runId": "teach-scene-001",
+  "role": "canon-snapshot",
+  "relativePath": "inputs/remains.json",
+  "sha256": "…",
+  "sourceVersion": "&lt;Reviewed commit&gt;"
+}</code></pre>
+
+<ul>
+  <li><code>relativePath</code>는 정규화한 뒤 <code>RUN_DIR</code> 하위여야 한다. 절대경로, <code>..</code>, 심볼릭 링크, <code>RUN_DIR</code> 이탈은 거부한다.</li>
+  <li>스냅샷의 실제 해시가 manifest의 <code>sha256</code>과 일치해야 한다. 다르면 그 스킬은 <code>hash-mismatch</code>로 멈춘다.</li>
+</ul>
+
+<p>이 두 규칙이 있는 이유는 하나다. 산출물을 나중에 읽을 때 <b>"이 판정이 본 텍스트"</b>를 복원할 수 있어야 한다. 검수 스킬이 <code>Reviewed commit</code>과 <code>Reviewed artifact SHA-256</code>을 요구하는 것도 같은 이유다. 지문이 현재 정본과 다르면 <code>novel-workflow</code>는 위임을 거부하고 <code>stale-fingerprint</code>로 처리한다.</p>
+
+<div class="callout callout--warn">
+  <span class="callout__label">지금 이 레포의 상태</span>
+  <p>검수 스킬들이 요구하는 <code>Reviewed compiled-content SHA-256</code>은 2026-09-13부터 <code>story-graph-compiler</code>가 내는 그래프 지문이 그 역할을 한다. <b>엔진이 굴리는 runtime evidence는 아직 없다</b> — 지금 있는 증거는 그래프 실행 증거다. 남은 공백은 <a href="../RESOURCES.md">RESOURCES.md의 Gaps</a>에 있다.</p>
+</div>
+
+<h2>4. 사실 범주: 무엇을 아는지 정직하게 표시한다</h2>
+
+<table>
+  <thead><tr><th>범주</th><th>뜻</th><th>예 (이 프로토타입)</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag tag--fact">FACT</span></td><td>원장·원고에서 확인</td><td>"루는 게임 시작 시 사람 모습으로 회사에 있다"</td></tr>
+    <tr><td><span class="tag tag--inference">INFERENCE</span></td><td>확인된 사실에서 추론</td><td>"루는 강두식이 자기와 싸운 당사자임을 모른다" — 원장의 <code>knowledge</code> 항목에서 추론</td></tr>
+    <tr><td><span class="tag tag--hypothesis">HYPOTHESIS</span></td><td>새로 제안. <b>승격 금지</b></td><td>"시퍼는 폐허에서 발견될 때 협회 등급이 붙지 않았다"</td></tr>
+    <tr><td><span class="tag tag--conflict">CONFLICT</span></td><td>기존 설정과 모순</td><td>"강두식이 루시퍼 전투 참전을 초반에 직접 말한다" — 원장은 퇴역 인과만 확정</td></tr>
+  </tbody>
+</table>
+
+<p>가장 자주 어기는 규칙은 <code>[HYPOTHESIS]</code>를 <code>[FACT]</code>로 자동 승격하는 것이다. 후보·해석·새 설정은 사람이 승인하고 <code>remains-ledger-maintenance</code>가 원장에 반영하기 전까지 후보다. 그래서 <code>divergent-ideator</code>는 후보에 <code>[FACT]</code>를 아예 쓰지 못하게 막혀 있다.</p>
+
+<h2>5. 지식 3층: 작가 · 독자 · 인물</h2>
+
+<p>같은 사실이 세 주체에게 다르게 알려진다. 이 프로토타입은 1인칭이므로 <b>인물 지식</b>이 가장 엄격하다.</p>
+
+<table>
+  <thead><tr><th>비공개 필드</th><th>위치</th><th>공개 시점</th></tr></thead>
+  <tbody>
+    <tr><td>루의 <code>hiddenIdentity</code> — 도래한 괴수의 일부</td><td><code>remains.json</code> → <code>settings.characters.ru</code></td><td>미정 (후반 정보층)</td></tr>
+    <tr><td>강두식–루시퍼 분리 인과</td><td><code>settings.characters.dusik.secretCausality</code></td><td>미정</td></tr>
+    <tr><td>최 반장의 <code>hiddenActivity</code> — 별도 감시 보고서</td><td><code>settings.characters.banjang</code></td><td>미정 (초반 공개 금지)</td></tr>
+  </tbody>
+</table>
+
+<p>스킬은 이 세 사실을 <code>information.reveal</code>에 넣지 못한다. 인물이 알 수 없는 사실을 그 인물의 판단 근거로 쓰면 그 후보를 폐기하고(<code>knowledge-leak</code>), 위반이 남으면 판정은 <span class="tag tag--fail">FAIL</span>이 된다. 검수 스킬은 조기 노출을 <code>EARLY_DISCLOSURE</code> 유형으로 따로 표시한다.</p>
+
+<h2>6. 판정 어휘는 닫혀 있다</h2>
+
+<table>
+  <thead><tr><th>축</th><th>값</th><th>규칙</th></tr></thead>
+  <tbody>
+    <tr><td>판정 <code>Status</code></td><td><code>PASS</code> · <code>FAIL</code> · <code>UNVERIFIABLE</code></td><td>해결되지 않은 Critical/Major가 있으면 <code>FAIL</code>. 핵심 근거가 없으면 <code>UNVERIFIABLE</code>.</td></tr>
+    <tr><td>심각도 <code>severity</code></td><td><code>Critical</code> · <code>Major</code> · <code>Minor</code></td><td><code>Minor</code>는 <code>PASS</code>와 공존할 수 있고 <code>Required revisions</code>에 남는다.</td></tr>
+    <tr><td>점수 <code>Score</code></td><td>정수 0–100 또는 <code>null</code></td><td><code>null</code>은 "근거 없음"이지 "0점"이 아니다.</td></tr>
+  </tbody>
+</table>
+
+<p><code>UNVERIFIABLE</code>은 도망칠 곳이 아니다. 근거가 있는 실패를 숨기려고 쓰면 안 되고, 담당 범위 밖을 벌하려고 <code>FAIL</code>을 쓰면 안 된다. 게이트 전문 에이전트는 이 둘을 자기 boundary 규칙으로 명시한다.</p>
+
+<h2>7. 사람 게이트: 침묵은 승인이 아니다</h2>
+
+<p>10개 지점에서 사람 승인 없이 다음 단계로 넘어가지 않는다. Idea Selection, Story Premise Approval, Major Character Motivation, Major Plot Turn, Ending, Theme, Major Canon Change, Structural Rewrite, Final Voice, Final Manuscript.</p>
+
+<p>승인 판정 기준은 <b>사람의 명시적 선택 문장</b>이다. 침묵, 추정, 이전 산출물의 존재는 승인으로 보지 않는다. 이 코스에서는 그 사람이 곧 당신이다.</p>
+
+<h2>8. 왜 계약이 복사본인가</h2>
+
+<p>계약은 공유 파일을 가리키는 포인터가 아니라, 스킬마다 <b>복사</b>되어 있다. 스킬 하나가 단독 실행되어야 하기 때문이다. 복사본은 조용히 어긋나므로, 레포는 테스트로 막는다.</p>
+
+<pre><code>// tools/skills/contract-drift.test.ts
+test("every craft skill copies the baseline contract byte for byte", …)</code></pre>
+
+<p>계약을 고치는 순서는 정해져 있다: 기준 파일을 고친다 → <code>pnpm test</code>를 돌려 실패를 본다 → 실패한 스킬 파일에 반영한다 → 다시 통과시킨다. 이 테스트는 <code>pnpm verify</code>에 포함되므로 계약 드리프트가 커밋 게이트를 통과할 수 없다.</p>
+
+<hr>
+
+<h2>연습 — 인출</h2>
+
+<p>답을 보기 전에 먼저 소리 내어 답한다. 틀려도 좋다. 인출 자체가 저장 강도를 만든다.</p>
+
+<div class="quiz">
+
+<details>
+<summary>1. 같은 <code>RUN_ID</code>로 두 번째 실행 요청이 왔다. 스킬이 옳게 하는 일은?</summary>
+<ol type="a">
+  <li>내용을 덮어쓰고 새 판정을 낸다</li>
+  <li>파일을 쓰지 않고 <code>input-blocked</code>로 멈춘다</li>
+  <li>기존 산출물을 읽고 이어서 갱신한다</li>
+  <li>새 <code>RUN_ID</code>를 스스로 만들어 재시도한다</li>
+</ol>
+<div class="answer">
+<p><strong>b.</strong> 계약은 "이미 존재하는 <code>RUN_ID</code>는 덮어쓰지 않고 <code>input-blocked</code>로 처리한다"고 못박는다. 대체 경로를 고르지 않는 것도 규칙이다(<code>unwritable-output</code>, <code>path-escape</code> 처리와 같은 태도). a는 재현성을 지우고, d는 판정의 주소를 학습자 모르게 바꾼다.</p>
+</div>
+</details>
+
+<details>
+<summary>2. 원장에 근거가 없는 인물 해석을 새로 만들었다. 올바른 처리는?</summary>
+<ol type="a">
+  <li><code>[FACT]</code>로 올리고 다음 세션에서 재검토한다</li>
+  <li><code>[INFERENCE]</code>로 올리고 원장 근거를 병기한다</li>
+  <li><code>[HYPOTHESIS]</code>로 남기고 승격하지 않는다</li>
+  <li><code>[CONFLICT]</code>로 표시하고 원장 수정을 요청한다</li>
+</ol>
+<div class="answer">
+<p><strong>c.</strong> 근거 없는 항목은 <code>[HYPOTHESIS]</code>로만 쓴다. 승격은 사람 승인 + <code>remains-ledger-maintenance</code>의 몫이다. b는 근거가 없는데 추론처럼 보이게 만들고, d는 모순이 아닌 것을 모순으로 만들어 게이트 판정을 오염시킨다.</p>
+</div>
+</details>
+
+<details>
+<summary>3. 원고에서 1인칭 화자가 아직 모르는 사실을 판단 근거로 썼다. 이 발견의 유형은?</summary>
+<ol type="a">
+  <li><code>EARLY_DISCLOSURE</code> 유형의 위반으로 기록한다</li>
+  <li>서술자 제한으로 분류해 오탐으로 제거한다</li>
+  <li><code>Held checks</code>로 보내 다음 장면에서 확인한다</li>
+  <li><code>[INFERENCE]</code>로 표시하고 그대로 진행한다</li>
+</ol>
+<div class="answer">
+<p><strong>a.</strong> <code>continuity-auditor</code>는 비공개 정보의 조기 노출을 <code>EARLY_DISCLOSURE</code>로 따로 표시한다. b는 의도된 서술자 제한과 지식 위반을 혼동한 것이고, c는 위반 장면이 이미 작성된 경우라 보류 대상이 아니다(d는 판정 자체를 회피한다).</p>
+</div>
+</details>
+
+<details>
+<summary>4. <code>docs/ideation/world-situations-20.md</code>는 <code>prototype/storyline.md</code>를 근거로 인용하는데, 그 파일은 저장소에 없다. 옳은 처리는?</summary>
+<ol type="a">
+  <li>인용을 현재 파일명으로 바꿔 문서를 갱신한다</li>
+  <li>경로가 없으므로 근거로 쓰지 않고 드리프트로 기록한다</li>
+  <li><code>remains-ledger-maintenance</code>로 원장에 경로를 추가한다</li>
+  <li><code>[CONFLICT]</code>로 올려 게이트 메모에 포함한다</li>
+</ol>
+<div class="answer">
+<p><strong>b.</strong> <code>docs/ideation/</code>은 읽기 전용이고, 근거 경로는 저장소에 실제로 존재해야 한다. <code>divergent-ideator</code>는 존재하지 않는 근거를 인용하면 <code>input-blocked</code>다. a는 남의 과거 산출물을 고치는 행위이고, c는 없는 파일을 원장에 등록하는 행위이며, d는 설정 모순이 아닌 것을 모순으로 만든다.</p>
+</div>
+</details>
+
+</div>
+
+<div class="callout callout--task">
+  <span class="callout__label">다음 레슨 전에</span>
+  <p>네 답을 그대로 채팅에 남겨라. <a href="0002-request-routing.html">레슨 0002</a>는 이 네 가지를 전제로 시작하고, 첫 부분에서 1·3번을 다시 인출하게 한다. 4번은 후보 스킬 제안서의 실제 근거로 쓰인다.</p>
+</div>
+
+<div class="callout">
+  <span class="callout__label">1차 출처 — 20분</span>
+  <p><a href="../../../.omp/skills/_baseline/common-contract.md"><code>.omp/skills/_baseline/common-contract.md</code></a>를 처음부터 끝까지 읽어라. 38줄이다. 읽으면서 이 레슨의 표 4개를 그 파일의 불릿과 하나씩 대조하라. 대조가 안 되는 항목이 있으면 그게 질문이다.</p>
+</div>
+
+<div class="next-steps">
+  <h2>관련 문서</h2>
+  <ul>
+    <li><a href="../MISSION.md">MISSION.md</a> — 이 코스가 무엇을 향하는가</li>
+    <li><a href="../reference/skill-pipeline.html">워크플로우 한 장</a> — 이 계약을 쓰는 스킬들이 파이프라인 어디에 앉는가</li>
+    <li><a href="../reference/skill-map.html">스킬 지도</a> — 스킬별 "왜 필요한가 / 무엇이 다른가"</li>
+    <li><a href="../reference/gate-index.html">게이트 색인</a> — G01~G27이 실제로 묻는 것</li>
+    <li><a href="../reference/candidate-skills.html">후보 스킬 제안서</a> — 파이프라인의 구멍과 메울 스킬</li>
+  </ul>
+  <p>설명이 맞지 않거나 레포와 어긋나는 부분을 찾으면 그 자리에서 질문하라. 코스는 질문에 맞춰 순서와 난이도를 바꾼다.</p>
+</div>
+
+</main>
+
+<footer class="colophon">
+  <p>레슨 0001 · 분기 서사 스킬 surface 코스 · 정본 출처: <code>.omp/skills/_baseline/common-contract.md</code>, <code>tools/skills/contract-drift.test.ts</code>, <code>prototype/remains.json</code></p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>분기 패턴과 수렴 비용 — 외부 이론 요약</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <p class="eyebrow">참조 문서 · 분기 서사 스킬 surface</p>
+  <h1>분기 패턴과 수렴 비용</h1>
+  <p class="lede">구조를 감으로 고르지 않기 위한 최소한의 외부 이론. 모든 내용은 아래 1차 자료에서 왔고, 이 프로토타입에의 적용은 <span class="tag tag--hypothesis">HYPOTHESIS</span>로 표시했다.</p>
+</header>
+
+<main>
+
+<h2>1. 먼저 계산한다 — 조합 폭발</h2>
+
+<p>Dan Fabulich(Choice of Games)는 게임북의 분량 문제를 이렇게 계산한다. 페이지마다 2지선다라면 <b>7페이지</b> 분량의 이야기를 쓰려면 <b>128페이지</b>가 필요하고, <b>8페이지</b>면 <b>256페이지</b>, <b>20페이지</b>짜리 단편 하나에는 <b>100만 페이지가 넘는다</b>. 그래서 전통적 게임북의 평균 이야기 길이는 6페이지에 머물렀다.</p>
+
+<p>해법 두 가지가 함께 쓰인다.</p>
+
+<ul>
+  <li><b>공격적 합류(aggressive merging)</b> — 분기를 빠르게 하나로 모은다.</li>
+  <li><b>지연 분기(delayed branching)</b> — 초반 선택이 즉시 갈라지지 않고 <em>나중 결정의 결과</em>를 바꾼다.</li>
+</ul>
+
+<p>합류만 쓰면 부작용이 즉시 온다. Fabulich의 표현으로 "1·2·3장에서 무엇을 골랐든 이야기 나머지가 바뀌지 않는다면 합류가 인터랙티브 소설의 상호작용성 자체를 앗아간다." 지연 분기는 그 대가를 수치 상태(stat)로 되돌려 받는다 — 초반 선택이 stat을 올리고, 후반 선택이 그 stat을 검사한다.</p>
+
+<div class="callout">
+  <span class="callout__label">이 레포에 이미 있는 같은 발상</span>
+  <p><code>AGENTS.md</code>는 <code>모험가 이야기</code>의 이야기 사슬을 <code>&lt;name&gt;.step&lt;k&gt;</code> 플래그로 게이트하고, <code>resolve</code>되는 모든 경로(체크 실패·도주 포함)에서 step 플래그를 세우도록 요구한다. 플래그 하나가 빠지면 사슬이 막다른 곳에서 죽는다. G05가 보는 "여러 플래그의 AND"와 "실제 교차 사건"의 구분이 정확히 이 지점이다.</p>
+</div>
+
+<h2>2. 구조 패턴 — Ashwell의 분류</h2>
+
+<p>Sam Kabo Ashwell의 분류는 분기 구조의 사실상 표준 어휘다. 패턴은 배타적 범주가 아니고, 한 작품이 여러 패턴을 섞는다.</p>
+
+<table>
+  <thead><tr><th>패턴</th><th>형태</th><th>작성 비용</th><th>플레이 감각</th></tr></thead>
+  <tbody>
+    <tr><td><b>Time Cave</b></td><td>강하게 갈라지고 거의 합류하지 않는다. 상태 추적이 거의 필요 없다. 결말이 아주 많다.</td><td>폭발적. 그래서 회차가 짧아진다.</td><td>가능성이 열려 있지만 붙잡을 수 없다. 재플레이를 강하게 유도하고, 대부분의 콘텐츠를 못 본다.</td></tr>
+    <tr><td><b>Gauntlet</b></td><td>길고 좁다. 중앙 줄기가 있고 곁가지는 죽음·되돌아가기·빠른 재합류로 잘린다.</td><td>가장 쓰기 쉽다. 선형 이야기와 비슷하게 설계된다.</td><td>제약된 세계. 곁가지의 의미(죽음인가, 오답인가, 풍경인가)가 분위기를 결정한다.</td></tr>
+    <tr><td><b>Branch and Bottleneck</b></td><td>갈라졌다가 공통 사건에서 규칙적으로 재합류. <b>상태 추적이 거의 필수</b>다.</td><td>중간. 큰 작품이어야 효과가 난다.</td><td>시간의 흐름과 인과를 강하게 느낀다. 초반은 비슷하고 후반에 갈라진다.</td></tr>
+    <tr><td><b>Quest</b></td><td>뚜렷한 분기 + 소수의 승리 엔딩으로 합류. 상황별 소규모 클러스터가 안에서 많이 연결된다.</td><td>최소 규모가 크다. 대형 CYOA 다수가 여기 속한다.</td><td>탐험·여정. 지리로 조직되고 사건은 에피소드적이다.</td></tr>
+    <tr><td><b>Open Map</b></td><td>주요 노드 사이 이동이 가역적이다. 정적 지리.</td><td>상태 추적이 방대해진다.</td><td>느리고 덜 지향적. 세계를 파악할 여유는 늘고 이야기 전진은 줄어든다.</td></tr>
+    <tr><td><b>Sorting Hat</b></td><td>초반에 강하게 갈라졌다 합류하며 진로를 배정하고, 이후 각 진로는 거의 선형이다.</td><td>사실상 여러 게임을 쓴다.</td><td>초반 영향력이 크다. 후반의 선형성을 플레이어가 알아챌 수 있다.</td></tr>
+    <tr><td><b>Floating Modules</b></td><td>줄기가 없다. 상태나 무작위로 모듈이 열린다.</td><td>쓰기 어렵다. 콘텐츠가 적으면 선형으로 붕괴한다.</td><td>스탯 노출 압력이 생기고 반복이 늘어난다.</td></tr>
+    <tr><td><b>Loop and Grow</b></td><td>같은 지점으로 반복해서 돌아오고, 상태 때문에 매번 새 선택지가 열리고 닫힌다. <b>spoke and hub</b>는 여러 분기가 중심 노드에서 나갔다 돌아온다.</td><td>반복 구간을 정당화하는 설정이 필요하다.</td><td>세계의 규칙성이 느껴지면서 전진한다. 대개 갇힘·정체와의 싸움이 된다.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout--warn">
+  <span class="callout__label">Branch and Bottleneck의 함정</span>
+  <p>합류 자체는 공짜가 아니다. Ashwell의 지적대로 이 구조는 <b>상태 추적을 거의 항상 요구</b>한다. 합류 지점에서 이전 선택을 반영하지 않으면 "합류 뒤 이전 선택이 아무것도 바꾸지 않는" 상태가 된다. G05가 정확히 그것을 본다 — "합류 뒤 이전 선택이 인물·조건·해결을 바꾸는지".</p>
+</div>
+
+<h2>3. 선택지 하나의 설계 — Choice Poetics</h2>
+
+<p>Mawhorter 등은 선택을 세 요소로 분해한다: <b>플레이어의 목표(goals)</b>, <b>가능한 행동(options)</b>, <b>행동의 결과(outcomes)</b>. 이 틀이 유용한 이유는 "거짓 선택이 왜 평평하게 느껴지는가"를 취향이 아니라 구조로 설명하기 때문이다.</p>
+
+<table>
+  <thead><tr><th>요소</th><th>설계 질문</th><th>이 레포의 대응물</th></tr></thead>
+  <tbody>
+    <tr><td>Goals</td><td>플레이어가 이 지점에서 원한다고 믿는 것은 무엇인가?</td><td>선택지의 <code>이유</code> + <code>장면 목표</code></td></tr>
+    <tr><td>Options</td><td>고를 수 있는 행동이 서로 다른 결과를 <em>약속</em>하는가?</td><td>선택지 <code>보이는 위험</code> — 선택 시점에 인식 가능한 위험</td></tr>
+    <tr><td>Outcomes</td><td>결과가 시간·자원·관계·정보를 실제로 바꾸는가?</td><td><code>구별되는 즉시 결과</code> + <code>다음 상태</code></td></tr>
+  </tbody>
+</table>
+
+<p>같은 이론은 플레이어가 게임에 접근하는 방식(전략적 최적화, 감정적 몰입, 역할극, 비판적 플레이)이 다르면 같은 선택이 다르게 작동한다고 본다. 그래서 선택지의 즉시 결과가 같아지면 <em>어떤 모드로 플레이해도</em> 선택이 의미를 잃는다 — 이것이 <code>scene-architect</code>가 가짜 선택을 3조건으로 못박는 이유와 같다.</p>
+
+<p>Emily Short은 더 작은 규모를 다룬다. 큰 구조가 아니라 "한 선택지 묶음" 수준의 미시 구조다 — 한 장면에 선택지를 몇 개 두는가, 선택 사이 거리는 얼마인가, 같은 장면에서 연속 선택을 허용하는가. 상위 패턴과 미시 구조를 함께 봐야 실제 장면이 나온다.</p>
+
+<h2>4. 왜 기계가 읽는 형태가 필요한가</h2>
+
+<p>합류·가드·플래그를 산문으로만 적으면 검수할 수 없다. 스크립팅 도구들은 이 문제를 언어 차원에서 푼다.</p>
+
+<table>
+  <thead><tr><th>도구</th><th>합류를 표현하는 방식</th><th>참고할 점</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><b>ink</b> (inkle)</td>
+      <td>knot(장)과 stitch(하위 구획), divert(<code>-&gt;</code>)로 흐름을 옮기고, <b>weave</b>로 갈라진 대화를 다시 줄기에 합친다. 선택은 <code>*</code>(소비됨)과 <code>+</code>(sticky, 남아 있음)로 구분한다. 가드는 조건부 텍스트 <code>{ 조건: A | B }</code>.</td>
+      <td>"합류"와 "남아 있는 선택"이 별개 개념이라는 점. 재방문 가능한 선택지를 만들면 상태 추적 요구가 달라진다.</td>
+    </tr>
+    <tr>
+      <td><b>Yarn Spinner</b></td>
+      <td>node 단위로 나누고 <code>&lt;&lt;jump&gt;&gt;</code>로 이동, <code>&lt;&lt;set $flag&gt;&gt;</code>로 상태, <code>if</code>/<code>elseif</code>로 분기. VS Code 확장이 노드 그래프를 그려 준다.</td>
+      <td>그래프를 눈으로 보는 것과 텍스트로 쓰는 것을 동시에 한다. 이 레포에 없는 것이 정확히 그 "보이는 그래프"다.</td>
+    </tr>
+    <tr>
+      <td><b>Baldur's Gate 3</b> (Larian, GDC)</td>
+      <td>대규모 분기에서 flag·prerequisite 상태를 방대한 스프레드시트로 추적하고, 조기 플레이테스트로 논리 파손 지점을 찾는다.</td>
+      <td>분기가 커지면 무너지는 것은 창의성이 아니라 <b>추적 문서</b>다. 사람이 읽는 산문은 추적 문서가 되지 못한다.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>5. 이 프로토타입에의 적용 <span class="tag tag--hypothesis">HYPOTHESIS</span></h2>
+
+<p>아래는 정본이 아니라 가설이다. G05·G16·G17이 판정하기 전에 확정하지 않는다.</p>
+
+<table>
+  <thead><tr><th>구간</th><th>가설 구조</th><th>근거</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>1회차 초반 (현재 원고)</td>
+      <td><b>Gauntlet에 가까운 형태</b> — 협회 공문이 마감(정오)과 비용 규칙으로 길을 좁히고, 실패는 죽음이 아니라 비용·책임으로 prune된다.</td>
+      <td><code>example.md:43</code>(정오 제출), <code>:105</code>(안전 조치 별도 비용 불가), <code>:55</code>(인원이 늘면 책임 이름도 는다)</td>
+    </tr>
+    <tr>
+      <td>중반 현장</td>
+      <td><b>Branch and Bottleneck 후보</b> — 조사팀 구성·장비 선택이 현장의 시간·자원을 바꾸고, 관악구 현장이라는 공통 노드에서 합류하되 선택이 이후 조건을 바꾼다.</td>
+      <td><code>:57-62</code>(동행 직원 선택), <code>:82-86</code>(키트 선택), 그리고 <code>:117-125</code>(균열이 회사 쪽으로 뻗어오는 새 조건)</td>
+    </tr>
+    <tr>
+      <td>후반 정보층</td>
+      <td><b>Sorting Hat + 지연 분기 후보</b> — 루·시퍼 축이 중후반에 열리고, 초반의 인물 대우 선택이 그때의 결과를 바꾼다.</td>
+      <td><code>remains.json</code>의 <code>ru.hiddenIdentity</code>·<code>dusik.secretCausality</code>, <code>world-situations-20.md</code>가 두 항목을 <code>R</code>(중후반 공개)로 보류한 판정</td>
+    </tr>
+    <tr>
+      <td>엔딩</td>
+      <td><b>인물별 독립 사슬을 허용</b>하고 상위 통합 진엔딩을 강제하지 않는다.</td>
+      <td>G03 루브릭: "인물별 독립 사슬을 허용하며 상위 통합 진엔딩을 강제하지 않는다"</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>6. 게이트가 이 구조를 어떻게 검사하는가</h2>
+
+<table>
+  <thead><tr><th>Gate</th><th>구조에 대해 묻는 것</th><th>흔한 실패</th></tr></thead>
+  <tbody>
+    <tr><td><code>G02</code></td><td>첫 엔딩 뒤 남는 전용 콘텐츠. 엔딩 개수가 아니라 <b>한 회차의 동시 결과 집합</b>을 본다.</td><td>한 회차에 진엔딩과 핵심 장면을 다 보는 구조를 재플레이 동기로 세는 것. 표본 최대를 이론적 최대로 부르는 것.</td></tr>
+    <tr><td><code>G04</code></td><td>선택 → 즉시 결과 → 상태 → 중기 → 교차 사건 → 장기 → 엔딩 사슬.</td><td>설명뿐인 비용. 표현적 선택을 주요 분기로 과대평가.</td></tr>
+    <tr><td><code>G05</code></td><td>빠른 합류·콘텐츠 과도 제거·고정 정답·잠금의 인과. 여러 플래그의 AND vs 실제 교차 사건.</td><td>합류 뒤 이전 선택이 아무것도 바꾸지 않음. 체크리스트 잠금을 교차 사건으로 착각.</td></tr>
+    <tr><td><code>G14</code></td><td>모든 엔딩의 6축 종결(서사·인물·주제·감정·선택 결과·기억 이미지).</td><td>본편 완료 장면의 반복을 종결로 세는 것.</td></tr>
+    <tr><td><code>G16</code></td><td>배타 상태 · 동시 달성 · 회차 전용 경험. 진엔딩만 정답인지, 한 route가 모두 소비하는지.</td><td>준비의 보상을 결함으로 취급. 자동 초엔딩·인공 잠금으로 균형 맞추기.</td></tr>
+    <tr><td><code>G17</code></td><td>재플레이 동기를 A~G로 채점.</td><td>이미 본 인물 진엔딩을 "놓친 콘텐츠"로 세는 것.</td></tr>
+    <tr><td><code>G19</code></td><td>Layer 1 기본 / Layer 2 조건부 / Layer 3 연결·재해석.</td><td>루트가 다르다는 이유만으로 다회차 필수라고 하는 것.</td></tr>
+  </tbody>
+</table>
+
+<h3>G17의 A~G — 각 0~5점, 합계 구간</h3>
+
+<table>
+  <thead><tr><th>축</th><th>묻는 것</th></tr></thead>
+  <tbody>
+    <tr><td>A</td><td>다른 엔딩</td></tr>
+    <tr><td>B</td><td>선택 결과</td></tr>
+    <tr><td>C</td><td>인물 관계·삶</td></tr>
+    <tr><td>D</td><td>숨은 진실</td></tr>
+    <tr><td>E</td><td>다른 루트</td></tr>
+    <tr><td>F</td><td>놓친 콘텐츠</td></tr>
+    <tr><td>G</td><td>의미 변화</td></tr>
+  </tbody>
+</table>
+
+<p>합계 0~10 매우 낮음 · 11~20 낮음 · 21~27 보통 · 28~32 높음 · 33~35 매우 높음. 미평가 항목이 있으면 합계를 보류한다.</p>
+
+<div class="callout callout--warn">
+  <span class="callout__label">이 문서를 쓰는 순서</span>
+  <p>패턴을 먼저 고르고 이야기를 끼워 맞추지 않는다. 순서는 반대다 — 장면 사양이 쌓이고, 그 사양들 사이의 합류·교차를 <em>관찰한 뒤</em> 패턴에 이름을 붙인다. G05가 요구하는 것도 선언된 구조가 아니라 <b>실제 사건 차이</b>다.</p>
+</div>
+
+<div class="next-steps">
+  <h2>출처 (2026-09-13 확인)</h2>
+  <ul>
+    <li><a href="https://www.choiceofgames.com/2011/07/by-the-numbers-how-to-write-a-long-interactive-novel-that-doesnt-suck/">Dan Fabulich, "By the Numbers" (Choice of Games, 2011)</a> — 조합 폭발 계산, 지연 분기, stat</li>
+    <li><a href="https://heterogenoustasks.wordpress.com/2015/01/26/standard-patterns-in-choice-based-games/">Sam Kabo Ashwell, "Standard Patterns in Choice-Based Games" (2015)</a> — 8개 패턴</li>
+    <li><a href="http://www.fdg2014.org/papers/fdg2014_paper_19.pdf">Mawhorter, Mateas, Wardrip-Fruin, Jhala, "Towards a Theory of Choice Poetics" (FDG 2014)</a> — 선택의 분해</li>
+    <li><a href="https://www.mdpi.com/2076-0752/7/3/47">Mawhorter et al., "Choice Poetics by Example" (<em>Arts</em> 7(3):47, 2018)</a> — 적용 사례</li>
+    <li><a href="https://emshort.blog/2016/11/05/small-scale-structures-in-cyoa/">Emily Short, "Small-Scale Structures in CYOA" (2016)</a> — 미시 구조</li>
+    <li><a href="https://github.com/inkle/ink/blob/master/Documentation/WritingWithInk.md">inkle, "Writing with Ink"</a> — knot·divert·weave·sticky choice</li>
+    <li><a href="https://docs.yarnspinner.dev/">Yarn Spinner 문서</a> — node·set·jump·그래프 시각화</li>
+    <li><a href="https://gdcvault.com/play/1034610/The-Secrets-of-Baldur-s">Swen Vincke, "The Secrets of Baldur's Gate 3" (GDC)</a> — 추적 문서와 플레이테스트</li>
+  </ul>
+  <p>같이 보기: <a href="skill-pipeline.html">워크플로우 한 장</a> · <a href="gate-index.html">게이트 색인</a> · <a href="candidate-skills.html">후보 스킬 제안서</a> · <a href="../lessons/0003-scene-card-design.html">레슨 0003</a></p>
+</div>
+
+</main>
+
+<footer class="colophon">
+  <p>분기 패턴 참조 · 외부 1차 자료 요약. 이 문서의 프로토타입 적용 절은 전부 가설이다. 정본은 <code>prototype/remains.json</code>과 게이트 판정이다.</p>
+</footer>
+
+</body>
+</html>

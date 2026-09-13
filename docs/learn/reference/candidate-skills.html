@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>후보 스킬 제안서 — 분기 시나리오 작성을 막는 구멍과 메울 것</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <p class="eyebrow">참조 문서 · 분기 서사 스킬 surface</p>
+  <h1>후보 스킬 제안서</h1>
+  <p class="lede">스토리 분기 게임 시나리오를 <em>끝까지</em> 쓰려면 지금 surface에 없는 것이 셋 있다: 그래프, 그 그래프의 실행 증거, 그리고 엔딩 세트. 무엇을 새로 만들고 무엇을 만들지 말아야 하는지 정리한다.</p>
+</header>
+
+<main>
+
+<h2>0. 요약</h2>
+
+<div class="callout">
+  <span class="callout__label">먼저 볼 것</span>
+  <p>각 후보가 파이프라인 <em>어디에</em> 앉고 <em>없으면 무엇이 막히는지</em>는 <a href="skill-pipeline.html">워크플로우 한 장</a>의 「제안 스킬이 앉는 자리」 표에 있다. 이 문서는 그 자리를 채울 <b>근거·출력 계약·검증 방법</b>을 다룬다. 위치 표를 두 곳에 두지 않는다.</p>
+</div>
+
+<table>
+  <thead><tr><th>구분</th><th>후보</th><th>층</th><th>우선</th><th>막는 것</th></tr></thead>
+  <tbody>
+    <tr><td rowspan="4">신규 스킬</td><td><code>story-graph-compiler</code></td><td>상류(도구)</td><td><b>P0</b></td><td>검수 surface가 요구하는 manifest·fingerprint의 생산자 부재</td></tr>
+    <tr><td><code>route-replay-runner</code></td><td>도구</td><td><b>P0</b></td><td>runtime evidence 부재 → 경로·엔딩 검사가 전부 <code>UNVERIFIABLE</code></td></tr>
+    <tr><td><code>story-graph-architect</code></td><td>상류</td><td><b>P1</b></td><td>수렴점·분기 축·브랜치 예산을 정하는 주체 부재</td></tr>
+    <tr><td><code>ending-set-architect</code></td><td>상류</td><td><b>P1</b></td><td>엔딩 세트·배타 상태·앵커·6축 목표의 설계자 부재</td></tr>
+    <tr><td rowspan="2">조건부</td><td><code>revelation-plan</code></td><td>상류</td><td>P2</td><td>Layer 1/2/3·복선/회수의 계획 정본 부재</td></tr>
+    <tr><td><code>voice-bible</code></td><td>상류</td><td>P2</td><td>원장이 스스로 "별도 규칙 필요"로 비워 둔 4인 말투</td></tr>
+    <tr><td rowspan="3">기존 소유자 확장</td><td><code>remains-ledger-maintenance</code> +<code>schema</code> 모드</td><td>원장</td><td><b>P0</b></td><td>새 도메인(엔딩·경로·플래그)을 원장에 들이는 경로 부재</td></tr>
+    <tr><td><code>narrative-rewriter</code> +<code>draft</code> 입력</td><td>본문</td><td>P1</td><td>scene card를 초고 산문으로 옮기는 주체 부재</td></tr>
+    <tr><td><code>narrative-gate-specialist</code> 경로·plan 정합</td><td>검수</td><td><b>P0</b></td><td>출력 경로가 RUN_DIR 규약 밖, <code>Global Constraints</code> 정본 부재</td></tr>
+  </tbody>
+</table>
+
+<h2>1. 진단 — 파이프라인의 구멍</h2>
+
+<p>아래는 추측이 아니라 저장소에서 확인한 사실이다(2026-09-13).</p>
+
+<table>
+  <thead><tr><th>#</th><th>구멍</th><th>근거</th><th>결과</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>검수 스킬이 요구하는 <code>route manifest</code>·<code>ending anchor</code>·<code>compiled-content SHA-256</code>을 만드는 주체가 없다.</td>
+      <td><code>narrative-ending-route-review/SKILL.md:41</code>, <code>narrative-multi-ending-integration/SKILL.md:41</code></td>
+      <td>경로·엔딩 검사를 시작할 수 없다.</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>runtime evidence 생산자가 없다. 그리고 "수동 guard 읽기는 replay 증거가 아니다"라고 못박혀 있다.</td>
+      <td><code>narrative-ending-route-review/SKILL.md:46</code>, <code>.omp/NARRATIVE_REVIEW.md:94</code></td>
+      <td>mechanics·도달성·배타성 검사가 전부 <code>UNVERIFIABLE</code>.</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>게이트 전문 에이전트가 우선하라고 지시받는 <code>.outline/sdd/plan.md</code>의 <code>Global Constraints</code>가 저장소에 없다.</td>
+      <td><code>.omp/agents/narrative-gate-specialist.md:10</code></td>
+      <td>게이트가 제약을 추론하게 된다 → 판정이 리뷰어 취향으로 흐른다.</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>게이트 전문 에이전트만 <code>RUN_DIR</code> 규약 밖(<code>.outline/sdd/reviews/specialists/</code>)에 쓴다.</td>
+      <td><code>.omp/agents/narrative-gate-specialist.md:22</code></td>
+      <td>같은 실행의 입력 스냅샷과 출력이 분리된다.</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>공식 점수 키 18개의 정본인 "최종 검토 스키마" 파일이 없다.</td>
+      <td><code>narrative-report-assembly/SKILL.md:58</code>, <code>narrative-score-synthesis/SKILL.md:45</code></td>
+      <td>키 이름을 매번 재구성해야 하고, G28↔G30이 어긋날 수 있다.</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><code>remains-ledger-maintenance</code>의 <code>add</code>는 "기존 도메인 중 알맞은 위치"에만 추가한다.</td>
+      <td><code>remains-ledger-maintenance/SKILL.md:26</code></td>
+      <td>엔딩·경로·플래그 같은 새 도메인을 캐논에 넣을 수 없다.</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>원장이 4인 말투 규칙을 "별도 규칙 필요"로 비워 두었다.</td>
+      <td><code>prototype/remains.json</code> → <code>narrativeRules.characterVoice.status</code></td>
+      <td><code>dialogue-variator</code>가 말투를 <code>[HYPOTHESIS]</code>로만 다룬다.</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>복선·정보층 계획 정본이 없다. G09·G19는 대조할 대상을 요구한다.</td>
+      <td><code>narrative-gate-rubrics.md</code> G09·G19</td>
+      <td>복선 회수를 사후 진단만 할 수 있고 계획할 수 없다.</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>과거 발산 문서가 사라진 경로를 인용한다 — 그대로 믿으면 죽은 근거가 된다.</td>
+      <td><code>docs/ideation/world-situations-20.md:11-12</code>가 <code>prototype/storyline.md</code>·<code>prototype/remains.md</code>를 인용</td>
+      <td>인용 드리프트. <b>스킬이 아니라 테스트로 막는다</b>(§4).</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>scene card를 초고 산문으로 옮기는 주체가 없다. <code>scene-architect</code>는 산문을 금지하고, <code>narrative-rewriter</code>의 입력은 "수정 요청"이다.</td>
+      <td><code>scene-architect/SKILL.md:55</code>, <code>.omp/agents/narrative-rewriter.md:32</code></td>
+      <td>사양은 쌓이는데 본문이 안 나온다.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout--ok">
+  <span class="callout__label">상태 (2026-09-13 갱신)</span>
+  <p>위 표는 <b>진단 시점의 기록</b>이다. 그 뒤 P0 넷이 착륙해 <b>①·②·⑥은 해소</b>됐고, <b>③은 완화</b>(plan 부재를 추론 금지로 대체), <b>④는 의도적 유지</b>(출력 주소를 바꾸면 루브릭 색인 27곳이 흔들린다). <b>⑤(점수 스키마 정본)·⑦(4인 voice)·⑧(복선·정보층 정본)·⑨(인용 드리프트 테스트)·⑩(초고 작성)</b>는 아직 열려 있다 — 순서는 §6, 착륙 결과는 §8.</p>
+</div>
+
+<h2>2. 신규 스킬 후보</h2>
+
+<p>각 후보는 상류 스킬과 같은 계약을 따른다: 정본은 읽기 전용, 산출물은 <code>.outline/&lt;RUN_ID&gt;/</code>, 사실 범주 4개, 판정 어휘 닫힘, 사람이 결정. 아래 "근거"가 저장소 사실이고, "검증"이 그 스킬이 제대로 도는지 아는 방법이다.</p>
+
+<h3>P0-1 · <code>story-graph-compiler</code></h3>
+
+<table>
+  <thead><tr><th>항목</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td>목적</td><td>승인된 정본·scene card·원고에서 <b>기계가 검증할 수 있는 이야기 그래프</b>를 컴파일한다. 노드, 엣지, <code>requires</code>, <code>effects</code>, 플래그, 앵커, route 목록. 산문을 만들지 않고 판정하지도 않는다.</td></tr>
+    <tr><td>트리거</td><td>경로·엔딩 검수를 시작하려는데 manifest가 없을 때. 새 장면이 승인되어 그래프를 갱신할 때.</td></tr>
+    <tr><td>사용하지 말아야 할 때</td><td>그래프 <em>설계</em>는 <code>story-graph-architect</code>. 실행은 <code>route-replay-runner</code>. 구조 진단은 <code>structural-critic</code>.</td></tr>
+    <tr><td>입력</td><td><code>prototype/remains.json</code>, <code>prototype/stories/example.md</code>, 승인된 scene card 모음, 확정 플래그 목록.</td></tr>
+    <tr><td>절차</td><td>① 범위와 <code>RUN_ID</code> 확정, 정본 스냅샷 → ② 원고에서 노드 경계(<code>## N. 제목</code>)와 선택지 <code>(S)</code>를 추출 → ③ 각 선택지에 <code>requires</code>·<code>effects</code> 후보를 붙이고, 근거 없는 것을 <code>[HYPOTHESIS]</code>로 표시 → ④ scene card가 있으면 <code>entry_state</code>·<code>exit_state</code>를 노드 상태로 옮김 → ⑤ 모든 노드의 <code>next</code>를 채우고 끊긴 곳을 <code>open-edge</code>로 기록 → ⑥ 앵커(엔딩·엔딩 후일담 위치)와 route 후보를 열거 → ⑦ <code>story-graph.json</code> + <code>routes.json</code> + 사람 보고서를 쓰고 <code>RUN_DIR</code> 반환.</td></tr>
+    <tr><td>출력 계약</td><td><code>RUN_DIR/outputs/graph/story-graph.json</code>(<code>nodes[]</code>: <code>id</code>, <code>scene</code>, <code>file</code>, <code>line</code>, <code>entry_state</code>, <code>exit_state</code>, <code>choices[]</code>{<code>label</code>, <code>requires[]</code>, <code>effects[]</code>, <code>next</code>}), <code>RUN_DIR/outputs/graph/routes.json</code>(<code>route_id</code>, <code>choices[]</code>, <code>terminal</code>), <code>RUN_DIR/outputs/graph/compile-report.md</code>(미해결 간선·근거 없는 플래그·사람 결정 필요 목록).</td></tr>
+    <tr><td>실패 처리</td><td><code>input-blocked</code>(정본 누락), <code>open-edge</code>(<code>next</code> 미정 — 그래프를 내되 보고서에 열거), <code>ungrounded-flag</code>(원장에 없는 플래그를 만들려 함 — <code>[HYPOTHESIS]</code>로 내리고 사람 승인 대기), <code>hash-mismatch</code>.</td></tr>
+    <tr><td>근거</td><td>진단 ①·⑥. 검수 스킬이 요구하는 manifest·fingerprint·anchor의 생산자가 없었다 — §8에서 이 스킬이 착륙해 해소됐다.</td></tr>
+    <tr><td>경계</td><td><code>reverse-outliner</code>는 원고를 <b>표로</b> 뽑지만 기계 형식이 아니고 진행 가능성도 계산하지 않는다. 이 스킬은 <em>합성 가능한</em> 형식을 낸다.</td></tr>
+    <tr><td>검증</td><td>같은 정본으로 두 번 컴파일하면 같은 파일이 나온다(플래그 순서 정규화). 그래프의 모든 노드·엣지가 <code>파일:줄</code> 또는 scene card ID 근거를 갖는다. 원장에 없는 플래그가 <code>effects</code>에 있으면 실패한다.</td></tr>
+    <tr><td>나중에</td><td>엔진이 생기면 이 스킬은 <code>tools/</code>의 빌드 단계 + 테스트로 내려간다. 지금 스킬로 두는 이유는 형식이 아직 고정되지 않았기 때문이다.</td></tr>
+  </tbody>
+</table>
+
+<h3>P0-2 · <code>route-replay-runner</code></h3>
+
+<table>
+  <thead><tr><th>항목</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td>목적</td><td><code>story-graph.json</code>을 <b>실행</b>해 route별 runtime evidence를 만든다. 노드 방문 순서, 평가된 guard, 세워진 flag, 도달한 terminal state. 그리고 그래프 자체의 결함(막다른 곳·충족 불가 guard·미설정 플래그 참조)을 보고한다.</td></tr>
+    <tr><td>트리거</td><td><code>ENDING_ROUTE</code>·<code>MULTI_ENDING</code> 검수 직전. 그래프가 바뀐 뒤.</td></tr>
+    <tr><td>사용하지 말아야 할 때</td><td>품질 판정은 검수 스킬의 몫. 이 스킬은 <b>판정하지 않는다</b> — "이 route는 도달했다", "이 guard는 참이 될 수 없다"만 말한다.</td></tr>
+    <tr><td>입력</td><td><code>story-graph.json</code>, <code>routes.json</code>, 그래프 지문(SHA-256), 탐색 한도(최대 경로 수·깊이).</td></tr>
+    <tr><td>절차</td><td>① 그래프 로드·스키마 검증 → ② 노드 도달 가능성 계산(진입 노드에서 forward) → ③ 각 route를 결정적으로 순회(선택은 route에 명시된 대로) → ④ 각 단계의 guard 평가 결과와 flag 상태를 기록 → ⑤ 분기별 미탐색 경로를 한도 내에서 열거 → ⑥ 결함 보고(막다른 노드, 참이 될 수 없는 <code>requires</code>, 한 번도 세워지지 않는 flag, terminal 미도달) → ⑦ evidence와 보고서를 <code>RUN_DIR/outputs/replay/</code>에 쓰고 반환.</td></tr>
+    <tr><td>출력 계약</td><td><code>outputs/replay/&lt;ROUTE_ID&gt;.json</code>(<code>steps[]</code>: <code>node</code>, <code>choice</code>, <code>guards[]</code>{<code>expr</code>, <code>value</code>}, <code>flags</code>, <code>terminal</code>), <code>outputs/replay/graph-evidence.md</code>(<code>Reviewed graph SHA-256</code>, 도달성 표, 결함 목록, 미탐색 영역, <code>Status</code>).</td></tr>
+    <tr><td>실패 처리</td><td><code>schema-invalid</code>, <code>unreachable-terminal</code>, <code>unsatisfiable-guard</code>, <code>unset-flag</code>, <code>budget-exhausted</code>(한도 초과 — 미탐색 영역을 명시하고 부분 evidence를 낸다).</td></tr>
+    <tr><td>근거</td><td>진단 ②. 검수 계약이 "수동 guard 읽기는 replay proof가 아니다"라고 명시하는 이상, 증거 생산자는 별도로 있어야 한다.</td></tr>
+    <tr><td>경계</td><td>게임 엔진이 아니다. 새 콘텐츠를 만들지 않고, 문장을 생성하지 않으며, 점수를 내지 않는다.</td></tr>
+    <tr><td>검증</td><td>같은 그래프·같은 route로 두 번 돌리면 같은 evidence가 나온다. 의도적으로 끊은 엣지를 넣으면 <code>unreachable-terminal</code>로 잡힌다. 이 두 개가 통과하면 스킬이 자기 일을 한다.</td></tr>
+  </tbody>
+</table>
+
+<h3>P1-3 · <code>story-graph-architect</code></h3>
+
+<table>
+  <thead><tr><th>항목</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td>목적</td><td>이야기 그래프의 <b>형태</b>를 설계한다: 분기 축, 수렴점 위치, 브랜치 예산, 노드별 정보 공개, 가드/효과 초안. 패턴 이름(Ashwell)을 명시적으로 고르고 근거를 남긴다.</td></tr>
+    <tr><td>트리거</td><td>여러 장면을 관통하는 분기 구조를 정할 때. "이 선택이 어디서 합류하는가"를 정할 때.</td></tr>
+    <tr><td>사용하지 말아야 할 때</td><td>장면 하나의 사양은 <code>scene-architect</code>. 후보 사건 발산은 <code>divergent-ideator</code>. 사후 구조 진단은 <code>structural-critic</code>. 그래프 컴파일은 <code>story-graph-compiler</code>.</td></tr>
+    <tr><td>입력</td><td>원장, 원고, 승인된 scene card, <code>docs/ideation/</code> 후보 중 선택된 것, 그리고 <b>브랜치 예산</b>(감당할 수 있는 노드·문장 수).</td></tr>
+    <tr><td>절차</td><td>① 범위·<code>RUN_ID</code> → ② 현재 원고에서 실제 노드·선택을 추출(컴파일러 호출 또는 수동) → ③ 후보 패턴 2개 이상을 비용·감각·근거와 함께 제시 → ④ 선택된 패턴에 대해 수렴점 목록과 각 수렴점의 state-tracking 항목을 확정 → ⑤ 분기 축마다 최소 두 갈래의 <em>구별되는 즉시 결과</em>를 명시 → ⑥ 각 노드의 정보 공개 <code>reveal</code>/<code>conceal</code>를 지식 주체와 함께 적음 → ⑦ 예산 초과 지점과 대안(합류 강화·지연 분기)을 보고 → ⑧ 사람 결정 대기 목록과 함께 출력.</td></tr>
+    <tr><td>출력 계약</td><td><code>outputs/graph/&lt;scope&gt;-design.md</code>: 패턴 선택 근거, 수렴점 표(<code>수렴점</code>, <code>합류 노드</code>, <code>합류 뒤 달라지는 것</code>, <code>근거</code>), 분기 축 표, 노드별 정보 공개 표, 예산 계산(Fabulich 계산식 + 노드 수), <code>[HYPOTHESIS]</code> 목록, 사람 결정 필요 목록.</td></tr>
+    <tr><td>실패 처리</td><td><code>budget-exceeded</code>(예산 초과 — 대안과 함께 내고 확정하지 않음), <code>no-state-tracking</code>(합류하는데 합류 뒤 달라지는 것이 없음 → <code>FAIL</code>로 표기), <code>ungrounded-rule</code>(확정되지 않은 세계 규칙 필요 → <code>[HYPOTHESIS]</code>).</td></tr>
+    <tr><td>근거</td><td>진단 ①·⑥. 지금 구조는 <em>사후에만</em> 문제로 드러난다 — G05는 이미 존재하는 tree를 검사한다.</td></tr>
+    <tr><td>경계</td><td>패턴을 강제하지 않는다. 원고에서 관찰한 구조에 이름을 붙이는 순서를 지킨다.</td></tr>
+    <tr><td>검증</td><td>산출 그래프가 <code>story-graph-compiler</code>를 통과한다. 모든 수렴점에 "합류 뒤 달라지는 것"이 근거와 함께 있다. 예산 계산이 노드 수와 맞는다.</td></tr>
+  </tbody>
+</table>
+
+<h3>P1-4 · <code>ending-set-architect</code></h3>
+
+<table>
+  <thead><tr><th>항목</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td>목적</td><td>채택할 <b>엔딩 세트</b>를 설계한다: 엔딩 ID, 도달 조건, 배타 상태, 6축 종결 목표, 앵커, outcome rules, 에필로그 의무. 한 회차 누적과 재플레이 전용 요소를 처음부터 계산에 넣는다.</td></tr>
+    <tr><td>트리거</td><td>엔딩을 몇 개 둘지, 어떤 엔딩이 배타적인지 정할 때. 새 엔딩을 추가할 때.</td></tr>
+    <tr><td>사용하지 말아야 할 때</td><td>엔딩 세트 <em>검토</em>는 <code>narrative-multi-ending-integration</code>. 경로 하나의 완결성은 <code>narrative-ending-route-review</code>. 엔딩 본문 산문은 <code>narrative-rewriter</code>.</td></tr>
+    <tr><td>입력</td><td>원장(비공개 정보 공개 시점 포함), <code>story-graph.json</code>과 route 목록, 주제 명제 초안, 채택 예정 인물 아크.</td></tr>
+    <tr><td>절차</td><td>① 범위·<code>RUN_ID</code> → ② 엔딩 후보를 일반·진·실패·부분으로 분류 → ③ 엔딩마다 <code>도달 조건</code>·<code>배타 상태</code>·<code>앵커</code> 후보를 붙임 → ④ 6축 종결(서사·인물·주제·감정·선택 결과·기억 이미지) 목표를 한 줄씩 적음 → ⑤ 배타성 행렬을 만들어 동시 달성 쌍과 불가능 쌍을 표시 → ⑥ 한 회차가 소비하는 결과 집합을 계산해 재플레이 전용 요소를 표시 → ⑦ outcome rules의 <b>평가 순서</b>를 확정(순서 은닉은 결함) → ⑧ 후보 세트와 사람 결정 대기 목록 출력.</td></tr>
+    <tr><td>출력 계약</td><td><code>outputs/endings/ending-set.md</code>: 엔딩 표(ID·분류·도달 조건·앵커·6축 목표·근거), 배타성 행렬, 한 회차 누적 계산, outcome rules 순서, 에필로그 의무, <code>[HYPOTHESIS]</code>, 사람 결정 필요 목록.</td></tr>
+    <tr><td>실패 처리</td><td><code>dominant-route</code>(한 경로가 모든 배타 콘텐츠를 먹음 — 재플레이 동기에서 제외하고 보고), <code>variant-only</code>(제목만 다른 엔딩 쌍 → 병합 또는 분화 요구), <code>unreachable</code>(도달 조건을 만족하는 route가 없음).</td></tr>
+    <tr><td>근거</td><td>진단 ①·⑥. <code>narrative-multi-ending-integration</code>은 "ending manifest / outcome rules / anchors / bodies 일치"를 검사 대상으로 요구하지만 어디에도 정의되지 않는다. G03·G14·G16이 요구하는 것도 <em>이미 존재하는</em> 엔딩이다.</td></tr>
+    <tr><td>경계</td><td>진엔딩을 자동으로 최상위로 두지 않는다. G16 루브릭의 "진엔딩만 정답/일반 결말 벌칙"을 설계 단계에서 만들지 않는다.</td></tr>
+    <tr><td>검증</td><td>모든 엔딩에 도달 가능한 route가 하나 이상 있다(<code>route-replay-runner</code>가 확인). 배타성 행렬이 대칭이고 모순이 없다. 6축 목표가 G14의 표 형식으로 바로 옮겨진다.</td></tr>
+  </tbody>
+</table>
+
+<h3>P2-5 · <code>revelation-plan</code> (조건부)</h3>
+
+<table>
+  <thead><tr><th>항목</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td>목적</td><td>비공개 정보·복선·약속의 <b>계획 정본</b>을 만든다: <code>fact_id</code>, Layer 1/2/3, 획득 조건, plant 장면, payoff 장면, 회수 여부, 지식 주체.</td></tr>
+    <tr><td>트리거</td><td>후반 정보층을 설계할 때. 복선의 식목·회수 지점을 정할 때.</td></tr>
+    <tr><td>근거</td><td>진단 ⑧. G09는 "복선→기대→오도→공개→회수"를, G19는 Layer 1/2/3와 획득 조건을 요구한다. 그 표의 <em>정본</em>이 없다 — 지금은 리뷰어가 매번 원고에서 재구성한다.</td></tr>
+    <tr><td>경계</td><td><code>continuity-auditor</code>의 <code>FORESHADOWING</code>·<code>PROMISE_PAYOFF</code> 영역은 <em>검사</em>다. 이 스킬은 <em>계획</em>이다.</td></tr>
+    <tr><td>검증</td><td>원장의 비공개 필드 전부(<code>ru.hiddenIdentity</code>, <code>dusik.secretCausality</code>, <code>banjang.hiddenActivity</code>)가 plant/payoff 장면을 갖거나 "미회수"로 명시된다. G09 리뷰가 이 표를 입력으로 받으면 <code>UNVERIFIABLE</code> 항목이 줄어든다.</td></tr>
+    <tr><td>보류 이유</td><td>산출물이 결국 원장의 새 도메인이 되어야 한다. 원장 확장(§3)이 먼저 서야 한다. 그전까지는 <code>divergent-ideator</code>와 <code>continuity-auditor</code>를 <code>draft-review</code> 모드로 조합해 임시 표를 만들 수 있다.</td></tr>
+  </tbody>
+</table>
+
+<h3>P2-6 · <code>voice-bible</code> (조건부 — 조합 경로를 먼저)</h3>
+
+<table>
+  <thead><tr><th>항목</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td>목적</td><td>네 인물의 말투 규칙과 1인칭 서술 규칙을 확정해 원장에 넣는다. 목표는 하나다: <b>대사만 읽어도 화자를 구별할 수 있다.</b></td></tr>
+    <tr><td>근거</td><td>진단 ⑦. 원장이 스스로 요구한다 — "등장인물 네 명의 문장만 읽어도 서로 구별되도록 독특한 말투를 부여한다."</td></tr>
+    <tr><td>경계</td><td><code>dialogue-variator</code>는 이미 정해진 하나의 표면 의도를 변주한다. voice 규칙이 없으면 그 결과가 <code>[HYPOTHESIS]</code>로만 남는다.</td></tr>
+    <tr><td>검증</td><td>① 네 인물 대사 4줄을 화자 표시 없이 제시했을 때 사람이 맞힌다. ② <code>dialogue-variator</code> 산출물에서 <code>unverifiable-voice</code> 실패가 사라진다. ③ <code>narrative-rewriter</code>가 톤 판단 근거를 요청하지 않는다.</td></tr>
+    <tr><td>보류 이유</td><td><code>copywriting-tone-of-voice-creator</code>로 규칙 초안(TONE/PROSE 형태)을 만들고 <code>remains-ledger-maintenance modify</code>로 <code>narrativeRules.characterVoice</code>에 넣는 경로를 먼저 시도한다. 그 경로가 두 번 실패하면(예: 말투가 인물별로 분리되지 않으면) 그때 스킬로 승격한다. 지금 스킬을 만들면 톤 가이드 작성이 두 곳에 생긴다.</td></tr>
+  </tbody>
+</table>
+
+<h2>3. 신규 스킬이 아니라 <b>기존 소유자 확장</b>이어야 하는 것</h2>
+
+<table>
+  <thead><tr><th>대상</th><th>확장</th><th>왜 새 스킬이 아닌가</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>remains-ledger-maintenance</code></td>
+      <td><code>schema</code> 모드 신설 — 새 도메인(엔딩·경로·플래그·정보층)을 기존 구조·명명·공개/비밀 분리를 유지한 채 추가하고, 참조 무결성과 <code>pnpm verify &amp;&amp; pnpm build</code>를 검증한다.</td>
+      <td>캐논을 쓰는 스킬이 둘이 되면 "누가 정본인가"가 무너진다. 계약의 단일 쓰기 원칙을 지킨다.</td>
+    </tr>
+    <tr>
+      <td><code>narrative-rewriter</code></td>
+      <td><code>draft</code> 입력 추가 — 승인된 scene card(<code>state change: PASS</code>)를 받아 1인칭 초고 블록을 쓴다. 카드가 없거나 <code>FAIL</code>이면 거부한다.</td>
+      <td>본문을 쓰는 주체가 둘이면 시점·문체 규칙이 두 벌이 된다. 이 에이전트는 이미 0계층 시점 규칙과 1계층 문체 규칙을 자기완결적으로 갖고 있다.</td>
+    </tr>
+    <tr>
+      <td><code>narrative-gate-specialist</code></td>
+      <td>출력 경로를 <code>.outline/&lt;RUN_ID&gt;/outputs/reviews/specialists/&lt;GATE&gt;.md</code>로 옮기고, <code>.outline/sdd/plan.md</code>가 없을 때의 처리를 명시한다(<code>Global Constraints</code> 부재를 <code>Limitations</code>에 적고 판정하거나, 계획 파일을 입력으로 요구).</td>
+      <td>에이전트 하나의 경로·전제 정합 문제다. 스킬을 늘릴 문제가 아니다.</td>
+    </tr>
+    <tr>
+      <td>공식 점수 키 18개</td>
+      <td>primary owner map을 정본 파일(예: <code>.omp/narrative-score-schema.md</code>)로 승격하거나, <code>narrative-report-assembly</code>의 참조를 "정의되지 않은 스키마" 요구에서 실제 문서로 바꾼다.</td>
+      <td>문서 하나의 부재다. 새 스킬이 아니라 정본 복원이다.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4. 조합으로 해결 — 새 스킬을 만들지 않는다</h2>
+
+<table>
+  <thead><tr><th>필요</th><th>조합</th><th>이유</th></tr></thead>
+  <tbody>
+    <tr><td>분기 전수 커버리지 증명</td><td><code>route-replay-runner</code>의 evidence + <code>exhaustive</code>(상태·분기 공간 전수 열거) + <code>property-test-authoring</code></td><td>"모든 경로를 봤다"는 주장은 기존 스킬로 증명할 수 있다. 새 스킬을 만들면 커버리지 정의가 두 벌이 된다.</td></tr>
+    <tr><td>그래프 도식</td><td><code>lifecycle-diagram</code>(상태·전이·터미널) 또는 <code>visual-diagram</code></td><td>그래프를 <em>그리는</em> 능력은 이미 있다. 필요한 것은 그림이 아니라 컴파일된 형식이다.</td></tr>
+    <tr><td>guard·effect 불변식</td><td><code>validation-first-driven</code>(상태·전이·시간 속성) + <code>type-driven</code>(스키마를 타입으로)</td><td>플래그가 항상 세워지고, 참이 될 수 없는 guard가 없다는 성질은 기존 접근의 정확한 적용 대상이다.</td></tr>
+    <tr><td>인용 드리프트(진단 ⑨)</td><td><code>tools/skills/citation-drift.test.ts</code> 신설 — 산출 문서가 인용한 저장소 경로가 실제로 존재하는지 검사</td><td><code>contract-drift.test.ts</code>가 이미 이 패턴을 증명했다. 드리프트는 스킬이 아니라 <b>테스트</b>로 막는다 — 스킬은 사람이 호출해야 하지만 테스트는 커밋 게이트에서 자동으로 돈다.</td></tr>
+    <tr><td>캐논 질의("원장이 뭐라고 하는가")</td><td><code>repo-qa-investigate</code></td><td>읽기 전용 조사 스킬이 이미 있다.</td></tr>
+    <tr><td>다음 작업 우선순위</td><td><code>next-best-action</code></td><td>이 제안서의 P0/P1/P2를 실행 순서로 바꿀 때.</td></tr>
+  </tbody>
+</table>
+
+<h2>5. 기각한 후보</h2>
+
+<table>
+  <thead><tr><th>후보</th><th>기각 이유</th></tr></thead>
+  <tbody>
+    <tr><td><code>scene-deleter</code> / <code>content-cutter</code></td><td><code>structural-critic</code>의 삭제·변화 테스트가 이미 답을 내고, 삭제 결정은 사람의 몫이다. 자동 삭제는 캐논·원고 쓰기 권한을 침범한다.</td></tr>
+    <tr><td><code>pacing-curve-designer</code></td><td>페이싱은 G20이 진단하고 <code>structural-critic</code>이 중반부 정체·stakes 변화를 본다. 곡선을 자동 생성하면 근거 없는 최적화가 되고, "일상·유머·휴식의 기능을 인정한다"는 G20 규칙과 충돌한다.</td></tr>
+    <tr><td><code>choice-label-writer</code></td><td>선택지 문안은 <code>scene-architect</code>의 4필드가 결과를 고정하고, 문체는 <code>narrative-rewriter</code>가 담당한다. 몰입 언어는 G25가 검사한다. 별도 스킬은 규칙을 세 벌로 만든다.</td></tr>
+    <tr><td><code>branch-diagram</code></td><td>그리기는 <code>lifecycle-diagram</code>이 담당한다. 필요한 것은 그림이 아니라 실행 가능한 그래프다.</td></tr>
+    <tr><td><code>canon-answerer</code></td><td><code>repo-qa-investigate</code>가 이미 읽기 전용 조사를 한다.</td></tr>
+    <tr><td><code>ending-writer</code></td><td>엔딩 <em>본문</em>은 <code>narrative-rewriter</code>의 <code>draft</code> 확장이 담당한다. 설계는 <code>ending-set-architect</code>가 맡는다.</td></tr>
+    <tr><td><code>auto-balancer</code>(엔딩 균형 자동 조정)</td><td>G16·MULTI_ENDING이 "자동 초엔딩이나 인공 잠금으로 균형을 맞추지 않는다"고 명시적으로 금지한다.</td></tr>
+  </tbody>
+</table>
+
+<h2>6. 도입 순서와 통합 체크리스트</h2>
+
+<pre><code>P0  story-graph-compiler      ← 다른 모든 것의 입력을 만든다
+P0  route-replay-runner       ← 검수 체인의 UNVERIFIABLE을 걷어낸다
+P0  ledger schema 모드         ← 엔딩·경로·플래그를 캐논에 들인다
+P0  gate-specialist 경로·plan  ← 게이트 판정의 전제를 고정한다
+P1  story-graph-architect     ← P0 위에서 구조를 설계한다
+P1  ending-set-architect      ← P0 위에서 엔딩을 설계한다
+P1  rewriter draft 입력        ← 사양을 본문으로 옮긴다
+P2  revelation-plan           ← ledger schema 이후
+P2  voice-bible               ← 조합 경로를 먼저 시도</code></pre>
+
+<h3>새 스킬을 계약 가족에 넣을 때 (레포가 요구하는 순서)</h3>
+
+<ol>
+  <li><code>.omp/skills/&lt;name&gt;/SKILL.md</code>에 <code>## 공통 계약</code> 절을 <a href="../../../.omp/skills/_baseline/common-contract.md"><code>_baseline/common-contract.md</code></a>와 <b>바이트 단위로 같게</b> 복사한다.</li>
+  <li>기준 파일의 <code>## 계약을 쓰는 스킬</code> 목록에 그 스킬 이름을 추가한다. <code>tools/skills/contract-drift.test.ts</code>가 이 목록과 실제 파일을 대조한다.</li>
+  <li>불릿을 자기 사정으로 바꿔야 하면 <code>## 선언된 예외</code>에 <code>&lt;스킬&gt;|&lt;불릿 번호&gt;|&lt;덧붙인 문자열&gt;</code>로 선언한다. 지금 예외는 <code>divergent-ideator</code>의 2번 하나뿐이다.</li>
+  <li><code>pnpm test</code>로 계약 드리프트 테스트를 통과시킨다. <code>pnpm verify &amp;&amp; pnpm build</code>는 경고 없이 통과해야 한다.</li>
+  <li><code>novel-workflow/references/workflow-modes.md</code>의 해당 모드 단계 표에 새 단계를 넣고 담당·입력·산출·게이트를 채운다.</li>
+  <li><code>.omp/NARRATIVE_REVIEW.md</code>의 라우팅 라벨 표와 Authoring surface 표를 갱신한다. 검수 스킬을 건드리면 「공통 실행 계약」도 맞춘다.</li>
+  <li>새 <code>references/*.md</code>가 있으면 SKILL.md의 참조 표에 <b>로드 시점</b>을 적는다 — 다음 조건 없이 참조 파일을 두지 않는다.</li>
+  <li><code>AGENTS.md</code>의 「프로토타입 원장」 절에 새 산출물 경로나 새 계약이 생기면 반영한다.</li>
+  <li><b>새 OMP 세션에서 discovery를 확인한다.</b> project skill은 세션을 다시 시작해야 <code>/skill:&lt;name&gt;</code>으로 잡힌다(<code>NARRATIVE_REVIEW.md</code> Discovery note).</li>
+</ol>
+
+<h3>새 스킬의 SKILL.md 뼈대</h3>
+
+<pre><code>---
+name: &lt;slug&gt;
+description: "&lt;한 문장 트리거 + 사용하지 말아야 할 때의 대체 스킬&gt;"
+---
+
+## 공통 계약
+&lt;_baseline/common-contract.md의 불릿 8개를 그대로. 예외는 선언된 것만.&gt;
+
+## 목적
+&lt;무엇을 만들고 무엇을 만들지 않는가. 판정하지 않는다는 문장 포함.&gt;
+
+## 사용 시점
+- &lt;트리거 3개 내외&gt;
+
+## 사용하지 말아야 할 때
+- &lt;인접 스킬 이름과 그 스킬이 맡는 일&gt;
+
+## 입력
+- &lt;필수 입력과 결측 시 input-blocked 조건&gt;
+
+## 절차
+1. &lt;근거 고정·RUN_DIR 생성·manifest·스냅샷&gt;  **완료 조건:** …
+   &lt;각 단계에 완료 조건을 붙인다 — 이 레포 스킬의 공통 문체다.&gt;
+
+## 금지
+- &lt;캐논·원고 수정, 최종 선택, 점수·등급, 포맷터·린터·테스트·빌드·커밋·게시&gt;
+
+## 출력 계약
+&lt;경로 하나. 필드 열거. 호출자 반환값(RUN_DIR + 판정).&gt;
+
+## 실패 처리
+- **&lt;어휘&gt;:** &lt;조건과 행동&gt;
+
+## 참조
+
+| 파일 | 로드 시점 |
+|---|---|
+| `references/&lt;x&gt;.md` | &lt;이 판단을 할 때&gt; |</code></pre>
+
+<h2>7. 이 제안서를 어떻게 검증할 것인가</h2>
+
+<ol>
+  <li><b>P0 두 개만 먼저 만든다.</b> <code>story-graph-compiler</code>가 <code>example.md</code> 2장에서 그래프를 만들고, <code>route-replay-runner</code>가 그 그래프의 route 하나를 재생해 evidence를 낸다.</li>
+  <li><b>그 evidence로 검수 하나를 돌린다.</b> <code>narrative-ending-route-review</code>에 그 evidence를 인라인으로 넣고, mechanics 검사가 <code>UNVERIFIABLE</code>에서 <code>PASS|FAIL</code>로 바뀌는지 본다. 바뀌지 않으면 evidence 형식이 계약과 어긋난 것이다.</li>
+  <li><b>그래프를 일부러 망가뜨린다.</b> 선택지 하나의 <code>next</code>를 없는 노드로 바꾸고 <code>route-replay-runner</code>가 <code>schema-invalid</code>로 잡고 <b>증거를 쓰지 않는지</b> 확인한다. 잡지 못하면 도구가 아니다.</li>
+  <li><b>P1은 P0가 안정된 뒤에.</b> 그래프가 없으면 엔딩 설계는 검증할 수 없다.</li>
+</ol>
+
+<h2>8. 착수 결과 — P0 넷 (2026-09-13)</h2>
+
+<table>
+  <thead><tr><th>항목</th><th>변경한 파일</th><th>검증</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>story-graph-compiler</code></td>
+      <td><code>.omp/skills/story-graph-compiler/SKILL.md</code> + <code>references/graph-schema.md</code></td>
+      <td>실제 원고 2장으로 두 번 컴파일 → <code>story-graph.json</code> 바이트 동일(<code>diff</code> 없음). 노드 2, 선택지 6, route 8, <code>open-edge</code> 6, <code>[HYPOTHESIS]</code> 플래그 2.</td>
+    </tr>
+    <tr>
+      <td><code>route-replay-runner</code></td>
+      <td><code>.omp/skills/route-replay-runner/SKILL.md</code> + <code>references/evidence-schema.md</code></td>
+      <td>같은 그래프 실행 → route 8개·step 24, <code>PASS</code>. 결함 주입 3종: dangling <code>next</code> → <code>schema-invalid</code>이고 <b>증거를 쓰지 않음</b>, <code>requires</code> 충족 불가 → <code>FAIL</code>, 선언만 된 플래그 → <code>unset-flag</code> 1.</td>
+    </tr>
+    <tr>
+      <td><code>remains-ledger-maintenance</code> + <code>schema</code></td>
+      <td>같은 <code>SKILL.md</code>에 모드·절차·실패 어휘 추가</td>
+      <td>새 도메인 추가 경로가 생겼다. 검증은 기존 <code>pnpm verify &amp;&amp; pnpm build</code> 게이트 그대로.</td>
+    </tr>
+    <tr>
+      <td>게이트 specialist 정합</td>
+      <td><code>.omp/agents/narrative-gate-specialist.md</code> 전제 문장</td>
+      <td>plan이 없을 때 제약을 <b>추론하지 않고</b> <code>Limitations</code>에 <code>Global Constraints: 판단 자료 부족</code>을 적는다. 출력 경로는 27개 루브릭 색인과 함께 유지 — 주소를 바꾸면 참조 30곳이 흔들린다.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><b>실행이 계약을 하나 고쳤다.</b> 첫 실행에서 <code>unreachable-terminal</code>이 "terminal이 아직 정의되지 않음"과 "정의된 terminal에 도달 불가"를 뭉뚱그려 <code>PASS</code> 옆에 결함처럼 붙었다. 그래서 <code>no-terminal-defined</code>를 분리했다 — 미완성 원고가 결함으로 보고되면 도구를 못 믿는다. 이 수정은 <code>SKILL.md</code>·<code>evidence-schema.md</code>·실행기 세 곳에 함께 반영했다.</p>
+
+<p><b>레포 게이트:</b> <code>pnpm verify</code>(typecheck + biome 248파일 + 501 테스트) 통과, <code>pnpm build</code> 경고 없이 통과. 드리프트 테스트는 새 스킬 2개를 계약 가족으로 인식한다(기준 파일의 「계약을 쓰는 스킬」 목록에 등록).</p>
+
+<div class="next-steps">
+  <h2>같이 보기</h2>
+  <ul>
+    <li><a href="skill-map.html">스킬 지도</a> — 제안의 출발점이 되는 현재 상태</li>
+    <li><a href="gate-index.html">게이트 색인</a> — 어떤 게이트가 어떤 입력을 요구하는가</li>
+    <li><a href="branch-patterns.html">분기 패턴과 수렴 비용</a> — <code>story-graph-architect</code>가 쓸 외부 이론</li>
+    <li><a href="../lessons/0001-run-contract.html">레슨 0001</a> · <a href="../lessons/0002-request-routing.html">0002</a> · <a href="../lessons/0003-scene-card-design.html">0003</a></li>
+    <li><a href="../../../.omp/skills/_baseline/common-contract.md">계약 기준 파일</a> — 새 스킬이 복사할 원문</li>
+  </ul>
+  <p>후보의 우선순위에 이견이 있으면 그 근거를 말하라. 이 문서는 P0/P1의 판단을 근거와 함께 제시할 뿐, 확정하지 않는다.</p>
+</div>
+
+</main>
+
+<footer class="colophon">
+  <p>후보 스킬 제안서 · 2026-09-13 기준 · 진단의 모든 근거는 저장소 파일과 줄 번호로 확인했다. 제안 자체는 확정이 아니다.</p>
+</footer>
+
+</body>
+</html>

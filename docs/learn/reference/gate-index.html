@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>게이트 색인 — G01~G30</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <p class="eyebrow">참조 문서 · 분기 서사 스킬 surface</p>
+  <h1>게이트 색인 G01~G30</h1>
+  <p class="lede">게이트가 <em>무엇을 묻는지</em>만 압축했다. 루브릭 원문은 <code>.omp/narrative-gate-rubrics.md</code>에 있다.</p>
+</header>
+
+<main>
+
+<h2>구조</h2>
+
+<pre><code>G01~G27   전문 리뷰   narrative-gate-specialist (GATE=&lt;NN&gt;)
+   ↓  메모 27개
+G28       점수 종합   narrative-score-synthesis  → 18 공식 키 + 4 supplemental
+   ↓
+G29       등급 판정   narrative-final-verdict    → grade·releaseReadiness·3 verdict
+   ↓
+G30       보고서 조립  narrative-report-assembly  → 13 섹션, 게이트 30개 커버리지</code></pre>
+
+<p>입력 메모의 <code>Reviewed commit</code>·SHA-256이 현재 소스와 다르면 체인이 막힌다. 누락된 게이트를 추측으로 채우지 않는다.</p>
+
+<h2>G01~G27 — 게이트별 한 줄</h2>
+
+<table>
+  <thead><tr><th>Gate</th><th>제목</th><th>호출 상황</th><th>핵심 질문</th></tr></thead>
+  <tbody>
+    <tr><td><code>G01</code></td><td>첫 회차 경험</td><td>전체 첫 회차 구조가 안정된 후</td><td>Hook·중반 긴장·절정 축적이 작동하는가?</td></tr>
+    <tr><td><code>G02</code></td><td>재플레이 가치</td><td>여러 route와 결과가 실행된 후</td><td>첫 엔딩 뒤 다시 할 실제 이유가 남는가?</td></tr>
+    <tr><td><code>G03</code></td><td>진엔딩 의미</td><td>진엔딩·일반 엔딩이 모두 작성된 후</td><td>진엔딩이 단순 행복 보상이 아닌가?</td></tr>
+    <tr><td><code>G04</code></td><td>선택의 실제 대가</td><td>주요 선택과 후속 state가 구현된 후</td><td>선택이 장기 결과와 대가를 만드는가?</td></tr>
+    <tr><td><code>G05</code></td><td>분기와 교차 인과</td><td>전체 선택 tree가 존재한 후</td><td>분기와 합류가 실제 사건 차이를 만드는가?</td></tr>
+    <tr><td><code>G06</code></td><td>인물 욕망과 변화</td><td>주요 인물 장면과 route가 작성된 후</td><td>인물이 욕망·약점·변화·독립 행동을 갖는가?</td></tr>
+    <tr><td><code>G07</code></td><td>행위 주도권과 대안</td><td>대안 해결·실패 route가 구현된 후</td><td>플레이어가 작가의 정답만 찾는가?</td></tr>
+    <tr><td><code>G08</code></td><td>사건 발생 원인</td><td>전체 사건 graph가 안정된 후</td><td>각 주요 사건에 실제 원인이 있는가?</td></tr>
+    <tr><td><code>G09</code></td><td>복선과 회수</td><td>본문·엔딩 회수 장면이 모두 준비된 후</td><td>복선이 자연스럽게 회수되는가?</td></tr>
+    <tr><td><code>G10</code></td><td>반전과 예상 가능성</td><td>공개 정보와 반전이 고정된 후</td><td>반전이 이전 장면을 재해석하는가?</td></tr>
+    <tr><td><code>G11</code></td><td>애착과 감정 보상</td><td>인물별 climax와 ending이 완성된 후</td><td>애착·충돌·손실·보상이 축적되는가?</td></tr>
+    <tr><td><code>G12</code></td><td>악역과 제도 압력</td><td>조직·제도 압력의 결과가 구현된 후</td><td>제도/악역이 실제로 선택을 압박하는가?</td></tr>
+    <tr><td><code>G13</code></td><td>세계 반응과 독립성</td><td>미개입·다른 route 결과가 준비된 후</td><td>세계와 NPC가 플레이어 없이도 움직이는가?</td></tr>
+    <tr><td><code>G14</code></td><td>모든 엔딩의 종결</td><td>모든 채택 엔딩이 완성된 후</td><td>모든 엔딩이 6축 종결을 갖는가?</td></tr>
+    <tr><td><code>G15</code></td><td>실패 이후의 이야기</td><td>실패 route와 후속 결과가 준비된 후</td><td>실패가 Game Over가 아니라 의미 있는 이야기를 만드는가?</td></tr>
+    <tr><td><code>G16</code></td><td>다중 엔딩 균형</td><td>다중 엔딩 result set이 실행된 후</td><td>진엔딩만 정답이거나 한 route가 모두 소비하지 않는가?</td></tr>
+    <tr><td><code>G17</code></td><td>재플레이 동기 채점</td><td>G02·G16 근거와 실제 route set이 준비된 후</td><td>A~G 재플레이 점수가 근거 있는가?</td></tr>
+    <tr><td><code>G18</code></td><td>후회와 책임 귀속</td><td>주요 선택의 전후 결과가 확인된 후</td><td>합리적인 후회와 공정한 정보가 있는가?</td></tr>
+    <tr><td><code>G19</code></td><td>정보 공정성과 다회차 지식</td><td>route별 발견 정보와 진실이 고정된 후</td><td>Layer 1/2/3가 공정하게 연결되는가?</td></tr>
+    <tr><td><code>G20</code></td><td>긴장과 장면 호흡</td><td>전체 장·노드 순서가 고정된 후</td><td>확인 반복과 절정 분산이 없는가?</td></tr>
+    <tr><td><code>G21</code></td><td>주제와 가치 충돌</td><td>선택·인물·엔딩이 모두 작성된 후</td><td>핵심 명제가 행동으로 시험되는가?</td></tr>
+    <tr><td><code>G22</code></td><td>세계관과 CEO 직업</td><td>세계관·CEO 직업 선택이 구현된 후</td><td>세계 조건과 직업 판타지가 실제 선택을 바꾸는가?</td></tr>
+    <tr><td><code>G23</code></td><td>경영과 현장 위기</td><td>경영 결정과 현장 위기가 연결된 후</td><td>관리 시스템과 드라마가 서로 원인이 되는가?</td></tr>
+    <tr><td><code>G24</code></td><td>분기와 지식 모순</td><td>전체 상태·본문·엔딩이 안정된 후</td><td>설정·지식·상태·시간축 모순이 없는가?</td></tr>
+    <tr><td><code>G25</code></td><td>몰입과 플레이 언어</td><td>실제 표시 문구와 선택지가 고정된 후</td><td>검증용 언어가 플레이 몰입을 깨지 않는가?</td></tr>
+    <tr><td><code>G26</code></td><td>작가 개입과 플롯 보호</td><td>위험·실패·생존 결과가 모두 정의된 후</td><td>특정 인물이 설명 없이 보호되는가?</td></tr>
+    <tr><td><code>G27</code></td><td>독자적 실행</td><td>전체 작품의 실행이 안정된 후</td><td>고유한 세계·직업·선택 결합이 남는가?</td></tr>
+  </tbody>
+</table>
+
+<h2>18개 공식 점수 키의 소유자</h2>
+
+<p><code>narrative-score-synthesis</code>가 만드는 공식 키 18개의 primary owner는 다음 게이트다. 나머지 게이트(G15·G16·G17·G18·G19·G22·G23·G24·G26)는 <b>점수를 소유하지 않고</b> 결론과 finding을 공급한다.</p>
+
+<table>
+  <thead><tr><th>#</th><th>키(게이트 라벨)</th><th>Gate</th><th>#</th><th>키(게이트 라벨)</th><th>Gate</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>First Playthrough</td><td>G01</td><td>10</td><td>Twist</td><td>G10</td></tr>
+    <tr><td>2</td><td>Replay Value</td><td>G02</td><td>11</td><td>Emotional Payoff</td><td>G11</td></tr>
+    <tr><td>3</td><td>True Ending</td><td>G03</td><td>12</td><td>Villain</td><td>G12</td></tr>
+    <tr><td>4</td><td>Choice Consequence</td><td>G04</td><td>13</td><td>World Reactivity</td><td>G13</td></tr>
+    <tr><td>5</td><td>Branching</td><td>G05</td><td>14</td><td>Ending Quality</td><td>G14</td></tr>
+    <tr><td>6</td><td>Character</td><td>G06</td><td>15</td><td>Theme</td><td>G21</td></tr>
+    <tr><td>7</td><td>Player Agency</td><td>G07</td><td>16</td><td>Pacing</td><td>G20</td></tr>
+    <tr><td>8</td><td>Causality</td><td>G08</td><td>17</td><td>Immersion</td><td>G25</td></tr>
+    <tr><td>9</td><td>Foreshadowing / Payoff</td><td>G09</td><td>18</td><td>Originality</td><td>G27</td></tr>
+  </tbody>
+</table>
+
+<p><b>Supplemental 4키</b>(공식 18과 별도): <code>World Integration</code>·<code>Professional Fantasy</code>는 G22가, <code>Management–Story Integration</code>·<code>Field / Crisis Quality</code>는 G23이 소유한다. 각 값은 정수 0–100 또는 <code>null</code>이다.</p>
+
+<div class="callout callout--warn">
+  <span class="callout__label">정본 부재</span>
+  <p><code>narrative-report-assembly</code>는 "최종 검토 스키마에 정의된 공식 점수 키를 정확히 18개" 쓰라고 요구하지만, 저장소에 그 스키마 파일이 없다(2026-09-13 확인). 현재 유일한 열거는 위 primary owner map이다. 이 표를 정본으로 승격할지, 스키마 파일을 복원할지는 사람이 정할 일이다.</p>
+</div>
+
+<h2>G28 · G29 · G30</h2>
+
+<table>
+  <thead><tr><th>Gate</th><th>스킬</th><th>핵심 규칙</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>G28</code></td>
+      <td><code>narrative-score-synthesis</code></td>
+      <td>같은 근본 원인의 finding을 <code>gate + affected location + normalized causal defect</code>로 병합하고 가장 높은 severity를 보존. <b>충돌 점수를 평균내지 않는다</b> — 근거로 판정하거나 <code>input-blocked</code>. 근거 없는 키는 <code>null</code>. <code>formalExportReady</code>를 반환.</td>
+    </tr>
+    <tr>
+      <td><code>G29</code></td>
+      <td><code>narrative-final-verdict</code></td>
+      <td>verdict 5필드를 닫힌 enum으로 확정: <code>grade</code>(S|A|B|C|D|F), <code>releaseReadiness</code>(Ready|Conditional|Not Ready), <code>replayValue</code>(Low|Medium|High|Exceptional), <code>trueEnding</code>(Weak|Adequate|Strong|Definitive), <code>choiceQuality</code>(Weak|Adequate|Strong|Exceptional).</td>
+    </tr>
+    <tr>
+      <td><code>G30</code></td>
+      <td><code>narrative-report-assembly</code></td>
+      <td>13개 섹션을 순서대로: Executive Verdict · Scorecard · Critical Problems · World &amp; Professional Fantasy Analysis · Character &amp; World Independence Analysis · Replayability Analysis · True Ending Analysis · Choice Tree Analysis · Player Experience Simulation · Strongest Elements · Required Revisions · Gate Coverage · FINAL VERDICT. finding을 근본 원인 단위로 중복 제거. 메모를 고치지 않는다.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>G29의 상한 규칙 — 외우지 말고 여기서 확인한다</h3>
+
+<table>
+  <thead><tr><th>규칙</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td>핵심 게이트 상한</td><td>Choice Consequence · Player Agency · Replay Value · Ending Quality · Causality 중 하나라도 50 미만이면 grade는 C 이하.</td></tr>
+    <tr><td>Critical/Major 금지</td><td>해결되지 않은 Critical/Major가 남으면 <code>Ready</code>를 쓰지 않는다. <code>Conditional</code> 또는 <code>Not Ready</code>.</td></tr>
+    <tr><td>UNVERIFIABLE 핵심 게이트</td><td>핵심 게이트가 <code>null</code>/<code>UNVERIFIABLE</code>이면 <code>Ready</code>를 쓰지 않는다.</td></tr>
+    <tr><td>범위</td><td>서사 출시 준비도만 판정한다. 제품 전체 승인·투자 승인을 대신 결정하지 않는다.</td></tr>
+  </tbody>
+</table>
+
+<p>등급 의미: S(AAA 서사 품질, 모든 critical 게이트와 근거 통과 시에만 Ready) · A(구조 결함 없는 출시 가능) · B(개선 여지가 한정된 강한 초고 → Conditional) · C(구조 수정 필요) · D(대규모 재작성 필요) · F(의도한 경험이 현재 지지 불가).</p>
+
+<h2>호출 예</h2>
+
+<pre><code>GATE=G05 narrative-gate-specialist
+/skill:narrative-scene-after-generation SCENE_ID=scene-03
+/skill:narrative-ending-route-review ENDING_ID=E_ru_true ROUTE_ID=R_dusik_trust
+/skill:narrative-multi-ending-integration</code></pre>
+
+<p>G28~G30은 스킬 이름을 직접 부른다(router가 계획에 넣지 않는다).</p>
+
+<div class="next-steps">
+  <h2>같이 보기</h2>
+  <ul>
+    <li><a href="skill-pipeline.html">워크플로우 한 장</a> — 이 게이트들이 파이프라인 어디에 앉는가</li>
+    <li><a href="skill-map.html">스킬 지도</a> — 누가 이 게이트들을 실행하는가</li>
+    <li><a href="candidate-skills.html">후보 스킬 제안서</a> — 게이트를 <code>UNVERIFIABLE</code>로 만드는 입력 부재</li>
+    <li><a href="../lessons/0001-run-contract.html">레슨 0001</a> — <code>Status</code>·severity·<code>null</code> 규칙</li>
+  </ul>
+</div>
+
+</main>
+
+<footer class="colophon">
+  <p>게이트 색인 · 2026-09-13 기준 · 출처: <code>.omp/narrative-gate-rubrics.md</code>, <code>.omp/agents/narrative-gate-specialist.md</code>, <code>.omp/skills/narrative-{score-synthesis,final-verdict,report-assembly}/SKILL.md</code></p>
+</footer>
+
+</body>
+</html>
