@@ -9,7 +9,12 @@ import { RECHANCE_LIMIT } from "./run";
 const stageCard = (id: StageId): StageCard => ({
   id,
   title: `제목 ${id}`,
-  screen: `화면 ${id}`,
+  document: {
+    heading: `문서 ${id}`,
+    meta: [`메타 ${id}`],
+    items: [`항목 ${id}`],
+    tail: `끝 ${id}`,
+  },
   prompt: `지시 ${id}`,
   partyLines: [],
 });

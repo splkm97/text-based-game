@@ -23,7 +23,7 @@ export function PlayScreen() {
   const stage = content.stages[run.stage];
   return (
     <section aria-label="복구 현장" className="flex flex-1 flex-col gap-3 p-3">
-      <BriefingPanel screen={stage.screen} />
+      <BriefingPanel document={stage.document} />
       <p className="text-sm leading-prose text-parchment">{stage.prompt}</p>
       {stage.partyLines.length > 0 && (
         <ul aria-label="동행" className="flex flex-col gap-2">

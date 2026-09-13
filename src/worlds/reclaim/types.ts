@@ -37,10 +37,22 @@ export type RunState = {
 // Content cards
 // ---------------------------------------------------------------------------
 
+/**
+ * A안 문서 얼굴(prototype-briefing-format.html): heading은 발신명의·문서명, meta는
+ * 부서·문서번호·수신·제목 같은 작은 머리 줄, items는 번호 항목(`<ol>` 본문), tail은
+ * 직인생략·붙임·끝 같은 문서 끝 줄. 모든 문자열은 플레인 리터럴이다.
+ */
+export type StageDocument = {
+  readonly heading: string;
+  readonly meta: readonly string[];
+  readonly items: readonly string[];
+  readonly tail: string;
+};
+
 export type StageCard = {
   readonly id: StageId;
   readonly title: string;
-  readonly screen: string;
+  readonly document: StageDocument;
   readonly prompt: string;
   readonly partyLines: readonly {
     readonly character: CharacterId;

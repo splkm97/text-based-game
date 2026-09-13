@@ -52,7 +52,14 @@ test("공문·서술·동행 대사·행동 버튼을 CONTENT 문면 그대로 �
   store.getState().start();
   mount(store);
   const field = CONTENT.stages.field;
-  expect(screen.getByText(field.screen)).toBeDefined();
+  expect(screen.getByText(field.document.heading)).toBeDefined();
+  for (const line of field.document.meta) {
+    expect(screen.getByText(line)).toBeDefined();
+  }
+  for (const item of field.document.items) {
+    expect(screen.getByText(item)).toBeDefined();
+  }
+  expect(screen.getByText(field.document.tail)).toBeDefined();
   expect(screen.getByText(field.prompt)).toBeDefined();
   expect(screen.getByRole("heading", { name: field.title })).toBeDefined();
   for (const line of field.partyLines) {
