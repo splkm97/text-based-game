@@ -2,5 +2,6 @@ node_modules
 dist
 dev-dist
 .outline
+.odin
 *.local
 .DS_Store
