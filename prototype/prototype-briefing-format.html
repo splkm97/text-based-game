@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE — 아침 브리핑 서식 세 안</title>
+<style>
+  :root {
+    --ink-deep: #0a0d11; --ink: #202833; --slate: #8892a0; --ash: #aeb8c2;
+    --parchment: #f4f7f9; --ember: #ff6a1a; --blood: #ff5257; --moss: #3fb571;
+    --sky: #5aa0ea; --gold: #f5c400; --dusk: #4d5866;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ink-deep); color: var(--parchment);
+    font-family: "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+    word-break: keep-all; line-height: 1.7; padding: 0 0 110px 0;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 32px 24px 0 24px; }
+
+  .tag { display: inline-block; border: 1px solid var(--blood); color: var(--blood);
+    font-size: 12px; letter-spacing: 2px; padding: 3px 9px; }
+  h1 { font-size: 30px; line-height: 1.25; margin: 14px 0 8px 0; }
+  .q { font-size: 15px; color: var(--ash); margin: 0 0 6px 0; }
+  .assume { font-size: 13px; color: var(--slate); border-left: 2px solid var(--dusk);
+    padding-left: 12px; margin: 16px 0 0 0; }
+
+  .fixed { border: 1px solid var(--slate); background: var(--ink); padding: 16px 18px;
+    margin: 26px 0 0 0; }
+  .fixed h2 { font-size: 12px; letter-spacing: 2px; color: var(--ember); margin: 0 0 10px 0;
+    font-weight: 400; }
+  .fixed ul { margin: 0; padding-left: 18px; font-size: 14px; color: var(--ash); }
+  .fixed li { margin-bottom: 5px; }
+  .fixed b { color: var(--parchment); }
+
+  .variant { display: none; margin-top: 30px; }
+  .variant.on { display: block; }
+  .vhead { border-top: 2px solid var(--ember); padding-top: 16px; }
+  .vkey { font-size: 12px; letter-spacing: 3px; color: var(--ember); }
+  .vname { font-size: 26px; margin: 6px 0 10px 0; }
+  .vlead { font-size: 16px; margin: 0; }
+
+  .phone { max-width: 390px; margin: 24px auto 0 auto; border: 1px solid var(--slate);
+    background: var(--ink-deep); }
+  .phone .ph { padding: 10px 14px; border-bottom: 1px solid var(--dusk); font-size: 12px;
+    letter-spacing: 1px; color: var(--slate); background: var(--ink); }
+  .phone .pb { padding: 16px 16px 18px 16px; }
+  .caption { text-align: center; font-size: 12px; color: var(--dusk); margin-top: 10px; }
+
+  /* 공문 — 문서 서식 */
+  .doc { border: 1px solid var(--ash); background: #f4f7f9; color: #0a0d11;
+    font-family: "Apple SD Gothic Neo", "Noto Sans KR", serif; padding: 14px 15px;
+    font-size: 13px; line-height: 1.75; }
+  .doc .org { text-align: center; font-size: 15px; letter-spacing: 1px;
+    border-bottom: 2px solid #0a0d11; padding-bottom: 8px; margin-bottom: 10px; }
+  .doc .meta { font-size: 11px; color: #4d5866; }
+  .doc .subj { border-top: 1px solid #8892a0; border-bottom: 1px solid #8892a0;
+    padding: 7px 0; margin: 10px 0; font-size: 14px; }
+  .doc ol { margin: 0; padding-left: 18px; }
+  .doc li { margin-bottom: 5px; }
+  .doc .sign { text-align: center; margin-top: 14px; padding-top: 10px;
+    border-top: 1px solid #8892a0; font-size: 14px; letter-spacing: 1px; }
+  .doc .foot { font-size: 11px; color: #4d5866; margin-top: 8px; }
+  .doc .sign { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .seal { width: 34px; height: 34px; border: 2px solid #c0392b; border-radius: 50%;
+    color: #c0392b; font-size: 9px; line-height: 1.15; display: flex; align-items: center;
+    justify-content: center; text-align: center; transform: rotate(-8deg); flex: 0 0 auto; }
+  .seal-omit { border: 1px solid #4d5866; color: #4d5866; font-size: 11px;
+    padding: 3px 7px; flex: 0 0 auto; }
+  .sealpick { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+  .sealpick > div { border: 1px solid var(--dusk); padding: 12px; text-align: center; }
+  .sealpick .lab { font-size: 12px; color: var(--slate); margin-bottom: 10px;
+    letter-spacing: 1px; }
+  .sealpick .box { background: #f4f7f9; color: #0a0d11; padding: 12px 8px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    font-size: 14px; letter-spacing: 1px; }
+
+  /* 공문 — 발췌 */
+  .slip { border-left: 3px solid var(--sky); background: var(--ink); padding: 12px 14px;
+    font-size: 14px; line-height: 1.75; }
+  .slip .no { font-size: 11px; color: var(--slate); letter-spacing: 1px; margin-bottom: 6px; }
+  .slip .from { font-size: 11px; color: var(--sky); margin-top: 9px; }
+
+  /* 뉴스 */
+  .news { margin-top: 18px; border: 1px solid var(--dusk); background: #151b24; }
+  .news .band { background: var(--blood); color: #f4f7f9; font-size: 11px;
+    letter-spacing: 2px; padding: 4px 10px; display: inline-block; }
+  .news .body { padding: 11px 13px; font-size: 14px; line-height: 1.7; }
+  .news .lower { border-top: 1px solid var(--dusk); background: #0a0d11; padding: 9px 13px;
+    font-size: 13px; color: var(--gold); }
+  .news .anchor { color: var(--ash); font-size: 13px; }
+
+  .oneline { border-left: 3px solid var(--gold); padding: 10px 13px; font-size: 14px;
+    color: var(--gold); margin-top: 16px; background: var(--ink); }
+
+  .pair { display: grid; grid-template-columns: 1fr; gap: 0; }
+  .pair .half { border: 1px solid var(--dusk); }
+  .pair .half + .half { border-top: none; }
+  .pair .hh { padding: 7px 12px; font-size: 11px; letter-spacing: 2px;
+    border-bottom: 1px solid var(--dusk); }
+  .pair .hh.doc { background: var(--ink); color: var(--sky); }
+  .pair .hh.news { background: var(--ink); color: var(--blood); }
+  .pair .hb { padding: 12px 13px; font-size: 14px; line-height: 1.7; }
+  .gapmark { text-align: center; font-size: 13px; color: var(--ember); padding: 10px 0; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 22px; }
+  th, td { border: 1px solid var(--dusk); padding: 10px 13px; text-align: left;
+    vertical-align: top; font-size: 14px; }
+  th { width: 176px; color: var(--ember); font-weight: 400; font-size: 13px;
+    letter-spacing: 1px; background: var(--ink); }
+  .variant td b { color: var(--gold); }
+
+  .cost { border: 1px solid var(--blood); padding: 14px 17px; margin-top: 20px; }
+  .cost .l { font-size: 12px; letter-spacing: 2px; color: var(--blood); margin-bottom: 6px; }
+  .cost .d { font-size: 14px; color: var(--ash); margin: 0; }
+
+  .switcher { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+    display: flex; align-items: stretch; border: 1px solid var(--slate);
+    background: var(--ink); }
+  .switcher button { background: none; border: none; color: var(--parchment);
+    font: inherit; font-size: 18px; padding: 10px 18px; cursor: pointer; min-width: 48px;
+    min-height: 48px; }
+  .switcher button:hover { background: var(--ember); color: var(--ink-deep); }
+  .switcher .cur { padding: 10px 20px; border-left: 1px solid var(--slate);
+    border-right: 1px solid var(--slate); font-size: 14px; min-width: 240px;
+    text-align: center; display: flex; align-items: center; justify-content: center; }
+  .hint { position: fixed; left: 50%; bottom: 4px; transform: translateX(-50%);
+    font-size: 11px; color: var(--dusk); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="tag">PROTOTYPE — 버릴 파일</span>
+  <h1>아침 브리핑 — 공문과 뉴스의 서식 세 안</h1>
+  <p class="q">질문: 협회 공문의 서식과 말투, 뉴스 자막의 톤을 무엇으로 잡을 것인가. 그리고 <b>두 채널을 둘 이유가 무엇인가</b>.</p>
+  <div style="border: 1px solid var(--moss); color: var(--moss); padding: 12px 16px; margin: 18px 0 0 0; font-size: 14px;">
+    <b>판정 — 2026-09-10, 안 A(서식 그대로) 채택.</b> A만 수정본이고 B·C는 탈락 시점 그대로 얼려 둔
+    증거다. 정본은 <code>docs/setting/tone.md</code>.
+  </div>
+  <p class="assume">둘을 따로 세우지 않은 이유 — 공문과 뉴스는 <b>하루가 열릴 때 같은 화면에 나란히</b> 온다(`forces.md`). 서식을 따로 정하면 둘이 왜 둘인지가 여전히 안 풀린다. 세 안은 그 「왜 둘인가」에 각자 다르게 답한다. 견본의 사건은 <b>1막 첫 아침 — 12번 육교 발주</b>로 통일했으니 셋을 같은 조건에서 견줄 수 있다.</p>
+
+  <div class="fixed">
+    <h2>세 안이 공통으로 지켜야 하는 것</h2>
+    <ul>
+      <li>협회는 <b>얼굴 없는 악역</b>이다. 대화하는 인물로 나오지 않으므로 <b>서식이 곧 그 캐릭터다.</b></li>
+      <li>발신명의는 <b>서울특별시 괴수재해대처본부 도시재건협회</b>. 아무도 기억 못 하는 이름이 매일 아침 한 줄로 지나간다.</li>
+      <li>어휘는 정해져 있다 — 특보 · 경보 · 주의보 · 해제 / 1종 · 2종 · 제한 · 무자격 / 잔존 생물 · 잔당.</li>
+      <li><b>폰 한 화면에서 매일 읽힌다.</b> 견본을 390px 폭에 그린 것은 그래서다.</li>
+    </ul>
+  </div>
+
+  <!-- ================= A ================= -->
+  <section class="variant" data-v="A">
+    <div class="vhead">
+      <div class="vkey">안 A</div>
+      <div class="vname">서식 그대로</div>
+      <p class="vlead">공문을 진짜 공문의 꼴로 낸다. 문서번호, 수신, 제목, 근거, 본문, 발신명의까지. 뉴스도 화면 그대로 — 앵커 멘트와 하단 자막.</p>
+    </div>
+
+    <div class="phone">
+      <div class="ph">아침 · 1일차</div>
+      <div class="pb">
+        <div class="doc">
+          <div class="org">서울특별시 괴수재해대처본부 도시재건협회</div>
+          <div class="meta">도시정비과 · 재건정비 제20XX-0417호<br>수신 &nbsp;수신자 참조 &nbsp;(경유)</div>
+          <div class="subj"><b>제목</b> &nbsp;구로 경인로 12번 육교 잔해 정리 발주</div>
+          <ol>
+            <li>귀사의 무궁한 발전을 기원합니다.</li>
+            <li>표제 구간의 상판 붕괴 잔해 및 노후 구조물 철거를 아래와 같이 발주하니 기한 내 시행하시기 바랍니다.<br>
+              가. 공사기한 5일 &nbsp;나. 대금 180만원</li>
+            <li>작업 중 <b>잔존 생물</b> 발견 시 즉시 통보하여야 하며 자체 처리를 금합니다.</li>
+          </ol>
+          <div class="sign">도시재건협회장 <span class="seal-omit">직인생략</span></div>
+          <div class="foot">붙임 1. 구간 도면 1부. &nbsp;끝.</div>
+        </div>
+
+        <div class="news">
+          <span class="band">뉴 스</span>
+          <div class="body"><span class="anchor">앵커</span> — 「어젯밤 11시 40분, 구로구 오류동에 주의보가 발령됐습니다. 인명 피해는 없었고 오늘 새벽 3시 12분 해제됐습니다.」</div>
+          <div class="lower">오류동 주의보 · 23:40 발령 → 03:12 해제 · 인명피해 없음</div>
+        </div>
+      </div>
+    </div>
+    <p class="caption">390px — 실제 폰 폭</p>
+
+    <div class="sealpick">
+      <div>
+        <div class="lab">직인생략</div>
+        <div class="box">도시재건협회장 <span class="seal-omit">직인생략</span></div>
+      </div>
+      <div>
+        <div class="lab">직인</div>
+        <div class="box">도시재건협회장 <span class="seal">도시<br>재건</span></div>
+      </div>
+    </div>
+    <p class="caption">발신명의 우측 — 둘 중 하나를 고른다</p>
+
+    <table>
+      <tr><th>공문의 꼴</th><td>완전한 문서. 문서번호 · 수신 · 경유 · 제목 · 항목 번호 · 발신명의 · <b>직인</b> · 붙임.</td></tr>
+      <tr><th>직인</th><td><b>「직인생략」</b>이면 — 폐허로 보내는 공문에 도장 찍을 것도 없다는 뜻이 되어 얼굴 없음이 한 단계 더 간다. <b>실제 직인</b>이면 — 매일 아침 붉은 도장이 하나씩 찍혀 오고, 그 무게가 관료제의 압박이 된다. 어느 쪽이든 <b>매일 같은 자리에 있다</b>.</td></tr>
+      <tr><th>연도</th><td>문서번호는 <b>제20XX-0417호</b>. 연도는 정하지 않았고 그때까지 20XX로 쓴다.</td></tr>
+      <tr><th>말투</th><td><b>「귀사의 무궁한 발전을 기원합니다」</b>가 매일 온다. 폐허를 치우라는 공문의 첫 줄이 그것이라는 게 이 게임의 유머다.</td></tr>
+      <tr><th>뉴스</th><td>앵커 멘트 + 하단 자막 바. <b>지명과 시각을 정확히 말한다</b> — 「서부」 같은 뭉뚱그린 말은 쓰지 않는다. 발령과 해제의 시각이 분 단위로 나오므로 플레이어는 그 경보가 몇 시간짜리였는지 안다.</td></tr>
+      <tr><th>두 채널을 둔 이유</th><td><b>매체가 다르다.</b> 하나는 나에게 온 문서고 하나는 남들이 보는 화면이다. 내용이 겹쳐도 상관없다 — 겹치는 것 자체가 관료제의 소음이다.</td></tr>
+    </table>
+
+    <div class="cost">
+      <div class="l">대가</div>
+      <p class="d">무겁다. 문서 머리(수신·경유·제목·근거)가 폰 화면의 절반을 먹고, 그걸 <b>매일 아침</b> 읽어야 한다. 첫날은 인상적이지만 12일차에도 인상적일지는 다른 문제다. 건너뛰기 쉬운 UI를 함께 설계해야 한다.</p>
+    </div>
+  </section>
+
+  <!-- ================= B ================= -->
+  <section class="variant" data-v="B">
+    <div class="vhead">
+      <div class="vkey">안 B</div>
+      <div class="vname">발췌</div>
+      <p class="vlead">공문에서 회사에 해당하는 줄만 뽑는다. 문서번호 한 줄과 발신명의 한 줄만 서식의 흔적으로 남고, 나머지는 본문 두세 줄이다. 뉴스도 자막 한 줄.</p>
+    </div>
+
+    <div class="phone">
+      <div class="ph">아침 · 1일차</div>
+      <div class="pb">
+        <div class="slip">
+          <div class="no">재건정비 제20XX-0417호</div>
+          구로 경인로 12번 육교 정비 발주. 상판 붕괴 잔해 및 노후 구조물 철거.<br>
+          기한 5일 · 대금 180만.<br>
+          <b>잔존 생물 발견 시 통보 의무 있음. 자체 처리 금함.</b>
+          <div class="from">서울특별시 괴수재해대처본부 도시재건협회 도시정비과</div>
+        </div>
+        <div class="oneline">뉴스 — 「어젯밤 서부 주의보, 새벽에 해제.」</div>
+      </div>
+    </div>
+    <p class="caption">390px — 실제 폰 폭</p>
+
+    <table>
+      <tr><th>공문의 꼴</th><td>발췌. 서식의 흔적은 <b>문서번호와 발신명의 두 줄</b>뿐이고, 그 두 줄이 「이건 공문이다」를 짊어진다.</td></tr>
+      <tr><th>말투</th><td>명사형 종결과 「~할 것」. 인사말 없음. <b>건조함이 분량이 아니라 문장에서 나온다.</b></td></tr>
+      <tr><th>뉴스</th><td>한 줄. 자막만 있고 앵커는 없다.</td></tr>
+      <tr><th>두 채널을 둔 이유</th><td><b>길이가 다르다.</b> 공문은 나에게 시키는 것이고 뉴스는 세상 소식이라 한 줄이면 족하다. 뉴스가 짧은 것이 곧 「남의 일」이라는 뜻이다.</td></tr>
+    </table>
+
+    <div class="cost">
+      <div class="l">대가</div>
+      <p class="d">서식의 압박이 약하다. 매일 읽기는 좋은데, 협회가 <b>문자메시지 보내는 존재</b>가 될 위험이 있다. 「서식이 곧 캐릭터」라는 전제를 두 줄에 다 거는 셈이다.</p>
+    </div>
+  </section>
+
+  <!-- ================= C ================= -->
+  <section class="variant" data-v="C">
+    <div class="vhead">
+      <div class="vkey">안 C</div>
+      <div class="vname">대조</div>
+      <p class="vlead">같은 일을 공문과 뉴스가 <b>다르게 말하는 것</b>을 나란히 놓는다. 두 채널을 둔 이유가 형식 자체에 들어간다 — 협회가 무엇을 안 적는지가 매일 아침 보인다.</p>
+    </div>
+
+    <div class="phone">
+      <div class="ph">아침 · 1일차</div>
+      <div class="pb">
+        <div class="pair">
+          <div class="half">
+            <div class="hh doc">공문 · 재건정비 제20XX-0417호</div>
+            <div class="hb">
+              구로 경인로 12번 육교 정비 발주. 기한 5일 · 대금 180만.<br>
+              <b>잔존 생물 발견 시 통보 의무 있음.</b>
+            </div>
+          </div>
+          <div class="half">
+            <div class="hh news">뉴스 · 어젯밤</div>
+            <div class="hb">
+              「2년 만에 육교가 치워진다니 반갑다는 주민도 있지만, <b>왜 지금이냐</b>는 말도 나옵니다.」
+            </div>
+          </div>
+        </div>
+        <div class="gapmark">↑ 공문은 「왜 지금」을 적지 않는다</div>
+      </div>
+    </div>
+    <p class="caption">390px — 실제 폰 폭</p>
+
+    <table>
+      <tr><th>공문의 꼴</th><td>B와 같은 발췌. 다만 <b>항상 뉴스와 짝으로만</b> 나온다.</td></tr>
+      <tr><th>말투</th><td>공문은 사실과 의무만. 뉴스는 <b>사람의 말</b>을 옮긴다 — 주민, 상인, 이름 없는 목격자.</td></tr>
+      <tr><th>뉴스</th><td>협회가 안 적은 것을 흘린다. 항상은 아니고, 흘리는 날과 그냥 받아 적는 날이 섞인다.</td></tr>
+      <tr><th>두 채널을 둔 이유</th><td><b>이것이 답이다.</b> 공문은 협회가 인정한 것만 적고 뉴스는 인정하지 않은 것도 흘린다. 그 틈이 <b>은폐를 조금씩 보여주는 통로</b>가 된다 — 2막 격리 병동과 3막 「문」이 그 틈에서 자란다.</td></tr>
+    </table>
+
+    <div class="cost">
+      <div class="l">대가</div>
+      <p class="d">두 블록이 세로를 먹고, 매일 두 개를 읽어야 한다. 그리고 <b>뉴스가 매일 뭔가를 흘리면 폭로가 싸진다</b> — 흘리는 날과 안 흘리는 날의 비율을 콘텐츠가 관리해야 한다. 아침 텍스트를 두 배로 써야 한다는 뜻이기도 하다.</p>
+    </div>
+  </section>
+</div>
+
+<div class="switcher">
+  <button type="button" data-step="-1" aria-label="이전 안">←</button>
+  <div class="cur"><span id="label"></span></div>
+  <button type="button" data-step="1" aria-label="다음 안">→</button>
+</div>
+<div class="hint">← → 키로도 넘긴다 · 주소의 ?variant= 로 공유된다</div>
+
+<script>
+  var VARIANTS = ["A", "B", "C"];
+  var NAMES = { A: "A · 서식 그대로", B: "B · 발췌", C: "C · 대조" };
+
+  // file:// 에서 더블클릭으로 열린다. pushState 가 막히므로 해시로 대체하고, 해시가 있으면 해시가 이긴다.
+  var state = null;
+
+  function fromUrl() {
+    var h = location.hash.replace("#", "");
+    if (VARIANTS.indexOf(h) !== -1) return h;
+    var q = new URLSearchParams(location.search).get("variant");
+    if (VARIANTS.indexOf(q) !== -1) return q;
+    return "A";
+  }
+
+  function render() {
+    var sections = document.querySelectorAll(".variant");
+    var i;
+    for (i = 0; i < sections.length; i++) {
+      sections[i].classList.toggle("on", sections[i].dataset.v === state);
+    }
+    document.getElementById("label").textContent = NAMES[state];
+    document.title = `PROTOTYPE — 브리핑 ${NAMES[state]}`;
+  }
+
+  function sync() {
+    var url = new URL(location.href);
+    url.searchParams.set("variant", state);
+    try {
+      history.pushState({ variant: state }, "", url);
+    } catch (_err) {
+      location.hash = state;
+    }
+  }
+
+  function go(step) {
+    var i = VARIANTS.indexOf(state);
+    state = VARIANTS[(i + step + VARIANTS.length) % VARIANTS.length];
+    render();
+    sync();
+    window.scrollTo({ top: 0 });
+  }
+  var buttons = document.querySelectorAll(".switcher button");
+  var b;
+  for (b = 0; b < buttons.length; b++) {
+    buttons[b].addEventListener("click", (e) => {
+      go(Number(e.currentTarget.dataset.step));
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    var el = document.activeElement;
+    if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
+    if (e.key === "ArrowLeft") go(-1);
+    if (e.key === "ArrowRight") go(1);
+  });
+
+  function reread() { state = fromUrl(); render(); }
+  window.addEventListener("popstate", reread);
+  window.addEventListener("hashchange", reread);
+  reread();
+</script>
+</body>
+</html>
