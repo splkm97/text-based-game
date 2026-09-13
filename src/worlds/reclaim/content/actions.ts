@@ -1,0 +1,231 @@
+// One card per ActionId: the button line, the refusal reason shown when a guard fails,
+// and the one-line run record written on success. All strings are plain literals —
+// the editor locates cards by the literal `id`. Deny/result never carry numbers;
+// the UI renders quantities from state.
+
+import type { ActionId } from "../ids";
+import type { ActionText } from "../types";
+
+export const ACTIONS_TEXT: Readonly<Record<ActionId, ActionText>> = {
+  call_respond: {
+    id: "call_respond",
+    label: "두식과 함께 긴급 피해 조사에 나간다",
+    deny: "출동이 끝난 뒤라 다시 응답할 호출이 없다",
+    result: "두식이 자기 압류 통지서를 꺼냈다. 협회 공문은 여전히 매일 아침 온다.",
+  },
+
+  dispatch_send_taesan: {
+    id: "dispatch_send_taesan",
+    label: "지방 파견에 배태산을 보낸다",
+    deny: "파견 명단이 확정된 뒤라 배태산을 다시 보낼 수 없다",
+    result: "배태산이 지방으로 갔다. 다음 날 아침 사무실에 그가 없다.",
+  },
+  dispatch_send_other: {
+    id: "dispatch_send_other",
+    label: "지방 파견에 다른 사람을 보낸다",
+    deny: "파견 인원이 이미 정해져 다른 사람을 넣을 수 없다",
+    result: "다른 사람이 지방으로 갔다. 배태산은 사무실에 남는다.",
+  },
+
+  obs_send_ru_alone: {
+    id: "obs_send_ru_alone",
+    label: "관측소에 루를 단독으로 보낸다",
+    deny: "관측소 건이 진행 중이 아니어서 루를 단독으로 보낼 수 없다",
+    result: "루가 파편의 문양과 구조를 읽었다. 나는 특이사항 없음을 썼다.",
+  },
+  obs_boss_joins: {
+    id: "obs_boss_joins",
+    label: "직접 관측소에 함께 간다",
+    deny: "관측소 건이 열려 있지 않아 함께 갈 수 없다",
+    result: "내가 파편을 먼저 기록했다. 루는 아무것도 읽지 못했다.",
+  },
+  obs_send_other: {
+    id: "obs_send_other",
+    label: "관측소에 다른 직원을 보낸다",
+    deny: "관측소 인원이 이미 배정되어 다른 직원을 보낼 수 없다",
+    result: "돌아온 보고서에 특이사항이 없다.",
+  },
+
+  radio_morning_on: {
+    id: "radio_morning_on",
+    label: "라디오를 켠 채 아침을 시작한다",
+    deny: "아침이 지나면 라디오는 다시 켜지 않는다",
+    result: "라디오에서 협회 발표가 흘러나왔다.",
+  },
+  radio_business_only: {
+    id: "radio_business_only",
+    label: "라디오를 업무 방송만 틀어 둔다",
+    deny: "그 아침이 지나면 방송을 되돌릴 수 없다",
+    result: "좌표 발표는 흘려보냈다. 루는 아무것도 적지 않았다.",
+  },
+
+  archive_with_dusik: {
+    id: "archive_with_dusik",
+    label: "두식과 본부 조사에 나선다",
+    deny: "본부 방문이 모두 끝난 뒤라 두식과 들어갈 수 없다",
+    result: "두식이 문서 사본을 손에 넣었다. 방송이 말한 예측 시스템에 대한 대목은 없었다.",
+  },
+  archive_with_ru: {
+    id: "archive_with_ru",
+    label: "루와 본부 조사에 나선다",
+    deny: "루를 데리고 들어갈 방문이 남지 않았다",
+    result: "루가 목록 밖의 물건 앞에서 걸음을 멈췄다.",
+  },
+  archive_with_taesan: {
+    id: "archive_with_taesan",
+    label: "배태산과 본부 조사에 나선다",
+    deny: "배태산과 나갈 본부 일정이 더 없다",
+    result: "배태산이 핵심 문서를 빼돌렸다.",
+  },
+  archive_alone: {
+    id: "archive_alone",
+    label: "최 반장을 혼자 본부에 들여보낸다",
+    deny: "최 반장을 혼자 보내기엔 방문이 닫혀 있다",
+    result: "최 반장의 별도 보고가 회사 기록과 어긋났다.",
+  },
+  archive_leave: {
+    id: "archive_leave",
+    label: "본부를 나선다",
+    deny: "한 번도 들어가지 않은 상태로 나갈 수는 없다",
+    result: "남은 사본 더미를 두고 나왔다. 시간이 없었다.",
+  },
+
+  xcheck_compare: {
+    id: "xcheck_compare",
+    label: "좌표와 실험 기록을 대조한다",
+    deny: "방송 좌표와 문서가 모두 있어야 대조가 선다",
+    result: "두 좌표가 같은 지점이었다. 예측이 아니라 소환이었다.",
+  },
+  xcheck_skip: {
+    id: "xcheck_skip",
+    label: "대조 없이 넘어간다",
+    deny: "이미 대조가 끝난 뒤라 다시 건너뛸 것이 없다",
+    result: "대조를 건너뛰었다.",
+  },
+
+  gate_dispatch: {
+    id: "gate_dispatch",
+    label: "루를 최종 정리에 파견한다",
+    deny: "루가 시퍼의 존재를 모른다 — 그는 손을 들지 않는다",
+    result: "루가 먼저 손을 들었다. 나는 이유를 물었지만 답을 듣지 못했다.",
+  },
+  gate_hold: {
+    id: "gate_hold",
+    label: "루 대신 다른 인원을 배치한다",
+    deny: "이 배치는 루가 단서를 쥔 회차에서만 가능하다",
+    result: "평소처럼 다른 이름을 썼다. 등 뒤에서 인기척이 났다.",
+  },
+  gate_reopen: {
+    id: "gate_reopen",
+    label: "관측소 건을 다시 연다",
+    deny: "다시 열 기회가 남아 있지 않다",
+    result: "관측소 건을 다시 열었다.",
+  },
+  gate_to_venue: {
+    id: "gate_to_venue",
+    label: "루를 거치지 않고 다음 단계로 넘어간다",
+    deny: "단서를 쥔 회차다 — 루 체인이 먼저 열린다",
+    result: "루는 아무것도 알아채지 못했다. 다음 수신자를 정하러 갔다.",
+  },
+
+  site_hold: {
+    id: "site_hold",
+    label: "정리를 보류하고 최 반장과 들어간다",
+    deny: "현장이 진행 중이 아니어서 함께 들어갈 수 없다",
+    result: "루가 잔당에 손을 댔다. 나는 그 몸짓을 안전 위반으로 기록했다.",
+  },
+  site_process: {
+    id: "site_process",
+    label: "지침대로 처리 요청을 올린다",
+    deny: "처리 요청을 받을 현장이 열려 있지 않다",
+    result: "시퍼가 제거되었다. 힘을 잃은 루는 실험실로 옮겨졌다.",
+  },
+  site_with_taesan: {
+    id: "site_with_taesan",
+    label: "배태산이 함께 들어간다",
+    deny: "이 현장에 배태산이 들어갈 때가 아니다",
+    result: "배태산이 판정을 넘겨받았다. 시퍼 제거와 루 인계가 같은 날 진행되었다.",
+  },
+
+  night_use: {
+    id: "night_use",
+    label: "루가 물건을 삼킨다",
+    deny: "쓸 물건이 없다 — 재통합은 열리지 않는다",
+    result: "루가 물건을 삼켰다. 도시가 다시 전장으로 변해 갔다.",
+  },
+  night_not_use: {
+    id: "night_not_use",
+    label: "루가 물건을 쓰지 않는다",
+    deny: "아직 그 밤이 아니어서 물건을 거두지 못한다",
+    result: "재통합은 열리지 않았다. 잔당은 처리되고 도시는 남는다.",
+  },
+  night_no_item: {
+    id: "night_no_item",
+    label: "물건 없이 현장을 닫는다",
+    deny: "물건이 회사 보관함에 있다",
+    result: "접점만 남았다. 재통합은 열리지 않았다.",
+  },
+
+  venue_military: {
+    id: "venue_military",
+    label: "군부대에 알린다",
+    deny: "군은 독립 검증을 요구한다 — 방송·문서·좌표가 모두 맞아야 하고 접점이 막히지 않아야 한다",
+    result: "군의 협조 창구를 잡았다. 이제 누구와 현장에 갈지만 남았다.",
+  },
+  venue_association: {
+    id: "venue_association",
+    label: "협회에 먼저 알린다",
+    deny: "문서 없이는 협회에 알릴 근거가 서지 않는다",
+    result: "협회가 먼저 움직였다. 유예 뒤에 두식이 처리되었다.",
+  },
+  venue_government: {
+    id: "venue_government",
+    label: "관청에 알린다",
+    deny: "넘길 서면이 없으면 관청은 접수하지 않는다",
+    result: "관청이 서류를 회수해 갔다. 증거는 남지 않았다.",
+  },
+  venue_press: {
+    id: "venue_press",
+    label: "언론에 알린다",
+    deny: "기사가 될 서면이 없어 언론은 움직이지 않는다",
+    result: "청구는 취소되었다. 다만 재등록은 복원되지 않았다.",
+  },
+  venue_silence: {
+    id: "venue_silence",
+    label: "아무에게도 알리지 않는다",
+    deny: "침묵은 결정이 끝난 뒤에는 고를 수 없다",
+    result: "아무에게도 알리지 않았다. 유예 뒤에 두식이 처리되었다.",
+  },
+  venue_no_stage: {
+    id: "venue_no_stage",
+    label: "알릴 것이 없어 사건을 닫는다",
+    deny: "손에 쥔 문서가 있다 — 아직 수신자를 고를 수 있다",
+    result: "문서를 확보하지 못했다. 다음 날 아침 같은 공문이 다시 왔다.",
+  },
+
+  gun_with_taesan: {
+    id: "gun_with_taesan",
+    label: "배태산과 현장에 간다",
+    deny: "군 접점이 열려 있지 않아 배태산과 갈 수 없다",
+    result: "배태산의 인맥이 지휘관과의 접점을 열었다. 다만 그가 우리 경로를 알게 되었다.",
+  },
+  gun_with_banjang: {
+    id: "gun_with_banjang",
+    label: "최 반장과 현장에 간다",
+    deny: "이 접점에 최 반장을 데려갈 자리가 없다",
+    result: "인맥이 없어 접점이 열리지 않았다. 군 창구는 다시 열리지 않는다.",
+  },
+
+  submit_original: {
+    id: "submit_original",
+    label: "원본 대조를 요구한다",
+    deny: "제출처가 닫혀 원본을 요구할 수 없다",
+    result: "군 등록번호가 붙었다. 협회가 지울 수 없는 형태가 되었다.",
+  },
+  submit_copy: {
+    id: "submit_copy",
+    label: "사본 제출로 만족한다",
+    deny: "사본을 받을 접수 창구가 열려 있지 않다",
+    result: "사본으로 접수되었다.",
+  },
+};
