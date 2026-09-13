@@ -26,7 +26,7 @@ description: "종합된 근거에 권위 있는 서사 등급과 출시 준비�
 
 ## 격리된 작업 디렉터리
 
-- 호출자가 제공한 인라인 입력으로 고유한 `RUN_ID`를 정하고, 존재하지 않는 `.outline/<RUN_ID>/`를 먼저 만든다. 생성한 `.outline/<RUN_ID>/`를 `RUN_DIR`로 사용한다. 이미 존재하면 `input-blocked`로 처리한다.
+- 호출자가 제공한 인라인 입력으로 고유한 `RUN_ID`를 정하고 `.outline/<RUN_ID>/.claim`을 배타 생성으로 선점한다. 실패하면 다른 실행이 그 `RUN_ID`를 잡은 것이므로 `input-blocked`로 처리하고 파일을 만들지 않는다. 선점에 성공하면 그 디렉터리를 `RUN_DIR`로 사용한다. 관대한 생성(`exist_ok=True`, `mkdir -p`)은 선점이 아니다. `.claim`에는 `runId`·생성 시각·`sourceVersion`을 적는다. 남은 `.claim`은 실행 중단의 흔적이며, 사람이 그 RUN의 `manifest.json`과 `outputs/`를 확인해 완료된 실행인지 판정한 뒤에만 지운다 — 그것이 유일한 해제 수단이다.
 - `RUN_ID`는 `[A-Za-z0-9_-]+` 형식만 허용한다.
 - 인라인 입력을 `RUN_DIR/inputs/manifest.json`과 스냅샷으로 기록한다. manifest에는 `runId`, 입력·중간 산출물·출력별 `role`, `relativePath`, `sha256`, 선택적 `sourceVersion`을 기록한다.
 - 모든 `relativePath`를 정규화하고 절대경로·`..`·심볼릭 링크·`RUN_DIR` 이탈을 거부한다. 실제 스냅샷 해시가 manifest의 `sha256`과 일치해야 한다.

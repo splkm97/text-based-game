@@ -15,7 +15,7 @@
 
 ### 공통 실행 계약
 
-- 각 리뷰 스킬은 호출마다 존재하지 않는 `.outline/<RUN_ID>/`를 직접 만들고 이를 `RUN_DIR`로 사용한다. `RUN_ID`는 `[A-Za-z0-9_-]+`만 허용한다. 이미 존재하는 `RUN_ID`는 덮어쓰지 않고 `input-blocked`(report-assembly는 `export-blocked`)로 처리한다.
+- 각 리뷰 스킬은 호출마다 `.outline/<RUN_ID>/.claim`을 배타 생성으로 선점하고 그 디렉터리를 `RUN_DIR`로 사용한다. `RUN_ID`는 `[A-Za-z0-9_-]+`만 허용한다. 선점에 실패하면 다른 실행이 그 `RUN_ID`를 잡은 것이므로 `input-blocked`(report-assembly는 `export-blocked`)로 처리한다. `exists()` 검사만으로는 같은 순간의 두 실행을 막지 못한다. 관대한 생성(`exist_ok=True`, `mkdir -p`)은 선점이 아니다. `.claim`에는 `runId`·생성 시각·`sourceVersion`을 적는다. 남은 `.claim`은 실행 중단의 흔적이며, 사람이 그 RUN의 `manifest.json`과 `outputs/`를 확인해 완료된 실행인지 판정한 뒤에만 지운다 — 그것이 유일한 해제 수단이다.
 - 호출자는 검수 대상 입력(장면·route·memo·runtime evidence·지문)을 인라인으로 제공한다. 스킬은 이를 `RUN_DIR/inputs/manifest.json`과 스냅샷으로 기록하고, manifest에 기록된 스냅샷만 읽는다. 외부 프로젝트 경로는 읽지 않는다.
 - manifest 항목은 `runId`, `role`, `relativePath`, `sha256`, 선택적 `sourceVersion`을 가진다. `relativePath`는 정규화 후 `RUN_DIR` 하위여야 하며, 절대경로·`..`·심볼릭 링크·`RUN_DIR` 이탈은 거부한다. 스냅샷 해시는 manifest의 `sha256`과 일치해야 한다.
 - 결과는 `RUN_DIR/outputs/` 아래에만 쓰고, 호출자에게 그 `RUN_DIR` 경로를 돌려준다. orchestrator는 이 경로에서 결과를 찾는다.

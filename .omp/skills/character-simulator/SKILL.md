@@ -5,7 +5,7 @@ description: "인물이 플롯에 협조하지 않고 자기 상태에서 행동
 
 ## 공통 계약
 - 프로젝트 정본(`prototype/remains.json`, `prototype/stories/example.md`)과 확정이 아닌 발산 제안(`docs/ideation/`)은 읽기 전용 입력이다. 원장·원고·발산 문서를 수정하지 않는다. 승인된 정본 변경은 소유자가 수행한다 — 원장은 `remains-ledger-maintenance`, 원고는 `narrative-rewriter`(지정 범위)·사람. 게임 메커니즘 파라미터(`prototype/game-mechanics.md`)도 읽기 전용 입력이며, 변경은 설계 문서 개정으로만 한다.
-- 산출물은 `.outline/<RUN_ID>/` 아래에만 쓰고 호출자에게 `RUN_DIR` 경로를 돌려준다. `RUN_ID`는 `[A-Za-z0-9_-]+`만 허용한다. 이미 존재하는 `RUN_ID`는 덮어쓰지 않고 `input-blocked`로 처리한다.
+- 산출물은 `.outline/<RUN_ID>/` 아래에만 쓰고 호출자에게 `RUN_DIR` 경로를 돌려준다. `RUN_ID`는 `[A-Za-z0-9_-]+`만 허용한다. 실행 디렉터리 선점은 원자적으로 한다 — `.outline/<RUN_ID>/.claim`을 배타 생성(`mkdir` 또는 `O_EXCL`)으로 만들고, 실패하면 다른 실행이 이미 그 `RUN_ID`를 잡은 것이므로 `input-blocked`로 처리한다. 존재 확인과 생성 사이에 다른 실행이 끼어들 수 있으므로 `exists()` 검사만으로 시작하지 않는다. 관대한 생성(`exist_ok=True`, `mkdir -p`)은 선점이 아니다. `.claim`에는 `runId`·생성 시각·`sourceVersion`을 적는다. 남은 `.claim`은 실행 중단의 흔적이며, 사람이 그 RUN의 `manifest.json`과 `outputs/`를 확인해 완료된 실행인지 판정한 뒤에만 지운다 — 그것이 유일한 해제 수단이다.
 - 읽은 정본은 `RUN_DIR/inputs/manifest.json`과 스냅샷으로 기록한다. manifest 항목은 `runId`, `role`, `relativePath`, `sha256`, 선택적 `sourceVersion`을 가진다. `relativePath`는 정규화 후 `RUN_DIR` 하위여야 하며 절대경로·`..`·심볼릭 링크·`RUN_DIR` 이탈을 거부한다. 스냅샷 해시는 manifest의 `sha256`과 일치해야 한다.
 - 사실 범주를 구분한다: `[FACT]` 원장·원고에서 확인, `[INFERENCE]` 확인된 사실에서 추론, `[HYPOTHESIS]` 새로 제안, `[CONFLICT]` 기존 설정과 모순. `[HYPOTHESIS]`를 `[FACT]`로 자동 승격하지 않는다.
 - 지식은 작가 지식·독자 지식·인물 지식으로 나눈다. 인물이 알 수 없는 사실을 그 인물의 판단 근거로 쓰지 않는다.
@@ -32,7 +32,7 @@ description: "인물이 플롯에 협조하지 않고 자기 상태에서 행동
 - `CHARACTER_ID`가 원장에 없거나 현재 상태·상황·시점·행동 목록 중 하나라도 없으면 `input-blocked`로 처리한다.
 
 ## 절차
-1. 실행 디렉터리와 근거를 고정한다. 고유한 `RUN_ID`를 정해 존재하지 않는 `.outline/<RUN_ID>/`를 만들고 `RUN_DIR`로 쓴다. 원장 인물 항목, 관련 원고 구간, 관련 `docs/ideation/*.md` 항목을 읽고 `RUN_DIR/inputs/manifest.json`과 스냅샷으로 기록한다. 원장에 해당 인물 항목이 없으면 `input-blocked`로 처리하고 파일을 작성하지 않는다. 완료 조건: 모든 manifest 항목의 `relativePath`가 `RUN_DIR` 하위이고 스냅샷 해시가 `sha256`과 일치하며, 인용할 원장 JSON 경로와 원고 장면 제목이 보고서에 있다.
+1. 실행 디렉터리와 근거를 고정한다. 고유한 `RUN_ID`를 정해 `.outline/<RUN_ID>/.claim`을 배타 생성으로 선점하고 `RUN_DIR`로 쓴다. 선점에 실패하면 `input-blocked`로 처리하고 파일을 작성하지 않는다. 관대한 생성(`exist_ok=True`, `mkdir -p`)은 선점이 아니다. 원장 인물 항목, 관련 원고 구간, 관련 `docs/ideation/*.md` 항목을 읽고 `RUN_DIR/inputs/manifest.json`과 스냅샷으로 기록한다. 원장에 해당 인물 항목이 없으면 `input-blocked`로 처리하고 파일을 작성하지 않는다. 완료 조건: 모든 manifest 항목의 `relativePath`가 `RUN_DIR` 하위이고 스냅샷 해시가 `sha256`과 일치하며, 인용할 원장 JSON 경로와 원고 장면 제목이 보고서에 있다.
 2. 인물의 6축을 분리해 적는다: 욕망, 공포, 믿음, 오해, 관계, 현재 지식. 축마다 근거를 `prototype/remains.json` JSON 경로 또는 원고 장면 제목(`prototype/stories/example.md 「N. 제목」`)으로 붙이고 `[FACT]`/`[INFERENCE]`/`[HYPOTHESIS]` 태그를 단다. 근거 없는 항목은 `[HYPOTHESIS]`로만 쓴다. 완료 조건: 6축이 모두 채워지고 축마다 근거 또는 `[HYPOTHESIS]` 태그가 하나 이상 있다.
 3. 인물 지식 경계를 표기한다. 논의에 필요한 사실마다 작가·독자·대상 인물의 `K`/`U`/`?`를 적고, 초반 비공개 항목의 공개 시점은 `미정`으로 둔다. 인물 칸이 `U` 또는 `?`인 사실은 그 인물의 이유·욕망·두려움에 쓰지 않는다. 완료 조건: 보고서에 등장하는 모든 비공개 사실의 인물 칸이 `K`이거나, 해당 사실을 쓴 후보를 폐기했다고 적혀 있다.
 4. 자연스러운 행동 후보 3개를 만든다. 후보는 대상 인물의 현재 상태에서 출발하고, 최소 하나는 그 인물 자신에게 불리한 선택이어야 한다. 플레이어가 원하는 결과를 기준으로 후보를 고르지 않는다. 완료 조건: 후보가 정확히 3개이고 그중 하나 이상에 `자기 불리` 표시가 있다.
