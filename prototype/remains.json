@@ -18,7 +18,7 @@
       "secretSummoning": "협회가 도래자들을 불러들인 주체다. 이 사실은 게임 시작 시점에 공개되지 않는 세계의 비밀이다.",
       "appearanceChannels": ["공문", "청구서", "방송"],
       "dialogueRule": "대화하는 인물로 등장하지 않는다.",
-      "history": "방역·격리 기구로 출발해 지금은 도시 행정의 반 이상을 담당한다.",
+      "history": "토목·건축 기구로 출발해 지금은 도시 행정의 반 이상을 담당한다.",
       "heroRegistrationAuthority": true,
       "registrationRule": "히어로 등록을 받지 않으면 빌런으로 분류된다.",
       "heroRegistrationGrades": ["1종", "2종", "제한", "무자격(빌런)"],
