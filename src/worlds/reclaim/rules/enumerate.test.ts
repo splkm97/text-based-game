@@ -32,7 +32,7 @@ describe.each(PLACEMENTS)("배치 %s — 전체 상태 공간 열거", (placemen
     );
   });
 
-  test("종결 8종 전부에 도달 경로가 있다 — terminalCounts가 끝 id마다 1 이상", () => {
+  test("모든 종결에 도달 경로가 있다 — terminalCounts가 끝 id마다 1 이상", () => {
     const report = reports[placement];
     for (const id of ENDING_IDS) {
       expect(

@@ -126,7 +126,7 @@ describe("도달성 — 시작 상태에서 만족 가능한 경로", () => {
     expect(missing, `한 번도 목록에 오르지 않은 액션: ${missing.join(", ") || "없음"}`).toEqual([]);
   });
 
-  test("종결 8종 전부에 도달 경로가 있다 — 두 배치 각각 terminalCounts 1 이상", () => {
+  test("모든 종결에 도달 경로가 있다 — 두 배치 각각 terminalCounts 1 이상", () => {
     for (const placement of PLACEMENTS) {
       for (const id of ENDING_IDS) {
         expect(
@@ -287,10 +287,10 @@ describe("문면 총체성 — 콘텐츠 리터럴", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 6. 종결 8종의 잠금 서술 — 형식 단언: 실패 시 실제 길이를 메시지로 보인다.
+// 6. 종결의 잠금 서술 — 형식 단언: 실패 시 실제 길이를 메시지로 보인다.
 // ---------------------------------------------------------------------------
 
-describe("종결 8종의 잠금 서술 — 형식 단언(길이 진단)", () => {
+describe("종결의 잠금 서술 — 형식 단언(길이 진단)", () => {
   test("모든 종결 본문이 차 있고, 진엔딩 두 종은 나머지 가운데 가장 짧지 않다", () => {
     const lengths = ENDING_IDS.map((id) => ({ id, chars: CONTENT.endings[id].text.length }));
     const table = [...lengths].sort((a, b) => b.chars - a.chars).map((e) => `${e.id}=${e.chars}`);
