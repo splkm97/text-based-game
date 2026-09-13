@@ -161,6 +161,7 @@
   <tbody>
     <tr><td>목적</td><td>이야기 그래프의 <b>형태</b>를 설계한다: 분기 축, 수렴점 위치, 브랜치 예산, 노드별 정보 공개, 가드/효과 초안. 패턴 이름(Ashwell)을 명시적으로 고르고 근거를 남긴다.</td></tr>
     <tr><td>트리거</td><td>여러 장면을 관통하는 분기 구조를 정할 때. "이 선택이 어디서 합류하는가"를 정할 때.</td></tr>
+    <tr><td>전제</td><td>원장·원고가 정본이어야 한다. 새 설정을 손에 들고 시작하는 경우 먼저 사람 승인과 <code>remains-ledger-maintenance</code>로 원장에 반영한다 — 붙여넣은 텍스트는 어떤 스킬도 읽지 않는다.</td></tr>
     <tr><td>사용하지 말아야 할 때</td><td>장면 하나의 사양은 <code>scene-architect</code>. 후보 사건 발산은 <code>divergent-ideator</code>. 사후 구조 진단은 <code>structural-critic</code>. 그래프 컴파일은 <code>story-graph-compiler</code>.</td></tr>
     <tr><td>입력</td><td>원장, 원고, 승인된 scene card, <code>docs/ideation/</code> 후보 중 선택된 것, 그리고 <b>브랜치 예산</b>(감당할 수 있는 노드·문장 수).</td></tr>
     <tr><td>절차</td><td>① 범위·<code>RUN_ID</code> → ② 현재 원고에서 실제 노드·선택을 추출(컴파일러 호출 또는 수동) → ③ 후보 패턴 2개 이상을 비용·감각·근거와 함께 제시 → ④ 선택된 패턴에 대해 수렴점 목록과 각 수렴점의 state-tracking 항목을 확정 → ⑤ 분기 축마다 최소 두 갈래의 <em>구별되는 즉시 결과</em>를 명시 → ⑥ 각 노드의 정보 공개 <code>reveal</code>/<code>conceal</code>를 지식 주체와 함께 적음 → ⑦ 예산 초과 지점과 대안(합류 강화·지연 분기)을 보고 → ⑧ 사람 결정 대기 목록과 함께 출력.</td></tr>
