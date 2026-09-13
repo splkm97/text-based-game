@@ -22,7 +22,7 @@ description: "모든 경로, manifest, 앵커, 에필로그, 엔딩 본문이 �
 
 ## 공통 계약
 
-`RUN_DIR`(=`.outline/<RUN_ID>/`) 안의 산출물만 검토한다. 외부 프로젝트 경로는 읽지 않는다. 제공된 원본 내용과 기존 리뷰 근거를 보존한다. 죽음, 배신, 전투, 시스템, 통화, 플레이 시간, 확률 또는 제공된 범위를 벗어난 사실을 만들지 않는다. 확인된 근거, 예상되는 플레이어 경험, `판단 자료 부족`을 구분한다. 모든 중요한 발견에는 격리된 파일의 줄·노드·선택지·상태·엔딩·재플레이 경로 위치를 붙인다. 해결되지 않은 Critical/Major 발견에는 `FAIL`, 핵심 근거가 없으면 `UNVERIFIABLE`, 그 외에는 `PASS`를 사용한다. 포맷터, 린터, 테스트, 빌드, 커밋 또는 게시 명령을 실행하지 않는다.
+`RUN_DIR`(=`.outline/<RUN_ID>/`) 안의 산출물만 검토한다. 외부 프로젝트 경로는 읽지 않는다. 제공된 원본 내용과 기존 리뷰 근거를 보존한다. 죽음, 배신, 전투, 시스템, 통화, 플레이 시간, 확률 또는 제공된 범위를 벗어난 사실을 만들지 않는다. 확인된 근거, 예상되는 플레이어 경험, `판단 자료 부족`을 구분한다. 모든 중요한 발견에는 격리된 파일의 장면·노드·선택지·상태·엔딩·재플레이 경로 위치를 붙인다. 해결되지 않은 Critical/Major 발견에는 `FAIL`, 핵심 근거가 없으면 `UNVERIFIABLE`, 그 외에는 `PASS`를 사용한다. 포맷터, 린터, 테스트, 빌드, 커밋 또는 게시 명령을 실행하지 않는다.
 
 ## 격리된 작업 디렉터리
 
@@ -36,9 +36,9 @@ description: "모든 경로, manifest, 앵커, 에필로그, 엔딩 본문이 �
 - 채택 엔딩 세트와 경로 manifest의 인라인 내용.
 - 모든 경로 메모의 인라인 내용.
 - 모든 채택 경로의 runtime evidence 인라인 내용.
-- 컴파일 콘텐츠, 최종 검토 스키마, 소스·콘텐츠 지문의 인라인 내용.
+- 컴파일 콘텐츠, 소스·콘텐츠 지문, 최종 검토 스키마의 인라인 내용(스키마 정본: `.omp/skills/_baseline/review-score-schema.md`).
 
-채택 엔딩 세트, 경로 manifest, 컴파일 콘텐츠 지문 중 하나라도 없으면 `input-blocked`로 처리하고 파일을 작성하지 않는다.
+채택 엔딩 세트, 경로 manifest, 컴파일 콘텐츠 지문, 최종 검토 스키마 중 하나라도 없으면 `input-blocked`로 처리하고 파일을 작성하지 않는다.
 
 ## 절차
 
@@ -50,7 +50,7 @@ description: "모든 경로, manifest, 앵커, 에필로그, 엔딩 본문이 �
 6. 일반·진엔딩·실패·부분 엔딩을 제목만 다른 변형과 구분한다. 완료 조건: 같은 내용의 변형으로 판정된 엔딩 쌍이 근거와 함께 열거되거나 `없음`으로 적는다.
 7. 배타 상태, 독립적으로 얻는 결과, 규칙 순서 은닉, 거짓 선택지, 콘텐츠 손실, 지배적인 최선 경로를 확인한다. 완료 조건: 여섯 항목 각각에 발견 목록 또는 `없음` 판정이 있다.
 8. 실제 경로 결과 집합에서 한 회차 누적을 점검한다. 한 경로가 네 인물의 진엔딩 전부 또는 모든 배타 콘텐츠를 포함하면 해당 엔딩을 재플레이 동기에서 제외하고 남은 재플레이 전용 요소를 식별한다. 완료 조건: `One-run accumulation findings`에 해당 경로와 남은 재플레이 전용 요소가 적힌다.
-9. 정보 계층, 에필로그 중복, 모순, 종료 상태 덮어쓰기, 스키마를 확인한다. 정확히 30개 게이트와 기존 18개 공식 점수 키를 유지하고 supplemental scores는 별도로 둔다. 18개 공식 점수 키와 4개 supplemental 키의 정의는 `narrative-score-synthesis`의 점수 계약을 따르며 여기서 다시 열거하지 않는다. 완료 조건: 정보 계층과 중복 발견이 근거 위치와 함께 있고, 스키마 키 개수가 확인된다.
+9. 정보 계층, 에필로그 중복, 모순, 종료 상태 덮어쓰기, 스키마를 확인한다. 정확히 30개 게이트와 기존 18개 공식 점수 키를 유지하고 supplemental scores는 별도로 둔다. 18개 공식 점수 키와 4개 supplemental 키의 정의는 `.omp/skills/_baseline/review-score-schema.md`를 따르며 여기서 다시 열거하지 않는다. 완료 조건: 정보 계층과 중복 발견이 근거 위치와 함께 있고, 스키마 키 개수가 확인된다.
 10. 자동 초엔딩이나 인공 잠금으로 불균형을 해결하지 않는다. 완료 조건: `Required revisions`에 균형 수정안이 자동 잠금 없이 적힌다.
 11. `RUN_DIR/outputs/multi-ending-complete.md`에 결과를 작성한다. 완료 조건: 출력 파일 하나에 필수 13개 필드와 `PASS|FAIL|UNVERIFIABLE` 중 하나의 판정이 들어 있다.
 
@@ -58,7 +58,7 @@ description: "모든 경로, manifest, 앵커, 에필로그, 엔딩 본문이 �
 
 - 경로: `RUN_DIR/outputs/multi-ending-complete.md` 한 파일. 정규화 후 `RUN_DIR` 하위여야 하고 심볼릭 링크를 거부한다.
 - 필수 필드 13개: `Reviewed commit`, `Reviewed compiled-content SHA-256`, `Route memo fingerprints`, `Ending inventory`, `Route/result matrix`, `One-run accumulation findings`, `Replay motivation`, `Information layers`, `Cross-ending contradictions`, `Status`, `Critical/Major findings`, `Required revisions`, `Limitations`.
-- 각 finding은 severity(`Critical|Major|Minor`), status(`open|resolved`), 근거 위치(`파일:줄`), 영향을 받는 엔딩·경로, `Required revisions` 배정 여부를 포함한다.
+- 각 finding은 severity(`Critical|Major|Minor`), status(`open|resolved`), 근거 위치(`앵커`), 영향을 받는 엔딩·경로, `Required revisions` 배정 여부를 포함한다.
 - 호출자 반환: `RUN_DIR` 경로와 `Status`. `input-blocked`면 파일 없이 부족한 입력 목록을 돌려준다.
 
 ## 실패 처리

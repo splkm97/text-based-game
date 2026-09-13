@@ -2,7 +2,7 @@
 
 이 문서는 `scene-architect`가 beats, turn, 목표 충돌, 선택지, `continuity_risk`를 확정할 때만 읽는다. 예시는 문법 설명용이며 원고 문장으로 쓰지 않는다.
 
-앵커 규칙: 장면을 가리킬 때는 장면 제목(`## N. 제목`)과 `prototype/remains.json`의 키 경로를 쓴다. 아래 줄 번호는 작성 시점 예시이며, 원고가 자라면 장면 제목으로 다시 확인한다.
+앵커 규칙: 장면을 가리킬 때는 장면 제목(`## N. 제목`)과 `prototype/remains.json`의 키 경로를 쓴다. 행 번호는 쓰지 않는다 — 원고는 개정될 수 있으므로 위치는 장면 제목으로 고정한다.
 
 ## beat 4요소
 
@@ -89,13 +89,13 @@
 `continuity_risk: <위험 내용> — <근거 위치> — <심각도>` 한 줄에 하나씩 적는다.
 
 - 위험 내용: 무엇이 정본과 어긋날 수 있는지 한 문장.
-- 근거 위치: `prototype/remains.json:행`, `prototype/stories/example.md:행`, `docs/ideation/<파일>:행` 형식. 근거를 찾지 못하면 `확인 필요`를 쓴다.
+- 근거 위치: `prototype/remains.json` JSON 키 경로, 원고 장면 제목(`prototype/stories/example.md 「N. 제목」`), 발산 문서 `docs/ideation/<파일> §<후보 제목>` 형식. 근거를 찾지 못하면 `확인 필요`를 쓴다.
 - 심각도: `Critical|Major|Minor`. 확정 전에 반드시 고쳐야 하면 Critical, 후속 장면에서 회수해야 하면 Major, 문장 수준이면 Minor.
 
 예:
 
 - `continuity_risk: 강두식이 루시퍼 전투 참전을 직접 언급한다 — 원장에 퇴역 인과만 있고 인물별 공개 시점이 없다 — Major`
-- `continuity_risk: 현장 도착 시각이 공문의 정오 제출 기한과 맞지 않는다 — prototype/stories/example.md:47-51 — Critical`
+- `continuity_risk: 현장 도착 시각이 공문의 정오 제출 기한과 맞지 않는다 — 원고 「2. 긴급 피해 조사 명령」 — Critical`
 - `continuity_risk: 배태산이 회사 외부 정보를 미리 알고 있다 — 확인 필요 — Minor`
 
 근거를 확인하지 못한 위험은 `UNVERIFIABLE` 판정과 함께 남기고, 없는 근거를 만들어 붙이지 않는다.

@@ -33,9 +33,9 @@
 | 필드 | 값 | 근거 표기 |
 |---|---|---|
 | `entryState`·`exitState` | scene card의 문장, 없으면 `미기재` | `entryStateBasis`: `<card-id>` 또는 `미기재` |
-| `requires`·`effects` | 플래그 이름 문자열 배열 | `requiresBasis`·`effectsBasis`: `prototype/stories/example.md:줄` 또는 `prototype/remains.json` JSON 경로 또는 `없음` |
+| `requires`·`effects` | 플래그 이름 문자열 배열 | `requiresBasis`·`effectsBasis`: 원고 장면 앵커(`prototype/stories/example.md 「N. 제목」`) 또는 `prototype/remains.json` JSON 경로 또는 `없음` |
 | `flags[]` | `{ name, category, basis }` | `category`는 `[INFERENCE]`·`[HYPOTHESIS]`·`[CONFLICT]` 중 하나. **`[FACT]`는 쓰지 않는다** — 확정 플래그는 원장이 정한다 |
-| `anchors[]` | `{ id, file, line, status }` | `status`는 `proposed` 또는 `confirmed`. 근거가 없으면 `proposed` |
+| `anchors[]` | `{ id, file, scene, status }` | `scene`은 장면 제목(`## N. 제목`). `status`는 `proposed` 또는 `confirmed`. 근거가 없으면 `proposed` |
 
 ### 플래그 표기
 
@@ -67,7 +67,6 @@
       "id": "scene-01",
       "heading": "## 1. 첫 출동",
       "file": "prototype/stories/example.md",
-      "line": 3,
       "entryState": "미기재",
       "exitState": "미기재",
       "entryStateBasis": "미기재",

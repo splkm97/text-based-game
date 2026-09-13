@@ -33,7 +33,7 @@ Use one status rule across all specialists: unresolved `Critical` or `Major` fin
 - `Reviewed artifact SHA-256: exact reviewed artifact fingerprint or null when input-blocked`
 - `Scope: exact files/artifacts and paths executed`
 - `Evidence:` bullet list; every material claim has a location or replay path
-- `Findings:` each item has `id`, `severity` (Critical|Major|Minor), `status` (open|resolved), `file`, `line` (integer >= 1), `problem`, `why`, `playerImpact`, `fix`; include evidence in the surrounding Evidence section
+- `Findings:` each item has `id`, `severity` (Critical|Major|Minor), `status` (open|resolved), `file`, `location` (scene title or ledger key path), `problem`, `why`, `playerImpact`, `fix`; include evidence in the surrounding Evidence section
 - `Required revisions:` ordered P0/P1/P2 list
 - `Limitations:` explicit missing evidence
 Do not emit a final grade, aggregate score, or findings belonging to another gate.

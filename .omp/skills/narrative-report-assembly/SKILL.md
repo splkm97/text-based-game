@@ -33,9 +33,9 @@ description: "전문 메모와 종합 메모에서 최종 30개 게이트 서사
 
 ## 입력
 
-- G01~G27 전문 메모, G28·G29 종합 메모, 최종 검토 스키마, 소스 지문의 인라인 내용.
+- G01~G27 전문 메모, G28·G29 종합 메모, 소스 지문, 최종 검토 스키마의 인라인 내용(스키마 정본: `.omp/skills/_baseline/review-score-schema.md`).
 
-G01~G27, G28, G29 메모 중 하나라도 없거나 최종 검토 스키마가 없으면 `export-blocked`로 처리하고 파일을 작성하지 않는다. 누락된 게이트를 추측으로 채우지 않는다.
+G01~G27, G28, G29 메모 또는 최종 검토 스키마가 없으면 `export-blocked`로 처리하고 파일을 작성하지 않는다. 누락된 게이트를 추측으로 채우지 않는다.
 
 ## 필수 섹션 순서
 
@@ -55,8 +55,8 @@ G01~G27, G28, G29 메모 중 하나라도 없거나 최종 검토 스키마가 �
 
 ## 점수 및 G30 계약
 
-- `Scorecard`는 최종 검토 스키마에 정의된 공식 점수 키를 정확히 18개 사용한다. supplemental scores는 별도 섹션으로 유지한다.
-- G30 레코드는 `Gate`, `Status`, `Reason`, `Score`, `Reviewed commit`, `Reviewed artifact SHA-256`, `Scope`, `Evidence`, `Findings`, `Required revisions`, `Limitations`를 정확히 포함한다. `Status`는 `PASS|FAIL|UNVERIFIABLE`, `Score`는 정수 `0-100` 또는 `null`이다. 각 finding은 `id`, `severity`, `status`, `file`, `line`, `problem`, `why`, `playerImpact`, `fix`를 포함한다.
+- `Scorecard`는 `.omp/skills/_baseline/review-score-schema.md`의 공식 점수 키를 정확히 18개 사용한다. supplemental scores는 별도 섹션으로 유지한다.
+- G30 레코드는 `Gate`, `Status`, `Reason`, `Score`, `Reviewed commit`, `Reviewed artifact SHA-256`, `Scope`, `Evidence`, `Findings`, `Required revisions`, `Limitations`를 정확히 포함한다. `Status`는 `PASS|FAIL|UNVERIFIABLE`, `Score`는 정수 `0-100` 또는 `null`이다. 각 finding은 `id`, `severity`, `status`, `file`, `location`, `problem`, `why`, `playerImpact`, `fix`를 포함한다.
 
 ## 절차
 
@@ -77,7 +77,7 @@ G01~G27, G28, G29 메모 중 하나라도 없거나 최종 검토 스키마가 �
 
 ## 실패 처리
 
-- **export-blocked:** 메모나 스키마가 누락되었거나, 형식이 잘못되었거나, 지문이 현재 소스와 불일치하거나, `RUN_ID`가 이미 존재하거나, `relativePath`·스냅샷 해시 검증에 실패한 경우. 파일을 작성하지 않고 부족한 입력을 나열한다.
+- **export-blocked:** 메모나 최종 검토 스키마가 누락되었거나, 형식이 잘못되었거나, 지문이 현재 소스와 불일치하거나, `RUN_ID`가 이미 존재하거나, `relativePath`·스냅샷 해시 검증에 실패한 경우. 파일을 작성하지 않고 부족한 입력을 나열한다.
 - **schema-mismatch:** 13개 섹션 순서, 30개 게이트 ID, 18개 공식 점수 키가 계약과 다른 경우. 키를 새로 만들지 않고 `export-blocked`로 중단하며 어긋난 항목을 나열한다.
 - **unresolved-conflict:** 점수·verdict·게이트 상태에 영향을 주는 충돌이 남은 경우. 충돌을 평균내거나 임의로 고르지 않고 `export-blocked`로 중단한다.
 - **non-blocking-defect:** finding 필드 일부가 비어 있거나 표현이 다른 경우처럼 조립 판정을 바꾸지 않는 결함. 없는 근거를 채우지 않고 `Limitations`에 남긴 뒤 조립을 계속한다.

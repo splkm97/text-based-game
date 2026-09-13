@@ -42,12 +42,12 @@ description: "승인된 정본·scene card·원고에서 기계가 검증할 수
 ## 절차
 
 1. `RUN_DIR`을 만들고 읽은 정본을 `RUN_DIR/inputs/`에 스냅샷으로 복사한 뒤 `manifest.json`을 기록한다. **완료 조건:** 모든 `relativePath`가 `RUN_DIR` 하위이고 스냅샷 SHA-256이 manifest의 `sha256`과 일치한다.
-2. 노드 경계를 `## N. 제목` 단위로 확정하고 노드 ID를 `scene-NN`으로 부여한다. 경계를 잡을 수 없는 구간은 `boundary-ambiguous`로 표시하고 임의로 나누지 않는다. **완료 조건:** 노드 ID와 `## N. 제목`, `파일:줄` 대응표가 있다.
+2. 노드 경계를 `## N. 제목` 단위로 확정하고 노드 ID를 `scene-NN`으로 부여한다. 경계를 잡을 수 없는 구간은 `boundary-ambiguous`로 표시하고 임의로 나누지 않는다. **완료 조건:** 노드 ID와 `## N. 제목` 대응표가 있다.
 3. 선택지를 문서 순서대로 추출한다. 원고 관례는 `**문장 (S)**` 아래 `- 이름` 목록이고, 선택된 항목에 `— 선택`이 붙는다. 선택지 ID는 `<nodeId>.c<N>`이다. **완료 조건:** 모든 노드의 `choices`가 문서 순서를 보존하고 `selected` 표시가 원고와 일치한다.
-4. 선택지마다 `requires`(진입 조건)와 `effects`(상태 변화)를 붙인다. 값마다 근거를 `prototype/stories/example.md:줄` 또는 `prototype/remains.json` JSON 경로로 적는다. 원장에 없는 플래그를 만들려 하면 그 항목을 `[HYPOTHESIS]`로 낮추고 `ungrounded-flag`로 보고한다. 근거가 없으면 `requiresBasis`에 `없음`을 쓴다. **완료 조건:** 모든 선택지에 `requires`·`effects`·근거가 있고, `[FACT]`로 표시한 항목에는 원장 근거가 있다.
+4. 선택지마다 `requires`(진입 조건)와 `effects`(상태 변화)를 붙인다. 값마다 근거를 원고 장면 앵커(`prototype/stories/example.md 「N. 제목」`) 또는 `prototype/remains.json` JSON 경로로 적는다. 원장에 없는 플래그를 만들려 하면 그 항목을 `[HYPOTHESIS]`로 낮추고 `ungrounded-flag`로 보고한다. 근거가 없으면 `requiresBasis`에 `없음`을 쓴다. **완료 조건:** 모든 선택지에 `requires`·`effects`·근거가 있고, `[FACT]`로 표시한 항목에는 원장 근거가 있다.
 5. scene card가 주어졌으면 `entry_state`·`exit_state`를 노드 상태로 옮기고 카드 ID를 근거로 적는다. 카드가 없으면 두 값을 `미기재`로 둔다. **완료 조건:** 모든 노드에 `entryState`·`exitState`와 근거가 있다.
 6. 노드 사이 간선을 채운다. 다음 장면이 아직 없으면 `next`를 `null`로 두고 `openEdges`에 사유와 함께 넣는다. 존재하지 않는 노드 ID를 `next`에 쓰지 않는다. **완료 조건:** 모든 `next`가 실제 노드 ID이거나 `null`이고, `null`마다 `openEdges` 항목이 있다.
-7. 앵커를 열거한다. 엔딩 또는 엔딩 후일담의 위치 후보를 `파일:줄` 근거와 함께 적고, 근거가 없으면 `[HYPOTHESIS]`로 둔다. 앵커를 발명하지 않는다. **완료 조건:** 앵커마다 근거 또는 `[HYPOTHESIS]` 표시가 있다.
+7. 앵커를 열거한다. 엔딩 또는 엔딩 후일담의 위치 후보를 장면 제목 근거와 함께 적고, 근거가 없으면 `[HYPOTHESIS]`로 둔다. 앵커를 발명하지 않는다. **완료 조건:** 앵커마다 근거 또는 `[HYPOTHESIS]` 표시가 있다.
 8. route를 열거한다. 진입 노드에서 terminal까지 선택지 조합으로 경로를 만들고, `open-edge`에 막힌 경로는 `incomplete`로 표시한다. **완료 조건:** 모든 route가 `id`·`choices`·`terminal`·`status`를 갖고, `terminal`이 `null`인 route에는 막힌 간선이 적혀 있다.
 9. `outputs/graph/story-graph.json`, `outputs/graph/routes.json`, `outputs/graph/compile-report.md`를 쓰고 호출자에게 `RUN_DIR`과 요약을 돌려준다. **완료 조건:** 세 파일이 존재하고, JSON 키 순서·배열 순서가 정규화되어 있으며(키는 사전순, 노드·선택지·route는 문서 순서), 보고서에 노드 수·선택지 수·`open-edge` 수·`ungrounded-flag` 수·사람 결정 필요 목록이 있다.
 
@@ -60,7 +60,7 @@ description: "승인된 정본·scene card·원고에서 기계가 검증할 수
 
 ## 출력 계약
 
-- `outputs/graph/story-graph.json`: `schemaVersion`, `compiledFrom`(역할별 `relativePath`·`sha256`), `nodes[]`(`id`, `heading`, `file`, `line`, `entryState`, `exitState`, `entryStateBasis`, `exitStateBasis`, `choices[]`{`id`, `label`, `selected`, `requires[]`, `effects[]`, `requiresBasis`, `effectsBasis`, `next`}, `next`), `flags[]`(`name`, `category`, `basis`), `anchors[]`(`id`, `file`, `line`, `status`), `openEdges[]`(`from`, `choice`, `reason`). `runId`는 넣지 않는다 — 같은 입력이면 같은 바이트가 나와야 한다.
+- `outputs/graph/story-graph.json`: `schemaVersion`, `compiledFrom`(역할별 `relativePath`·`sha256`), `nodes[]`(`id`, `heading`, `file`, `entryState`, `exitState`, `entryStateBasis`, `exitStateBasis`, `choices[]`{`id`, `label`, `selected`, `requires[]`, `effects[]`, `requiresBasis`, `effectsBasis`, `next`}, `next`), `flags[]`(`name`, `category`, `basis`), `anchors[]`(`id`, `file`, `scene`, `status`), `openEdges[]`(`from`, `choice`, `reason`). `runId`는 넣지 않는다 — 같은 입력이면 같은 바이트가 나와야 한다.
 - `outputs/graph/routes.json`: `schemaVersion`, `entryNode`, `routes[]`(`id`, `choices[]`, `terminal`, `status`, `blockedBy[]`).
 - `outputs/graph/compile-report.md`: `Run ID`, `Scope`, `Reviewed commit`, `Reviewed artifact SHA-256`(원고 스냅샷), `Nodes`, `Choices`, `Open edges`, `Ungrounded flags`, `Anchors`, `Boundary-ambiguous`, `Human decision required`, `Limitations`.
 - 호출자 반환: `RUN_DIR`, 노드 수, `open-edge` 수, `ungrounded-flag` 수. `input-blocked`면 파일 없이 부족한 입력을 돌려준다.

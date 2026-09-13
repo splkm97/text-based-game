@@ -34,24 +34,24 @@ G01~G27 전문 메모를 하나의 점수 집합으로 종합해, 어떤 게이�
 ## 입력
 
 - G01~G27 전문 메모의 인라인 내용.
-- 최종 검토 스키마와 현재 소스·아티팩트 지문의 인라인 내용.
+- 현재 소스·아티팩트 지문과 최종 검토 스키마의 인라인 내용(스키마 정본: `.omp/skills/_baseline/review-score-schema.md`).
 
 G01~G27 전문 메모 중 하나라도 없거나, 최종 검토 스키마 또는 현재 지문이 없으면 `input-blocked`로 처리하고 파일을 작성하지 않는다. 누락된 게이트를 추측으로 채우지 않는다.
 
 ## 점수 계약
 
-- 공식 점수는 정확히 18개 키를 만든다.
-- supplemental scores는 다음 네 키를 별도로 만든다: `World Integration`, `Professional Fantasy`, `Management–Story Integration`, `Field / Crisis Quality`. 각 값은 `0-100` 또는 `null`이다.
-- primary owner map은 First Playthrough G01, Replay Value G02, True Ending G03, Choice Consequence G04, Branching G05, Character G06, Player Agency G07, Causality G08, Foreshadowing / Payoff G09, Twist G10, Emotional Payoff G11, Villain G12, World Reactivity G13, Ending Quality G14, Theme G21, Pacing G20, Immersion G25, Originality G27이다.
+- 공식 점수는 정확히 18개 키를 만든다. 키 이름·primary owner gate·표시 순서는 `.omp/skills/_baseline/review-score-schema.md`를 따른다.
+- supplemental scores는 네 키를 별도로 만든다. 키 이름과 값 형식은 `.omp/skills/_baseline/review-score-schema.md`를 따른다.
+- primary owner map의 정본도 같은 스키마 파일이다. 여기서 다시 열거하지 않는다.
 
 ## G28 게이트 레코드
 
-G28 레코드는 `Gate`, `Status`, `Reason`, `Score`, `Reviewed commit`, `Reviewed artifact SHA-256`, `Scope`, `Evidence`, `Findings`, `Required revisions`, `Limitations`를 정확히 포함한다. `Status`는 `PASS|FAIL|UNVERIFIABLE`, `Score`는 정수 `0-100` 또는 `null`이다. 각 finding은 `id`, `severity`, `status`, `file`, `line`, `problem`, `why`, `playerImpact`, `fix`를 포함한다.
+G28 레코드는 `Gate`, `Status`, `Reason`, `Score`, `Reviewed commit`, `Reviewed artifact SHA-256`, `Scope`, `Evidence`, `Findings`, `Required revisions`, `Limitations`를 정확히 포함한다. `Status`는 `PASS|FAIL|UNVERIFIABLE`, `Score`는 정수 `0-100` 또는 `null`이다. 각 finding은 `id`, `severity`, `status`, `file`, `location`, `problem`, `why`, `playerImpact`, `fix`를 포함한다.
 
 ## 절차
 
 1. 실행 디렉터리를 만들고 인라인 입력을 manifest와 스냅샷으로 기록한다. 완료 조건: 모든 manifest 항목의 `relativePath`가 `RUN_DIR` 하위이고 스냅샷 해시가 `sha256`과 일치한다.
-2. 모든 메모가 `Gate`, `Status`, `Reason`, `Score`, 지문, `Scope`, `Evidence`, `Findings`, `Required revisions`, `Limitations`를 갖는지 검증한다. 각 finding은 `id`, `severity`, `status`, `file`, `line`, `problem`, `why`, `playerImpact`, `fix`를 갖는다. 완료 조건: 27개 게이트 각각에 대해 필수 필드 존재 여부가 판정되고, 누락이 있으면 그 게이트 이름이 보고서에 열거된다.
+2. 모든 메모가 `Gate`, `Status`, `Reason`, `Score`, 지문, `Scope`, `Evidence`, `Findings`, `Required revisions`, `Limitations`를 갖는지 검증한다. 각 finding은 `id`, `severity`, `status`, `file`, `location`, `problem`, `why`, `playerImpact`, `fix`를 갖는다. 완료 조건: 27개 게이트 각각에 대해 필수 필드 존재 여부가 판정되고, 누락이 있으면 그 게이트 이름이 보고서에 열거된다.
 3. 현재 지문과 메모 지문이 일치하는지 확인한다. 완료 조건: 게이트별 지문 일치·불일치 판정이 있고, 불일치 게이트는 `input-blocked` 목록에 들어간다.
 4. `gate + affected location + normalized causal defect`로 같은 근본 원인을 병합하고, 가장 높은 severity와 독립 근거를 보존한다. 완료 조건: 병합된 finding마다 병합에 포함된 게이트 목록과 보존한 severity가 적힌다.
 5. 충돌하는 점수는 평균내지 않는다. 근거로 판정하거나 `input-blocked`로 표시한다. 완료 조건: 모든 충돌 쌍이 `판정` 또는 `input-blocked` 중 하나로 처리되고, 평균낸 값이 없다.

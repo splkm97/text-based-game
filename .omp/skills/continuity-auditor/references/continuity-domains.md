@@ -1,8 +1,8 @@
 # 연속성 검사 도메인
 
-`continuity-auditor`의 절차 2단계에서 로드한다. 11개 영역의 검사 질문, 영역별 오탐 방지 기준, 지식 3층 스키마, 프로젝트 비밀 정보 적용 예, 심각도 사다리, `suggested_check` 작성 형식을 담는다. 근거는 `파일:줄` 형식으로 적고, 근거가 확인되지 않은 항목은 단정하지 않는다.
+`continuity-auditor`의 절차 2단계에서 로드한다. 11개 영역의 검사 질문, 영역별 오탐 방지 기준, 지식 3층 스키마, 프로젝트 비밀 정보 적용 예, 심각도 사다리, `suggested_check` 작성 형식을 담는다. 근거는 원장 키 경로와 장면 제목으로 적고, 근거가 확인되지 않은 항목은 단정하지 않는다.
 
-앵커 규칙: 판정의 앵커는 장면 제목(`## N. 제목`)과 `prototype/remains.json`의 키 경로다. 아래 줄 번호는 작성 시점 예시이며, 원고가 자라면 finding을 장면 제목 기준으로 다시 확인한 뒤 줄 번호를 갱신한다.
+앵커 규칙: 판정의 앵커는 장면 제목(`## N. 제목`)과 `prototype/remains.json`의 키 경로다. 행 번호는 쓰지 않는다 — 원고는 개정될 수 있으므로 위치는 장면 제목으로 고정한다.
 
 ## 검사 영역 11개
 
@@ -77,10 +77,10 @@
 - `fact_id`: 검사 범위에서 고유한 식별자. 예: `ru.hiddenIdentity`.
 - `truth`: 원장 기준 사실과 사실 범주(`[FACT]`/`[INFERENCE]`/`[CONFLICT]`).
 - `author_knows`: 작가가 아는가(`true`/`false`). 원장에 기록된 사실은 `true`.
-- `reader_knows_from_scene`: 독자가 그 사실을 알게 되는 장면의 `파일:줄`. 아직 모르면 `null`.
+- `reader_knows_from_scene`: 독자가 그 사실을 알게 되는 장면 제목. 아직 모르면 `null`.
 - `characters.<id>.knows`: 인물별 지식 상태(`true`/`false`/`partial`/`unknown-time`).
-- `characters.<id>.learned_from`: 그 인물이 알게 되는 장면 `파일:줄`. 모르면 `null`.
-- `characters.<id>.evidence`: 그 인물이 실제로 접한 단서의 `파일:줄` 목록.
+- `characters.<id>.learned_from`: 그 인물이 알게 되는 장면 제목. 모르면 `null`.
+- `characters.<id>.evidence`: 그 인물이 실제로 접한 단서의 장면 제목 목록.
 - 검증 규칙: `characters.*.knows`가 `true`면 `evidence`가 있어야 하고, `reader_knows_from_scene`은 실제로 그 사실을 드러내는 장면이어야 한다. `knows`가 `false`인 인물의 대사·판단에는 그 사실을 근거로 쓰지 않는다.
 - 값 출처 규칙: `true`/`false`는 원장에 기록된 경우에만 쓴다. 원장에 기록이 없으면 `미기재`로 두고 그 사실을 `Held checks`에 올린다. 원장 미기재를 `false`로 단정해 지식 위반을 만들지 않는다.
 - `EARLY_DISCLOSURE` 판정: `reader_knows_from_scene`이 공개 예정 장면보다 앞서면 조기 노출이다.
@@ -88,27 +88,27 @@
 ## 프로젝트 비밀 정보 적용 예
 
 ### 1. `ru.hiddenIdentity` — 루는 도래한 괴수의 일부다
-- `truth`: `[FACT]` (`prototype/remains.json:64`).
-- `author_knows: true`, `reader_knows_from_scene: null`(초반 미공개), `characters.ru.knows: true`(`prototype/remains.json:88`), 나머지 세 인물의 지식은 원장 미기재이므로 `미기재`로 두고 `Held checks` 대상으로 기록한다.
-- 적용: `루시퍼`라는 이름 자체는 6개월간 뉴스에 노출된 공개 정보다(`prototype/remains.json:92`). 그러나 루가 그 일부라는 연결은 비공개다. 초반 장면의 서술자가 이 연결을 확정 서술하면 `EARLY_DISCLOSURE`다.
-- 별도 기록: 루가 강두식의 히어로 이력을 아는 시점은 `knowsDusikWasTheHeroInitially: false`, `realizesDusikIdentity: 이야기 중에 알아차린다`(`prototype/remains.json:89-90`)로 고정되어 있다.
+- `truth`: `[FACT]` (`settings.characters.ru.hiddenIdentity`).
+- `author_knows: true`, `reader_knows_from_scene: null`(초반 미공개), `characters.ru.knows: true`(`settings.characters.ru.knowledge.knowsOriginalIdentityFromStart`), 나머지 세 인물의 지식은 원장 미기재이므로 `미기재`로 두고 `Held checks` 대상으로 기록한다.
+- 적용: `루시퍼`라는 이름 자체는 6개월간 뉴스에 노출된 공개 정보다(`settings.characters.ru.publicExposure`). 그러나 루가 그 일부라는 연결은 비공개다. 초반 장면의 서술자가 이 연결을 확정 서술하면 `EARLY_DISCLOSURE`다.
+- 별도 기록: 루가 강두식의 히어로 이력을 아는 시점은 `knowsDusikWasTheHeroInitially: false`, `realizesDusikIdentity: 이야기 중에 알아차린다`(`settings.characters.ru.knowledge.knowsDusikWasTheHeroInitially`, `settings.characters.ru.knowledge.realizesDusikIdentity`)로 고정되어 있다.
 
 ### 2. `banjang.hiddenActivity` — 최 반장의 별도 감시 보고서
-- `truth`: `[FACT]` (`prototype/remains.json:97`). 초반에는 공개되지 않는다.
+- `truth`: `[FACT]` (`settings.characters.banjang.hiddenActivity`). 초반에는 공개되지 않는다.
 - `author_knows: true`, `reader_knows_from_scene: null`, `characters.banjang.knows: true`, 나머지 세 인물의 지식은 원장 미기재이므로 `미기재`로 두고 `Held checks` 대상으로 기록한다.
 - 적용: 초반 장면에서 다른 인물이 이 보고서를 언급하거나 서술자가 단정하면 `KNOWLEDGE` 또는 `EARLY_DISCLOSURE` 후보다. 최 반장의 행동을 `협회 지시 이행`으로만 서술한 장면은 모순이 아니라 감춤이다.
 
 ### 3. `dusik.secretCausality` — 강두식과 루시퍼의 분리 인과
-- `truth`: `[FACT]` (`prototype/remains.json:58`, `prototype/remains.json:125-128`). 6개월 전 진압 과정에서 강두식이 루시퍼와 싸운 결과 루와 시퍼로 분리되었다.
+- `truth`: `[FACT]` (`settings.characters.dusik.secretCausality`, `chronology`). 6개월 전 진압 과정에서 강두식이 루시퍼와 싸운 결과 루와 시퍼로 분리되었다.
 - `author_knows: true`, `reader_knows_from_scene: null`(초반 미공개), `characters.ru.knows: 미기재`, `characters.dusik.knows: unknown-time`, `characters.banjang.knows: unknown-time`, `characters.taesan.knows: unknown-time`.
-- 별개 사실 주의: 루가 강두식의 히어로 이력을 모르는 것은 `ru.knowsDusikWasTheHeroInitially: false`(`prototype/remains.json:89`)로 기록된 다른 사실이다. 이 인과에 대한 루의 지식과 섞지 않는다.
-- 적용: 원장에 없는 지식 상태를 `false`로 단정하지 않는다. `unknown-time`은 위반 판정 근거가 아니라 `suggested_check` 대상이다. 강두식의 퇴역·부채 이력(`prototype/remains.json:52-56`)과 이 인과를 같은 사건으로 묶는 서술은 `[INFERENCE]`로 표시한다.
+- 별개 사실 주의: 루가 강두식의 히어로 이력을 모르는 것은 `ru.knowsDusikWasTheHeroInitially: false`(`settings.characters.ru.knowledge`)로 기록된 다른 사실이다. 이 인과에 대한 루의 지식과 섞지 않는다.
+- 적용: 원장에 없는 지식 상태를 `false`로 단정하지 않는다. `unknown-time`은 위반 판정 근거가 아니라 `suggested_check` 대상이다. 강두식의 퇴역·부채 이력(`settings.characters.dusik.financialStatus`, `settings.characters.dusik.heroHistory`)과 이 인과를 같은 사건으로 묶는 서술은 `[INFERENCE]`로 표시한다.
 
 ## 심각도 사다리
 
 - `Critical`: 확정된 시점·인과·신분을 뒤집어 이후 장면의 전제를 무효화한다. 예: 6개월 전 분리 사건을 다른 시점에 일어난 일로 서술, 공개되지 않은 신분을 처음부터 공개된 것으로 서술.
 - `Major`: 두 장면이 같은 대상에 다른 값을 말하고, 원장으로 어느 쪽이 확정인지 판정할 수 있다. 예: 소지품, 등급, 호칭, 장소 구조.
-- `Minor`: 표기·거리·표현 수준의 어긋남으로 한 줄 범위.
+- `Minor`: 표기·거리·표현 수준의 어긋남으로 한 장면 제목.
 - 판정: `open`인 Critical 또는 Major가 하나라도 있으면 `FAIL`, `Minor`만 남거나 모두 `resolved`면 `PASS`, 입력 근거가 부족하면 `UNVERIFIABLE`.
 
 ## 반복 경고 대상 (연속성 판정 제외)
@@ -119,6 +119,6 @@
 
 ## suggested_check 작성 형식
 
-- 형식: 동사로 시작하는 한 문장 + 확인 대상 `파일:줄` + 확인할 값 + 기대 판정.
-- 예: `prototype/remains.json:44`의 `playerAddress`와 `prototype/stories/example.md:68` 대사의 호칭이 같은지 사람이 확인한다.
+- 형식: 동사로 시작하는 한 문장 + 확인 대상 앵커(원고 장면 제목 또는 원장 JSON 키 경로) + 확인할 값 + 기대 판정.
+- 예: `settings.company.playerAddress`와 원고 「2. 긴급 피해 조사 명령」의 `사장님` 호칭이 같은지 사람이 확인한다.
 - 금지: 수정 지시(`고친다`, `바꾼다`), 대체 문장 제시, 한 줄에 둘 이상의 검사 묶기.

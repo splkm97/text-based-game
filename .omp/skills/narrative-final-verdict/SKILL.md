@@ -33,7 +33,7 @@ description: "종합된 근거에 권위 있는 서사 등급과 출시 준비�
 
 ## 입력
 
-- G28 종합 메모, G01~G27 전문 메모, 최종 검토 스키마, 소스 지문의 인라인 내용.
+- G28 종합 메모, G01~G27 전문 메모, 소스 지문, 최종 검토 스키마의 인라인 내용(스키마 정본: `.omp/skills/_baseline/review-score-schema.md`).
 
 G28 종합 메모나 최종 검토 스키마가 없으면 `input-blocked`로 처리하고 파일을 작성하지 않는다.
 
@@ -61,12 +61,12 @@ G28 종합 메모나 최종 검토 스키마가 없으면 `input-blocked`로 처
 
 ## G29 게이트 레코드
 
-G29 레코드는 `Gate`, `Status`, `Reason`, `Score`, `Reviewed commit`, `Reviewed artifact SHA-256`, `Scope`, `Evidence`, `Findings`, `Required revisions`, `Limitations`를 정확히 포함한다. `Status`는 `PASS|FAIL|UNVERIFIABLE`, `Score`는 정수 `0-100` 또는 `null`이다. 각 finding은 `id`, `severity`, `status`, `file`, `line`, `problem`, `why`, `playerImpact`, `fix`를 포함한다.
+G29 레코드는 `Gate`, `Status`, `Reason`, `Score`, `Reviewed commit`, `Reviewed artifact SHA-256`, `Scope`, `Evidence`, `Findings`, `Required revisions`, `Limitations`를 정확히 포함한다. `Status`는 `PASS|FAIL|UNVERIFIABLE`, `Score`는 정수 `0-100` 또는 `null`이다. 각 finding은 `id`, `severity`, `status`, `file`, `location`, `problem`, `why`, `playerImpact`, `fix`를 포함한다.
 
 ## 절차
 
 1. 실행 디렉터리를 만들고 인라인 입력을 manifest와 스냅샷으로 기록한다. 완료 조건: 모든 manifest 항목의 `relativePath`가 `RUN_DIR` 하위이고 스냅샷 해시가 `sha256`과 일치한다.
-2. G28의 완전성, 지문, 공식 18개 키, supplemental keys, 충돌 기록을 검증한다. 18개 공식 점수 키와 4개 supplemental 키의 정의는 `narrative-score-synthesis`의 점수 계약을 따르며 여기서 다시 열거하지 않는다. 완료 조건: 18개 키와 4개 supplemental 키가 세어지고, 지문 일치 여부와 미해결 충돌 목록이 판정된다.
+2. G28의 완전성, 지문, 공식 18개 키, supplemental keys, 충돌 기록을 검증한다. 18개 공식 점수 키와 4개 supplemental 키의 정의는 `.omp/skills/_baseline/review-score-schema.md`를 따르며 여기서 다시 열거하지 않는다. 완료 조건: 18개 키와 4개 supplemental 키가 세어지고, 지문 일치 여부와 미해결 충돌 목록이 판정된다.
 3. 검증된 근거에서 다섯 verdict 필드를 도출하고 enum을 확인한다. 완료 조건: 다섯 필드가 모두 채워지고 닫힌 enum 안의 값이며, 각 값에 근거 위치가 붙는다.
 4. 해결되지 않은 Critical/Major finding을 보존한다. 핵심 게이트가 50 미만이면 grade는 C를 넘을 수 없고, Critical/Major가 남아 있으면 `Ready`로 판정하지 않는다. 완료 조건: 상한을 적용한 근거가 보고서에 적히고, 위반한 판정이 없다.
 5. 세계 상태, 선택 주도권, 재플레이, 진엔딩, 누적 선택과 인물 행동에 관한 다섯 질문에 답한다. 완료 조건: 다섯 질문 각각에 답과 근거 위치가 있다.
