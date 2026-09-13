@@ -18,6 +18,7 @@
 | 새 사건·에피소드·분기 후보가 필요하다 | `ideation` |
 | 인물이 왜 그렇게 행동하는지 검증해야 한다 | `character-test` |
 | 장면 하나의 목표·갈등·비트·선택지를 설계해야 한다 | `scene-design` |
+| 승인된 장면 설계(scene card)를 1인칭 초고로 옮겨야 한다 | `scene-design` |
 | 초고가 이미 있고 구조·연속성·독자 반응을 봐야 한다 | `draft-review` |
 | 진단 결과가 있고 수정 순서를 정해야 한다 | `revision` |
 
@@ -48,8 +49,9 @@
 | 1 | `scene-architect` | 원장, 직전 장면 원고, 장면 목표 | scene card | **Major Plot Turn** |
 | 2 | `continuity-auditor` | scene card, 원장, 직전 장면 | 진입 상태·지식 경계·용어 모순 | — |
 | 3 | `dialogue-variator` (대사가 있으면) | scene card, 인물 voice 규칙 | subtext 대안 목록 | **Final Voice** |
+| 4 | `narrative-rewriter` (draft) | 승인된 scene card(`state change: PASS`), 사람이 고른 대사 변주(있으면) | 1인칭 초고 블록 | — |
 
-3단계는 대사를 확정하지 않는다. 사람이 고른 뒤 원고에 반영한다. 반영은 이 라우터가 하지 않는다.
+3단계는 대사를 확정하지 않는다. 사람이 고른 뒤 원고에 반영한다. 반영은 이 라우터가 하지 않는다. 4단계 초고는 승인된 카드를 전제로 하며, 카드가 없거나 `state change`가 `PASS`가 아니면 `narrative-rewriter`가 거부한다.
 
 ## `draft-review`
 

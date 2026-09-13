@@ -115,8 +115,8 @@
 <line x1="880" y1="291.0" x2="920" y2="291.0" stroke="#4a3f63" stroke-width="2" stroke-dasharray="6 4"/>
 <rect x="920" y="465.0" width="300" height="30" fill="#f6f5f9" stroke="#2f6b4f" stroke-width="2"/>
 <text x="1070.0" y="483.8" text-anchor="middle" font-size="10.5" font-weight="600" fill="#2f6b4f">ledger schema 모드  ·  P0</text>
-<rect x="920" y="493.0" width="300" height="30" fill="#f6f5f9" stroke="#4a3f63" stroke-width="2" stroke-dasharray="6 4"/>
-<text x="1070.0" y="511.8" text-anchor="middle" font-size="10.5" font-weight="600" fill="#4a3f63">rewriter draft 입력  ·  P1</text>
+<rect x="920" y="493.0" width="300" height="30" fill="#f6f5f9" stroke="#2f6b4f" stroke-width="2"/>
+<text x="1070.0" y="511.8" text-anchor="middle" font-size="10.5" font-weight="600" fill="#2f6b4f">rewriter draft 입력  ·  P1</text>
 <line x1="880" y1="494.0" x2="920" y2="494.0" stroke="#4a3f63" stroke-width="2" stroke-dasharray="6 4"/>
 <rect x="920" y="737.0" width="300" height="30" fill="#f6f5f9" stroke="#2f6b4f" stroke-width="2"/>
 <text x="1070.0" y="755.8" text-anchor="middle" font-size="10.5" font-weight="600" fill="#2f6b4f">경로 · plan 정합 수정  ·  P0</text>

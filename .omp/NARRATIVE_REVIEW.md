@@ -6,6 +6,7 @@
 
 | Label | 호출 시점 | 담당 surface | 출력 |
 |---|---|---|---|
+| `DRAFT` | 승인된 scene card(`state change: PASS`)를 1인칭 초고 블록으로 옮길 때 | `narrative-rewriter` (에이전트, 카드 없음·비PASS는 거부) | 호출자가 지정한 초고 파일 경로 |
 | `SCENE` | 장면·노드 생성 또는 의미 있는 수정 직후 | 현재 장면, 직전/직후 노드, guard/effect, 정보 경계, 장면 인과 | `RUN_DIR/outputs/scenes/<SCENE_ID>.md` |
 | `ENDING_ROUTE` | 하나의 엔딩과 하나의 시작→종결 route 완성 직후 | 실제 route replay evidence, 엔딩 6축, route anchor, 비용·실패·후속 책임 | `RUN_DIR/outputs/endings/<ENDING_ID>/<ROUTE_ID>.md` |
 | `MULTI_ENDING` | 채택된 모든 엔딩·route·manifest·anchor 완성 후 | 엔딩 간 균형, 동시 달성, 재플레이, 정보 계층, 배타 상태, 전체 result set | `RUN_DIR/outputs/multi-ending-complete.md` |
