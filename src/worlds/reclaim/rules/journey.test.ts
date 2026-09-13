@@ -8,7 +8,7 @@ import type { ActionId, ChainStepId, CharacterId, CleanupTaskId, JobId, JobStepI
 import { CHARACTER_IDS, CLEANUP_TASK_IDS, JOB_IDS, JOB_STEP_IDS } from "../ids";
 import type { Placement, RunState } from "../types";
 import { cleanupAxis } from "./enumerate";
-import { applyAction, availableActions, startRun } from "./run";
+import { applyAction, availableActions, cleanupGrade, startRun } from "./run";
 
 const PLACEMENTS: readonly Placement[] = ["ru_first", "dusik_first"];
 /** 상태 폭발 방어 — 실측(2026-09-14, 실 CONTENT, 뒷정리 축 투영 후) ru_first 39,446 ·
@@ -338,5 +338,47 @@ describe("인물 축 불변식 — 하한, 부상 결장, 인원 선택의 막�
       if (run.terminal !== "true_ru") continue;
       expect(run.clue && run.relic, "true_ru인데 단서·물건이 없다").toBe(true);
     }
+  });
+});
+
+describe("뒷정리 축 — 서명이 등급 전이를 보존한다", () => {
+  /**
+   * 행동 등가 quotient의 witness다. 서명이 **가드가 읽는 축만** 남긴다는 정당화는 pfx를 빼먹은
+   * 버그를 만들었다(집합만 담으면 같은 집합의 다른 순서가 한 서명으로 접혀 메모이즈가 대표 하나만
+   * 확장하고, 탐험되는 등급이 ACTION_IDS 순서에 종속된다). pfx를 지우면 이 테스트가 즉시 실패한다.
+   */
+  const atCleanup = (picks: readonly CleanupTaskId[]): RunState => ({
+    ...startRun(CONTENT, "ru_first"),
+    jobIndex: 0,
+    jobStep: "cleanup",
+    cleanupPicks: picks,
+  });
+  const afterPhoto = (run: RunState): RunState => {
+    const outcome = applyAction(run, "cleanup_pick_photo", CONTENT);
+    expect(outcome.ok, "photo 픽이 거부됐다").toBe(true);
+    return outcome.ok ? outcome.run : run;
+  };
+
+  test("같은 집합·다른 등급 전이인 두 상태는 다른 서명을 낸다", () => {
+    // 지침 접두가 셋인 [sign, power, search]는 photo를 더하면 perfect,
+    // 첫 픽이 어긋난 [search, sign, power]는 같은 photo로 poor가 된다.
+    const canonical = atCleanup(["sign", "power", "search"]);
+    const strayed = atCleanup(["search", "sign", "power"]);
+    expect(cleanupGrade(afterPhoto(canonical))).toBe("perfect");
+    expect(cleanupGrade(afterPhoto(strayed))).toBe("poor");
+    expect(cleanupAxis(canonical)).not.toBe(cleanupAxis(strayed));
+  });
+
+  test("등급이 같은 두 순서는 한 서명으로 접힌다 — 순서 소음은 상태를 늘리지 않는다", () => {
+    // [search, photo]와 [photo, search]는 둘 다 지침 접두가 0이라 어떤 완주도 poor다.
+    const a = atCleanup(["search", "photo"]);
+    const b = atCleanup(["photo", "search"]);
+    const finish = (run: RunState): RunState => ({
+      ...run,
+      cleanupPicks: [...run.cleanupPicks, "sign", "power"],
+    });
+    expect(cleanupGrade(finish(a))).toBe("poor");
+    expect(cleanupGrade(finish(b))).toBe("poor");
+    expect(cleanupAxis(a)).toBe(cleanupAxis(b));
   });
 });
