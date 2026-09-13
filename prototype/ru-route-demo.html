@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>일회용 프로토타입 — 루 루트 상태 모델</title>
+<style>
+  :root { --ink:#16161a; --ash:#6b6b76; --line:#c9c9d2; --accent:#8a3b2e; --ok:#2f6b4f; --paper:#f4f2ee; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:20px; font:13px/1.6 -apple-system,"Apple SD Gothic Neo",sans-serif; color:var(--ink); background:#fbfbfc; }
+  h1 { font-size:17px; margin:0 0 4px; }
+  h2 { font-size:13px; margin:0 0 10px; letter-spacing:.06em; color:var(--ash); }
+  .q { color:var(--ash); margin:0 0 18px; max-width:900px; }
+  .tag { display:inline-block; border:2px solid var(--accent); color:var(--accent); padding:0 6px; font-size:11px; margin-left:6px; }
+  section { background:#fff; border:2px solid var(--line); padding:14px; }
+  .row { display:grid; grid-template-columns:1fr 420px; gap:16px; align-items:start; margin-bottom:16px; }
+  .col { display:flex; flex-direction:column; gap:16px; }
+  #state dl { display:grid; grid-template-columns:auto 1fr; gap:2px 14px; margin:0; }
+  #state dt { color:var(--ash); white-space:nowrap; }
+  #state dd { margin:0; }
+  #state .changed { margin-top:10px; padding-top:10px; border-top:2px solid var(--line); color:var(--ink); min-height:22px; }
+  #state .reject { color:var(--accent); }
+  #state .terminal { color:var(--accent); font-weight:600; }
+  .btns { display:flex; flex-wrap:wrap; gap:6px; }
+  button { font:inherit; min-height:44px; padding:10px 12px; background:#fff; border:2px solid var(--line); cursor:pointer; border-radius:0; transition:border-color 120ms; }
+  button:hover { border-color:var(--accent); }
+  button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  button.on { border-color:var(--accent); color:var(--accent); }
+  .tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .pane { display:none; } .pane.on { display:block; }
+  .steps { margin:10px 0 0; padding:0; list-style:none; }
+  .steps li { display:flex; align-items:center; gap:10px; margin-bottom:5px; }
+  .steps li span { color:var(--ash); font-size:12px; }
+  .steps li.done span { color:var(--ok); }
+  #graph svg { display:block; width:100%; height:auto; }
+  .n rect { fill:#fff; stroke:var(--line); stroke-width:2; }
+  .n text { font:11px -apple-system,"Apple SD Gothic Neo",sans-serif; fill:var(--ink); }
+  .n.now rect { stroke:var(--accent); stroke-width:3; }
+  .n.now text { fill:var(--accent); font-weight:700; }
+  .n.term rect { fill:var(--paper); }
+  .e { stroke:var(--line); stroke-width:2; fill:none; marker-end:url(#arrow); }
+  .e.hot { stroke:var(--accent); }
+  .el { font:10px -apple-system,"Apple SD Gothic Neo",sans-serif; fill:var(--ash); }
+  .phone { width:390px; border:2px solid var(--ink); background:#fff; padding:0; }
+  .phone .bar { border-bottom:2px solid var(--ink); padding:6px 10px; font-size:11px; color:var(--ash); display:flex; justify-content:space-between; }
+  .phone .scr { padding:14px; min-height:420px; }
+  .phone .doc { border:2px solid var(--line); padding:12px; }
+  .phone .doc h3 { margin:0 0 8px; font-size:12px; letter-spacing:.08em; color:var(--ash); font-weight:400; }
+  .phone .from { font-size:11px; color:var(--ash); border-bottom:2px solid var(--line); padding-bottom:6px; margin-bottom:10px; }
+  .phone p { margin:0 0 9px; font-size:12.5px; }
+  .phone .stamp { border:2px solid var(--accent); color:var(--accent); display:inline-block; padding:1px 6px; font-size:11px; margin-top:6px; }
+  .phone .mono { font-family:ui-monospace,Menlo,monospace; font-size:11.5px; }
+  .phone .cut { color:var(--ash); font-style:italic; }
+  table { border-collapse:collapse; width:100%; font-size:12px; }
+  th,td { border-bottom:1px solid var(--line); text-align:left; padding:4px 6px; }
+  #enumout .ok { color:var(--ok); font-weight:600; } #enumout .bad { color:var(--accent); font-weight:600; }
+</style>
+</head>
+<body>
+
+<h1>일회용 프로토타입 — 루 루트 상태 모델 <span class="tag">PROTOTYPE · 폐기 예정</span></h1>
+<p class="q">질문: 루 진엔딩 경로의 상태 모델이 합법 전이와 종결을 갖는가 — 특히 “사망 분기는 단서를 루가 확보한 회차에서만 무장된다”와 “물건이 없으면 재통합이 열리지 않는다”가 <strong>모든 플레이 상태를 종결로 보내는가?</strong> 좌측은 선택 그래프, 우측은 그 상태에서 화면에 뜨는 세계 쪽 표면이다. <em>날짜 대신 의존 단계를 쓴다 — 배치는 아직 보류다.</em></p>
+
+<div class="row">
+  <div class="col">
+    <section><h2>선택 그래프</h2><div id="graph"></div></section>
+    <section id="state"><h2>현재 상태</h2></section>
+  </div>
+  <section><h2>휴대전화 — 지금 화면</h2><div class="phone"><div class="bar"><span>회사 단말기</span><span id="phoneday">관측소 배정</span></div><div class="scr" id="phonescr"></div></div></section>
+</div>
+
+<section style="margin-bottom:16px"><h2>자유 실행 — 액션마다 버튼 하나 (불법 시도도 눌러 본다)</h2><div class="btns" id="free"></div></section>
+
+<section style="margin-bottom:16px">
+  <h2>안내된 워크스루</h2>
+  <div class="tabs" id="tabs"></div><div id="panes"></div>
+</section>
+
+<section>
+  <h2>상태 공간 열거 — 도달 가능한 모든 상태가 종결로 이어지는가</h2>
+  <div class="btns"><button type="button" id="enumbtn">상태 공간 열거 실행</button></div>
+  <div id="enumout"></div>
+</section>
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   순수 모듈 — DOM을 모른다. 상태는 도메인 언어의 값만 담는다.
+   ───────────────────────────────────────────────────────────── */
+const TERMINALS = {
+  TRUE: "진엔딩 · 루시퍼 복귀와 군단 소환",
+  DEATH: "이탈 · 사망 엔딩 (미파견, 이유 미표시)",
+  GENERAL: "이탈 · 일반 엔딩 (재통합 미성립)",
+  TAESAN: "이탈 · 시퍼 제거 · 루 확보",
+  ROUTINE: "이탈 · 일상 엔딩 (단서 미확보, 회차 재시작)",
+};
+
+const initial = () => ({
+  phase: "obs",          // obs | arc | dec | site | night | (terminal)
+  chances: 2,            // 재등장 기회 — 단서를 얻지 못한 관측소 방문마다 소모
+  clue: false,           // 루가 괴수 흔적의 문양·구조를 읽었는가
+  relic: null,           // null | "회사" — 회사 보관함에 들어온 물건
+  party: null,           // 현장 두 번째 동행
+  contact: false,        // 루가 시퍼에게 손을 댔는가
+  terminal: null,
+  note: "관측소 잔해가 미처리 목록에 남아 있다. 누구에게 맡길 것인가.",
+});
+
+const ACTIONS = [
+  /* 관측소 배정 — 회사 자체 업무, 사장 동행 의무 없음 */
+  { id: "obs_단독", label: "루를 단독으로 보낸다", when: (s) => s.phase === "obs",
+    run: () => ({ clue: true, phase: "arc", note: "루가 파편의 문양·구조를 읽었다. 사장은 보고서에 '특이사항 없음'을 썼다." }) },
+  { id: "obs_동행", label: "사장이 함께 간다", when: (s) => s.phase === "obs",
+    run: (s) => ({ phase: "arc", chances: Math.max(0, s.chances - 1), note: "사장이 파편을 먼저 사진으로 남겼다. 루는 아무것도 읽지 않았다. — 상실 신호: 단서 미확보" }) },
+  { id: "obs_미배정", label: "다른 직원에게 맡긴다", when: (s) => s.phase === "obs",
+    run: (s) => ({ phase: "arc", chances: Math.max(0, s.chances - 1), note: "다른 직원이 다녀왔다. 보고서에 특이사항이 없다. — 상실 신호 발화" }) },
+
+  /* 보관고 재방문 — 같은 장소, 다른 동행, 다른 산출 */
+  { id: "arc_루", label: "보관고에 최 반장 + 루가 들어간다", when: (s) => s.phase === "arc",
+    run: () => ({ relic: "회사", phase: "dec", note: "루가 목록 밖의 물건 앞에서 손을 멈췄다. 물건은 군 등록번호가 붙은 채 회사 보관함에 들어갔다." }) },
+  { id: "arc_강두식", label: "보관고에 최 반장 + 강두식이 들어간다", when: (s) => s.phase === "arc",
+    run: () => ({ phase: "dec", note: "문서 사본을 얻었다 — 다른 이야기의 재료다. 물건은 아무도 알아보지 못했다." }) },
+  { id: "arc_배태산", label: "보관고에 최 반장 + 배태산이 들어간다", when: (s) => s.phase === "arc",
+    run: () => ({ phase: "dec", note: "배태산이 먼저 손을 댔다. 물건이 협회 쪽으로 돌아갔다. — 상실 신호 발화" }) },
+
+  /* 파견 결정 — 사망 분기는 단서 보유 회차에서만 무장된다 */
+  { id: "dec_파견", label: "루를 최종 정리 사건에 파견한다", when: (s) => s.phase === "dec",
+    require: (s) => s.clue, deny: "루가 시퍼의 존재를 모른다 — 파견해도 그는 손을 들지 않는다",
+    run: () => ({ phase: "site", note: "루가 먼저 손을 들었다. 사장은 이유를 묻고 답을 듣지 못했다." }) },
+  { id: "dec_미파견", label: "파견하지 않고 다른 인원을 배치한다", when: (s) => s.phase === "dec",
+    require: (s) => s.clue, deny: "사망 분기는 단서를 루가 확보한 회차에서만 무장된다 — 이 회차에서는 무장되지 않는다",
+    run: () => ({ terminal: "DEATH", note: "사장은 평소처럼 다른 이름을 썼다. 등 뒤에서 인기척이 났다. 문장이 끝나지 않는다." }) },
+  { id: "dec_재등장", label: "단서가 없어 관측소 건을 다시 연다", when: (s) => s.phase === "dec",
+    require: (s) => !s.clue && s.chances > 0, deny: "재등장 기회를 모두 썼다",
+    run: () => ({ phase: "obs", note: "루는 확신하지 못했다. 관측소 건이 다시 열렸다 — 이번 방문도 실패하면 기회가 소모된다." }) },
+  { id: "dec_기회소진", label: "기회가 없다 — 회차를 일상으로 닫는다", when: (s) => s.phase === "dec",
+    require: (s) => !s.clue && s.chances === 0, deny: "아직 기회가 남아 있다",
+    run: () => ({ terminal: "ROUTINE", note: "단서를 얻지 못한 채 기회가 끝났다. 같은 공문이 다음 날 다시 온다." }) },
+
+  /* 현장 판정 — 시퍼는 이동하지 않고 먼저 치지 않는다 */
+  { id: "site_최반장", label: "관찰 유보 — 최 반장이 함께 들어간다", when: (s) => s.phase === "site",
+    run: () => ({ party: "최반장", contact: true, phase: "night", note: "루가 잔당에 손을 댔고 아무 일도 일어나지 않았다. 사장은 그 몸짓을 안전 위반으로 읽었다." }) },
+  { id: "site_처리요청", label: "지침대로 처리 요청을 올린다", when: (s) => s.phase === "site",
+    run: () => ({ terminal: "TAESAN", note: "시퍼가 제거되었다. 힘을 잃은 루가 확보되어 실험실로 갔다." }) },
+  { id: "site_배태산", label: "배태산이 함께 들어간다", when: (s) => s.phase === "site",
+    run: () => ({ terminal: "TAESAN", note: "그가 판정을 넘겨받았다. 시퍼 제거와 루 인계가 같은 날 진행되었다." }) },
+
+  /* 심야 — 물건이 있어야 재통합이 열린다 */
+  { id: "night_사용", label: "루가 물건을 삼킨다", when: (s) => s.phase === "night",
+    require: (s) => !!s.relic, deny: "쓸 물건이 없다 — 재통합이 열리지 않는다",
+    run: () => ({ terminal: "TRUE", note: "사장은 삼킨 뒤에야 그가 알고 있었다는 것을 알게 되었다. 좌표가 이쪽으로 옮겨지고, 마지막 장면은 폐허다." }) },
+  { id: "night_미사용", label: "루가 물건을 쓰지 않는다", when: (s) => s.phase === "night",
+    run: () => ({ terminal: "GENERAL", note: "재통합이 열리지 않았다. 잔당은 처리되고 도시는 남는다." }) },
+  { id: "night_물건없음", label: "물건 없이 현장을 닫는다", when: (s) => s.phase === "night",
+    require: (s) => !s.relic, deny: "물건이 회사 보관함에 있다",
+    run: () => ({ terminal: "GENERAL", note: "물건이 없다 — 접점만 남고 재통합은 열리지 않았다." }) },
+];
+
+const reduce = (state, id) => {
+  if (state.terminal) return { state, ok: false, reason: "회차가 이미 종결되었다" };
+  const a = ACTIONS.find((x) => x.id === id);
+  if (!a) return { state, ok: false, reason: "알 수 없는 액션" };
+  if (!a.when(state)) return { state, ok: false, reason: `이 단계의 액션이 아니다 (현재 ${state.phase})` };
+  if (a.require && !a.require(state)) return { state, ok: false, reason: a.deny };
+  const next = { ...state, ...(a.run(state) || {}) };
+  return { state: next, ok: true, reason: null };
+};
+
+/* 상태 공간 열거 — 경로 단위 DFS. chances가 단조 감소하고 phase가 뒤로 가지 않으므로
+   그래프는 비순환이다. 그 가정을 쓰지 않고 경로 내 재방문으로 검증한다(순환 0이어야 한다). */
+const sig = (s) => [s.phase, s.chances, s.clue, s.relic, s.party, s.contact, s.terminal].join("|");
+const enumerate = () => {
+  const terms = {}, deadEnds = [], cycles = [], states = new Set();
+  const walk = (s, path) => {
+    states.add(sig(s));
+    if (s.terminal) { terms[s.terminal] = (terms[s.terminal] || 0) + 1; return; }
+    let moved = false;
+    for (const a of ACTIONS) {
+      const r = reduce(s, a.id);
+      if (!r.ok) continue;
+      moved = true;
+      const k = sig(r.state);
+      if (path.has(k)) { cycles.push([...path, k].join(" → ")); continue; }
+      walk(r.state, new Set([...path, k]));
+    }
+    if (!moved) deadEnds.push(s);
+  };
+  walk(initial(), new Set([sig(initial())]));
+  return { states: states.size, terms, deadEnds, cycles };
+};
+
+/* 그래프 노드/엣지 — 모델 구조를 그대로 옮긴 정적 배치 */
+const NODES = [
+  { id: "n1", x: 30, y: 30, label: "관측소 배정" },
+  { id: "n2", x: 30, y: 96, label: "보관고 재방문" },
+  { id: "n3", x: 30, y: 162, label: "파견 결정" },
+  { id: "n4", x: 30, y: 228, label: "현장 판정" },
+  { id: "n5", x: 30, y: 294, label: "심야 · 재통합" },
+  { id: "t5", x: 300, y: 30, label: "일상 엔딩", term: true },
+  { id: "t2", x: 300, y: 162, label: "사망 엔딩", term: true },
+  { id: "t4", x: 300, y: 228, label: "배태산 · 시퍼 제거", term: true },
+  { id: "t3", x: 300, y: 294, label: "일반 엔딩", term: true },
+  { id: "t1", x: 300, y: 360, label: "진엔딩", term: true },
+];
+const EDGES = [
+  ["n1", "n2", "물건 확보 / 미확보"],
+  ["n2", "n3", ""],
+  ["n3", "n1", "단서 없음 · 기회 1회 소모"],
+  ["n3", "t5", "기회 소진"],
+  ["n3", "t2", "미파견 (단서 보유)"],
+  ["n3", "n4", "파견 (단서 보유)"],
+  ["n4", "n5", "관찰 유보"],
+  ["n4", "t4", "처리 요청 / 배태산"],
+  ["n5", "t1", "물건 사용"],
+  ["n5", "t3", "물건 없음 / 미사용"],
+];
+
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
+const labelOf = (id) => ACTIONS.find((a) => a.id === id)?.label || id;
+const nowId = (s) => s.terminal ? (s.terminal === "TRUE" ? "t1" : s.terminal === "DEATH" ? "t2" : s.terminal === "GENERAL" ? "t3" : s.terminal === "TAESAN" ? "t4" : "t5")
+  : s.phase === "obs" ? "n1" : s.phase === "arc" ? "n2" : s.phase === "dec" ? "n3" : s.phase === "site" ? "n4" : "n5";
+
+/* 세계 쪽 표면 — 지금 화면에 뜨는 것 */
+const renderPhone = (s) => {
+  const scr = document.getElementById("phonescr");
+  scr.replaceChildren();
+  const doc = el("div", "doc");
+  const head = (from, title) => { doc.append(el("div", "from", from)); doc.append(el("h3", null, title)); };
+  const p = (t, cls) => doc.append(el("p", cls, t));
+  if (s.terminal === "TRUE") {
+    head("폐허", "기록되지 않은 마지막 장면");
+    p("하늘이 갈라지고 첫 개체가 넘어온다.");
+    p("군 히어로 팀이 도착했으나 방어선이 서지 못한다.");
+    p("아무도 치우지 않는 폐허 — 여기서 서술이 끊긴다.", "mono");
+    doc.append(el("span", "stamp", "2편 예고"));
+  } else if (s.terminal === "DEATH") {
+    head("회사 단말기", "배치표");
+    p("금일 최종 정리 사건 — 배치 인원: (다른 이름)");
+    p("등 뒤에서 인기척이 났다.", "mono");
+    doc.append(el("span", "cut", "문장이 끝나지 않는다."));
+  } else if (s.terminal === "GENERAL") {
+    head("협회", "처리 결과");
+    p("잔당 1건 처리 완료. 추가 관찰 없음.");
+    p("청구 항목은 그대로 유지된다.", "mono");
+  } else if (s.terminal === "TAESAN") {
+    head("협회", "인계 서류");
+    p("잔당 제거 완료. 해당 인원은 보호 명목으로 인계되었다.");
+    p("인계 사유란: (공란)", "mono");
+  } else if (s.terminal === "ROUTINE") {
+    head("협회", "금일 업무");
+    p("금일 09:13경 발생한 재산 피해에 대한 조사 결과는 정오까지 제출할 것.");
+    p("어제와 같은 항목이다.", "mono");
+  } else if (s.phase === "obs") {
+    head("회사 미처리 목록", "천체관측소 잔해");
+    p("소환된 괴수의 잔해가 남아 있다. 재확인과 목록 정리가 필요하다.");
+    p(`협회 마감 없음 — 자체 업무다. 남은 기회 ${s.chances}회`, "mono");
+    p("파편 표면에 이쪽 문자 체계에 없는 문양·구조가 새겨져 있다.");
+  } else if (s.phase === "arc") {
+    head("협회 본부 · 보관고", "이송 목록");
+    p("회수품 목록에 군 등록번호가 붙은 물건이 하나 있다.");
+    p("이 방문의 산출은 데려간 사람이 정한다.", "mono");
+    if (s.relic) doc.append(el("span", "stamp", "물건 확보 — 루가 반응했다"));
+    if (s.clue) p("루가 목록을 훑는 손이 목록 밖의 항목에서 멈출 것이다.");
+  } else if (s.phase === "dec") {
+    head("협회", "최종 정리 공문");
+    p("관악구 일대 최종 정리 구역. 잔당 1건이 관측되었다.");
+    p("루가 먼저 손을 든다 — 이유는 말하지 않는다.", "mono");
+    if (!s.clue) p(`그는 확신하지 못한다. 관측소 건을 다시 열 수 있다. 남은 기회 ${s.chances}회`, "mono");
+  } else if (s.phase === "site") {
+    head("현장 정리 지침서", "잔당 판정란");
+    p("대상은 이동하지 않으며 먼저 공격하지 않는다.");
+    p("판정란: (공란) — 판정이 회사 몫이다.", "mono");
+    p("루가 앞으로 나간다. 지침서에는 없는 행동이다.");
+  } else {
+    head("최종 정리 구역 · 심야", "현장");
+    p("사장은 판정 보고를 올리고 철수했다가 되돌아왔다.");
+    p("루가 잔당 앞에 서 있다. 회사 보관함의 물건이 그의 손에 있다.", "mono");
+    if (s.contact) p("낮에 '안전 위반'으로 읽었던 몸짓이 여기서 뒤집힌다.");
+  }
+  scr.append(doc);
+  const label = s.terminal ? "종결" : { obs: "관측소 배정", arc: "보관고 재방문", dec: "파견 결정", site: "현장 판정", night: "심야" }[s.phase];
+  document.getElementById("phoneday").textContent = label;
+};
+
+const renderGraph = (s) => {
+  const box = document.getElementById("graph");
+  box.replaceChildren();
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", "0 0 520 420");
+  const defs = document.createElementNS(ns, "defs");
+  defs.innerHTML = '<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#c9c9d2"/></marker>';
+  svg.append(defs);
+  const pos = {}; for (const n of NODES) pos[n.id] = n;
+  const cur = nowId(s);
+  const perSource = {};
+  for (const [a, b, lab] of EDGES) {
+    const A = pos[a], B = pos[b];
+    const back = B.x < A.x; // 되돌아가는 간선(재등장)은 왼쪽으로 크게 휜다
+    const p = document.createElementNS(ns, "path");
+    const hot = (a === cur);
+    p.setAttribute("d", back
+      ? `M${A.x} ${A.y + 8} C${A.x - 60} ${A.y + 8} ${B.x - 100} ${B.y + 22} ${B.x} ${B.y + 22}`
+      : `M${A.x + 150} ${A.y + 14} C${A.x + 210} ${A.y + 14} ${B.x - 40} ${B.y + 14} ${B.x} ${B.y + 14}`);
+    p.setAttribute("class", `e${hot ? " hot" : ""}`);
+    svg.append(p);
+    if (lab) {
+      perSource[a] = (perSource[a] ?? -1) + 1;
+      const k = perSource[a];
+      const t = document.createElementNS(ns, "text");
+      t.setAttribute("x", back ? A.x - 96 : A.x + 162); t.setAttribute("y", back ? A.y + 4 + k * 12 : A.y + 12 + k * 13);
+      t.setAttribute("class", "el"); t.textContent = lab;
+      svg.append(t);
+    }
+  }
+  for (const n of NODES) {
+    const g = document.createElementNS(ns, "g");
+    g.setAttribute("class", `n${n.term ? " term" : ""}${n.id === cur ? " now" : ""}`);
+    const r = document.createElementNS(ns, "rect");
+    r.setAttribute("x", n.x); r.setAttribute("y", n.y); r.setAttribute("width", 150); r.setAttribute("height", 30);
+    const t = document.createElementNS(ns, "text");
+    t.setAttribute("x", n.x + 10); t.setAttribute("y", n.y + 19); t.textContent = n.label;
+    g.append(r, t); svg.append(g);
+  }
+  box.append(svg);
+};
+
+let state = initial();
+let lastReason = "";
+
+const renderState = () => {
+  const box = document.getElementById("state");
+  const h = box.querySelector("h2");
+  box.replaceChildren(h);
+  const dl = el("dl");
+  const row = (k, v, cls) => { dl.append(el("dt", null, k), el("dd", cls, v)); };
+  row("단계", { obs: "관측소 배정", arc: "보관고 재방문", dec: "파견 결정", site: "현장 판정", night: "심야" }[state.phase] ?? "종결");
+  row("재등장 기회", `${state.chances}회`);
+  row("단서 (문양·구조)", state.clue ? "루가 읽었다" : "없음");
+  row("물건", state.relic ? "회사 보관함" : "없음");
+  row("현장 동행", state.party ?? "—");
+  row("접촉", state.contact ? "루가 손을 댔다" : "없음");
+  row("종결", state.terminal ? TERMINALS[state.terminal] : "진행 중", state.terminal ? "terminal" : null);
+  box.append(dl);
+  const ch = el("div", `changed${lastReason ? " reject" : ""}`);
+  ch.textContent = lastReason ? `거부 — ${lastReason}` : state.note;
+  box.append(ch);
+
+  const free = document.getElementById("free");
+  free.replaceChildren();
+  for (const a of ACTIONS) {
+    const b = el("button", a.when(state) ? "on" : null, a.label);
+    b.onclick = () => { const r = reduce(state, a.id); lastReason = r.ok ? "" : r.reason; state = r.state; renderAll(); };
+    free.append(b);
+  }
+};
+
+const SCENARIOS = [
+  { key: "true", title: "진엔딩", desc: "루를 단독으로 보내 단서를 얻고, 보관고에서 그가 물건을 알아보고, 관찰 유보로 밤을 맞아 그가 삼킨다.",
+    steps: ["obs_단독", "arc_루", "dec_파견", "site_최반장", "night_사용"] },
+  { key: "recover", title: "엣지 — 사장 동행, 재등장으로 만회", desc: "사장이 관측소에 동행하면 루가 단서를 놓친다. 재등장 기회가 남아 있으면 관측소 건이 다시 열리고, 루 단독 배정으로 만회해 진엔딩에 도달한다 — 진엔딩 시나리오와 종결이 같지만, 이 갈래는 '기회 2회 규칙이 실제로 회복시킨다'를 보여준다. 같은 축의 반대 끝은 '기회 소진'(일상 엔딩)이다.",
+    steps: ["obs_동행", "arc_루", "dec_재등장", "obs_단독", "arc_루", "dec_파견", "site_최반장", "night_사용"] },
+  { key: "exhaust", title: "엣지 — 기회 소진", desc: "재등장 기회를 두 번 다 단서 없이 쓰면 파견 결정이 열리지 않고 일상 엔딩으로 닫힌다 — 회복의 반대 끝.",
+    steps: ["obs_동행", "arc_강두식", "dec_재등장", "obs_미배정", "arc_루", "dec_기회소진"] },
+  { key: "relic", title: "엣지 — 물건 없이 현장", desc: "단서는 얻었지만 물건을 확보하지 못하면 접점만 남고 재통합이 열리지 않는다.",
+    steps: ["obs_단독", "arc_강두식", "dec_파견", "site_최반장", "night_물건없음"] },
+  { key: "death", title: "엣지 — 미파견", desc: "단서를 쥔 회차에서 파견하지 않으면 그날 사망으로 닫힌다. 이유는 표시되지 않는다.",
+    steps: ["obs_단독", "arc_루", "dec_미파견"] },
+  { key: "taesan", title: "엣지 — 배태산 동행", desc: "현장에 배태산을 데려가면 시퍼가 제거되고 루가 확보된다 — 루 루트는 닫힌다.",
+    steps: ["obs_단독", "arc_배태산", "dec_파견", "site_배태산"] },
+  { key: "illegal", title: "불법 시도", desc: "단계 위반, 단서 없는 파견, 물건 없는 사용, 기회 없는 재등장을 모두 밟는다.",
+    steps: ["dec_파견", "night_사용", "dec_미파견", "obs_단독", "arc_강두식", "dec_기회소진", "dec_파견", "site_처리요청", "night_사용"] },
+];
+
+let activeScenario = 0;
+
+const renderWalkthroughs = () => {
+  const tabs = document.getElementById("tabs"), panes = document.getElementById("panes");
+  tabs.replaceChildren(); panes.replaceChildren();
+  SCENARIOS.forEach((s, i) => {
+    if (s.cursor === undefined) s.cursor = 0;
+    const on = i === activeScenario;
+    const t = el("button", on ? "on" : null, s.title);
+    const pane = el("div", `pane${on ? " on" : ""}`);
+    pane.append(el("p", null, s.desc));
+    const reset = el("button", null, "이 시나리오 처음부터 (상태 초기화)");
+    reset.onclick = () => { s.cursor = 0; state = initial(); lastReason = ""; renderAll(); };
+    pane.append(reset);
+    const ul = el("ul", "steps");
+    s.steps.forEach((id, k) => {
+      const li = el("li", k < s.cursor ? "done" : null);
+      const b = el("button", null, `${k + 1}. ${labelOf(id)}`);
+      b.onclick = () => {
+        if (k === 0 && state.terminal) { state = initial(); }   // 시나리오는 종결 상태에서도 처음부터 돌 수 있다
+        const r = reduce(state, id); s.cursor = k + 1; lastReason = r.ok ? "" : r.reason; state = r.state; renderAll();
+      };
+      li.append(b, el("span", null, k < s.cursor ? "완료" : ""));
+      ul.append(li);
+    });
+    pane.append(ul);
+    t.onclick = () => { activeScenario = i; renderWalkthroughs(); };
+    tabs.append(t); panes.append(pane);
+  });
+};
+
+const renderAll = () => { renderGraph(state); renderState(); renderPhone(state); renderWalkthroughs(); };
+
+document.getElementById("enumbtn").onclick = () => {
+  const { states, terms, deadEnds, cycles } = enumerate();
+  const out = document.getElementById("enumout");
+  out.replaceChildren();
+  const t = el("table");
+  const hr = el("tr"); hr.append(el("th", null, "종결"), el("th", null, "도달 경로 수")); t.append(hr);
+  for (const [k, v] of Object.entries(terms)) { const tr = el("tr"); tr.append(el("td", null, TERMINALS[k]), el("td", null, String(v))); t.append(tr); }
+  out.append(t);
+  out.append(el("p", deadEnds.length === 0 && cycles.length === 0 ? "ok" : "bad",
+    `도달 상태 ${states}개 · 종결 경로 ${Object.values(terms).reduce((a, b) => a + b, 0)}개 · ` +
+    `막다른 상태 ${deadEnds.length}개 · 순환 ${cycles.length}개` +
+    (deadEnds.length === 0 && cycles.length === 0 ? " — 비순환이고 모든 상태가 종결로 이어진다" : " — 확인 필요")));
+  if (deadEnds.length) {
+    const pre = el("pre", "bad"); pre.textContent = deadEnds.map((s) => JSON.stringify(s)).join("\n");
+    out.append(pre);
+  }
+  if (cycles.length) { const pre = el("pre", "bad"); pre.textContent = cycles.join("\n"); out.append(pre); }
+};
+
+renderAll();
+</script>
+</body>
+</html>
