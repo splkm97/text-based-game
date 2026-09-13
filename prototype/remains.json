@@ -164,7 +164,7 @@
     },
     "gameMechanics": {
       "status": "확정",
-      "reference": "docs/design/game-mechanics.md"
+      "reference": "prototype/game-mechanics.md"
     }
   },
   "trueEndingRoutes": {
