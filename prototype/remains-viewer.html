@@ -62,7 +62,8 @@
   <main id="routes"></main>
   <p class="hint">
     기본값은 같은 폴더의 <code>remains.json</code> 자동 로드입니다(정적 서버 필요). 파일로 직접 열었다면
-    “다른 JSON 열기”를 쓰거나 JSON 파일을 창에 끌어다 놓으세요. 점선 노드 <b>?</b> 는 아직 이어지지 않은 구간입니다.
+    “다른 JSON 열기”를 쓰거나 JSON 파일을 창에 끌어다 놓으세요. 다른 경로를 보려면 주소에 <code>?src=경로</code>를 붙이면 됩니다.
+    점선 노드 <b>?</b> 는 아직 이어지지 않은 구간입니다.
   </p>
 </div>
 <script type="module">
@@ -89,7 +90,7 @@ const parseMermaid = (src) => {
       if (t === "") continue;
       if (t in OPERATORS) { dashed = OPERATORS[t]; continue; }
       const m = NODE_RE.exec(t);
-      if (!m) return { error: "해석할 수 없는 조각: " + t };
+      if (!m) return { error: `해석할 수 없는 조각: ${t}` };
       const id = m[1];
       if (!labels.has(id)) labels.set(id, m[2] ?? m[3] ?? id);
       if (prev !== null) edges.push({ from: prev, to: id, dashed });
@@ -100,28 +101,41 @@ const parseMermaid = (src) => {
   return { labels, edges };
 };
 
-const toChain = ({ labels, edges }) => {
+const MAX_PATHS = 16;
+const MAX_DEPTH = 60;
+
+const toPaths = ({ labels, edges }) => {
   const ids = [...labels.keys()];
+  if (ids.length === 0) return null;
   const out = new Map(ids.map((id) => [id, []]));
   const incoming = new Map(ids.map((id) => [id, null]));
   for (const edge of edges) {
     out.get(edge.from).push(edge);
-    incoming.set(edge.to, edge);
+    if (incoming.get(edge.to) === null) incoming.set(edge.to, edge);
   }
-  const roots = ids.filter((id) => !edges.some((edge) => edge.to === id));
-  if (roots.length !== 1 || ids.length === 0) return null;
-  const order = [];
-  const seen = new Set();
-  let cur = roots[0];
-  while (cur !== undefined) {
-    if (seen.has(cur)) return null;
-    seen.add(cur);
-    order.push(cur);
-    const next = out.get(cur);
-    if (next.length > 1) return null;
-    cur = next.length === 1 ? next[0].to : undefined;
-  }
-  return order.length === ids.length ? { order, incoming } : null;
+  const roots = ids.filter((id) => incoming.get(id) === null);
+  if (roots.length === 0) return null;
+  const paths = [];
+  const visited = new Set();
+  const walk = (start) => {
+    const stack = [{ id: start, steps: [{ id: start, edge: incoming.get(start) }] }];
+    while (stack.length > 0 && paths.length <= MAX_PATHS) {
+      const { id, steps } = stack.pop();
+      visited.add(id);
+      const next = out.get(id);
+      if (next.length === 0 || steps.length >= MAX_DEPTH) {
+        paths.push(steps);
+        continue;
+      }
+      for (const edge of next) {
+        if (steps.some((step) => step.id === edge.to)) continue;
+        stack.push({ id: edge.to, steps: [...steps, { id: edge.to, edge }] });
+      }
+    }
+  };
+  for (const root of roots) walk(root);
+  for (const id of ids) if (!visited.has(id)) walk(id);
+  return { paths, truncated: paths.length > MAX_PATHS };
 };
 
 const resolveRef = (root, ref) => ref.split(".").reduce((o, k) => (o == null ? o : o[k]), root);
@@ -129,31 +143,37 @@ const resolveRef = (root, ref) => ref.split(".").reduce((o, k) => (o == null ? o
 const renderRoute = (root, key, route) => {
   const section = el("section", "route");
   const name = root?.settings?.characters?.[key]?.name ?? key;
-  section.append(el("h2", null, name + " · " + key), el("div", "tag", "endNodeRef: " + (route.endNodeRef ?? "없음")));
+  section.append(el("h2", null, `${name} · ${key}`), el("div", "tag", `endNodeRef: ${route.endNodeRef ?? "없음"}`));
 
   const parsed = parseMermaid(route.mermaid ?? "");
   if (parsed.error) {
-    section.append(el("p", "empty", "차트 해석 실패 — " + parsed.error));
+    section.append(el("p", "empty", `차트 해석 실패 — ${parsed.error}`));
   } else {
-    const chain = toChain(parsed);
-    if (!chain) {
-      section.append(el("p", "empty", "체인 형태가 아니어서 차트를 그리지 못했습니다. 원문을 확인하세요."));
+    const graph = toPaths(parsed);
+    if (!graph) {
+      section.append(el("p", "empty", "차트를 해석하지 못했습니다(순환 또는 빈 그래프). 원문을 확인하세요."));
     } else {
-      const chart = el("div", "chart");
+      const shown = graph.paths.slice(0, MAX_PATHS);
       let gaps = 0;
-      chain.order.forEach((id, i) => {
-        const label = parsed.labels.get(id);
-        const edge = chain.incoming.get(id);
-        if (edge) {
-          const arrow = el("span", "edge" + (edge.dashed ? " dashed" : ""), edge.dashed ? "-⇢" : "→");
-          chart.append(arrow);
+      let cards = 0;
+      for (const steps of shown) {
+        const row = el("div", "chart");
+        for (const { id, edge } of steps) {
+          if (edge) {
+            row.append(el("span", `edge${edge.dashed ? " dashed" : ""}`, edge.dashed ? "-⇢" : "→"));
+          }
+          const label = parsed.labels.get(id);
+          const isGap = label.trim() === "?";
+          if (isGap) gaps += 1;
+          cards += 1;
+          row.append(el("div", `node${isGap ? " gap" : ""}`, label));
         }
-        const isGap = label.trim() === "?";
-        if (isGap) gaps += 1;
-        chart.append(el("div", "node" + (isGap ? " gap" : ""), label));
-      });
-      section.append(chart);
-      section.append(el("div", "tag", "노드 " + chain.order.length + "개 · 미확정 구간 " + gaps + "곳"));
+        section.append(row);
+      }
+      const tag = shown.length > 1
+        ? `분기 ${shown.length}개 경로로 펼침 · 노드 ${cards}개 · 미확정 구간 ${gaps}곳`
+        : `노드 ${cards}개 · 미확정 구간 ${gaps}곳`;
+      section.append(el("div", "tag", tag + (graph.truncated ? ` · 최대 ${MAX_PATHS}개까지만 표시` : "")));
     }
   }
 
@@ -191,8 +211,8 @@ const render = (root, sourceLabel) => {
   }
   status.className = "";
   const keys = Object.keys(domain.routes);
-  status.textContent = sourceLabel + " — 경로 " + keys.length + "개";
-  meta.textContent = "status: " + (domain.status ?? "—") + " · legend: " + (domain.legend ?? "—");
+  status.textContent = `${sourceLabel} — 경로 ${keys.length}개`;
+  meta.textContent = `status: ${domain.status ?? "—"} · legend: ${domain.legend ?? "—"}`;
   for (const key of keys) routesRoot.append(renderRoute(root, key, domain.routes[key]));
 };
 
@@ -202,7 +222,7 @@ const loadText = (text, sourceLabel) => {
   } catch (error) {
     const status = document.getElementById("status");
     status.className = "err";
-    status.textContent = "JSON 파싱 실패 — " + error.message;
+    status.textContent = `JSON 파싱 실패 — ${error.message}`;
   }
 };
 
@@ -224,16 +244,18 @@ document.addEventListener("drop", (event) => {
   if (file) loadFile(file);
 });
 
-fetch("remains.json")
+const params = new URLSearchParams(location.search);
+const source = params.get("src") ?? "remains.json";
+fetch(source)
   .then((response) => {
-    if (!response.ok) throw new Error("HTTP " + response.status);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return response.text();
   })
-  .then((text) => loadText(text, "remains.json"))
+  .then((text) => loadText(text, source))
   .catch((error) => {
     const status = document.getElementById("status");
     status.className = "err";
-    status.textContent = "자동 로드 실패(" + error.message + ") — “다른 JSON 열기”로 이 파일을 선택하세요.";
+    status.textContent = `자동 로드 실패(${error.message}) — “다른 JSON 열기”로 이 파일을 선택하세요.`;
   });
 </script>
 </body>
