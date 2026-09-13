@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>원장 진엔딩 경로 뷰어</title>
+<style>
+  :root {
+    --ink-deep: #0a0d11; --ink: #202833; --slate: #8892a0; --ash: #aeb8c2;
+    --parchment: #f4f7f9; --ember: #ff6a1a; --sky: #5aa0ea; --dusk: #4d5866;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ink-deep); color: var(--parchment);
+    font-family: "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+    line-height: 1.7; padding: 0 0 80px 0; word-break: keep-all;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 28px 20px 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 6px 0; }
+  .sub { font-size: 13px; color: var(--slate); margin: 0 0 14px 0; }
+  .bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+  #status { font-size: 13px; color: var(--ash); }
+  #status.err { color: var(--ember); }
+  label.file {
+    border: 2px solid var(--slate); padding: 6px 12px; font-size: 13px; cursor: pointer;
+    min-height: 44px; display: inline-flex; align-items: center; gap: 8px;
+  }
+  label.file:hover { border-color: var(--ember); }
+  label.file input { display: none; }
+  .meta { font-size: 12px; color: var(--dusk); margin: 10px 0 26px 0; }
+  .route { border: 2px solid var(--ink); margin: 0 0 28px 0; padding: 18px; }
+  .route h2 { font-size: 18px; margin: 0 0 2px 0; }
+  .route .tag { font-size: 12px; color: var(--slate); margin-bottom: 14px; }
+  .chart { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 14px 0; }
+  .node {
+    border: 2px solid var(--slate); background: var(--ink); padding: 8px 12px;
+    font-size: 13px; max-width: 260px;
+  }
+  .node.gap { border-style: dashed; border-color: var(--sky); color: var(--sky); font-weight: 700; }
+  .edge { color: var(--ember); font-size: 16px; padding: 0 2px; }
+  .edge.dashed { color: var(--sky); letter-spacing: -2px; }
+  .steps { margin: 10px 0 0 0; padding-left: 20px; font-size: 13px; color: var(--ash); }
+  .steps li { margin-bottom: 4px; }
+  .ending { font-size: 13px; margin-top: 12px; }
+  .ending b { color: var(--ember); font-weight: 400; }
+  details { margin-top: 12px; }
+  summary { font-size: 12px; color: var(--slate); cursor: pointer; }
+  pre { overflow: auto; border: 1px solid var(--dusk); padding: 12px; font-size: 12px; color: var(--ash); }
+  .empty { color: var(--slate); font-size: 14px; }
+  .hint { font-size: 12px; color: var(--dusk); margin-top: 30px; border-top: 1px solid var(--dusk); padding-top: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>원장 진엔딩 경로 뷰어</h1>
+  <p class="sub">prototype/remains.json → <code>trueEndingRoutes</code> 의 머메이드 차트를 그립니다.</p>
+  <div class="bar">
+    <span id="status">불러오는 중…</span>
+    <label class="file">다른 JSON 열기<input id="file" type="file" accept=".json,application/json"></label>
+  </div>
+  <div class="meta" id="meta"></div>
+  <main id="routes"></main>
+  <p class="hint">
+    기본값은 같은 폴더의 <code>remains.json</code> 자동 로드입니다(정적 서버 필요). 파일로 직접 열었다면
+    “다른 JSON 열기”를 쓰거나 JSON 파일을 창에 끌어다 놓으세요. 점선 노드 <b>?</b> 는 아직 이어지지 않은 구간입니다.
+  </p>
+</div>
+<script type="module">
+const OPERATORS = { "-->": false, "-.->": true };
+const NODE_RE = /^([A-Za-z0-9_]+)(?:\["([^"]*)"\]|\[([^\]]*)\])?$/;
+
+const el = (tag, className, text) => {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+};
+
+const parseMermaid = (src) => {
+  const labels = new Map();
+  const edges = [];
+  for (const raw of String(src).split("\n")) {
+    let prev = null;
+    let dashed = false;
+    const line = raw.trim();
+    if (line === "" || /^(flowchart|graph)\b/.test(line)) continue;
+    for (const token of line.split(/(-->|-\.->)/)) {
+      const t = token.trim();
+      if (t === "") continue;
+      if (t in OPERATORS) { dashed = OPERATORS[t]; continue; }
+      const m = NODE_RE.exec(t);
+      if (!m) return { error: "해석할 수 없는 조각: " + t };
+      const id = m[1];
+      if (!labels.has(id)) labels.set(id, m[2] ?? m[3] ?? id);
+      if (prev !== null) edges.push({ from: prev, to: id, dashed });
+      prev = id;
+      dashed = false;
+    }
+  }
+  return { labels, edges };
+};
+
+const toChain = ({ labels, edges }) => {
+  const ids = [...labels.keys()];
+  const out = new Map(ids.map((id) => [id, []]));
+  const incoming = new Map(ids.map((id) => [id, null]));
+  for (const edge of edges) {
+    out.get(edge.from).push(edge);
+    incoming.set(edge.to, edge);
+  }
+  const roots = ids.filter((id) => !edges.some((edge) => edge.to === id));
+  if (roots.length !== 1 || ids.length === 0) return null;
+  const order = [];
+  const seen = new Set();
+  let cur = roots[0];
+  while (cur !== undefined) {
+    if (seen.has(cur)) return null;
+    seen.add(cur);
+    order.push(cur);
+    const next = out.get(cur);
+    if (next.length > 1) return null;
+    cur = next.length === 1 ? next[0].to : undefined;
+  }
+  return order.length === ids.length ? { order, incoming } : null;
+};
+
+const resolveRef = (root, ref) => ref.split(".").reduce((o, k) => (o == null ? o : o[k]), root);
+
+const renderRoute = (root, key, route) => {
+  const section = el("section", "route");
+  const name = root?.settings?.characters?.[key]?.name ?? key;
+  section.append(el("h2", null, name + " · " + key), el("div", "tag", "endNodeRef: " + (route.endNodeRef ?? "없음")));
+
+  const parsed = parseMermaid(route.mermaid ?? "");
+  if (parsed.error) {
+    section.append(el("p", "empty", "차트 해석 실패 — " + parsed.error));
+  } else {
+    const chain = toChain(parsed);
+    if (!chain) {
+      section.append(el("p", "empty", "체인 형태가 아니어서 차트를 그리지 못했습니다. 원문을 확인하세요."));
+    } else {
+      const chart = el("div", "chart");
+      let gaps = 0;
+      chain.order.forEach((id, i) => {
+        const label = parsed.labels.get(id);
+        const edge = chain.incoming.get(id);
+        if (edge) {
+          const arrow = el("span", "edge" + (edge.dashed ? " dashed" : ""), edge.dashed ? "-⇢" : "→");
+          chart.append(arrow);
+        }
+        const isGap = label.trim() === "?";
+        if (isGap) gaps += 1;
+        chart.append(el("div", "node" + (isGap ? " gap" : ""), label));
+      });
+      section.append(chart);
+      section.append(el("div", "tag", "노드 " + chain.order.length + "개 · 미확정 구간 " + gaps + "곳"));
+    }
+  }
+
+  if (Array.isArray(route.steps)) {
+    const list = el("ol", "steps");
+    for (const step of route.steps) list.append(el("li", null, step));
+    section.append(list);
+  }
+
+  const ending = route.endNodeRef ? resolveRef(root, route.endNodeRef) : undefined;
+  if (typeof ending === "string") {
+    const p = el("p", "ending");
+    p.append(el("b", null, "진엔딩: "), document.createTextNode(ending));
+    section.append(p);
+  }
+
+  const details = el("details");
+  details.append(el("summary", null, "머메이드 원문"), el("pre", null, route.mermaid ?? ""));
+  section.append(details);
+  return section;
+};
+
+const render = (root, sourceLabel) => {
+  const status = document.getElementById("status");
+  const routesRoot = document.getElementById("routes");
+  const meta = document.getElementById("meta");
+  routesRoot.replaceChildren();
+  const domain = root?.trueEndingRoutes;
+  if (!domain || typeof domain.routes !== "object" || domain.routes === null) {
+    status.className = "err";
+    status.textContent = "trueEndingRoutes.routes 를 찾지 못했습니다. 최상위 키: " +
+      Object.keys(root ?? {}).join(", ");
+    meta.textContent = "";
+    return;
+  }
+  status.className = "";
+  const keys = Object.keys(domain.routes);
+  status.textContent = sourceLabel + " — 경로 " + keys.length + "개";
+  meta.textContent = "status: " + (domain.status ?? "—") + " · legend: " + (domain.legend ?? "—");
+  for (const key of keys) routesRoot.append(renderRoute(root, key, domain.routes[key]));
+};
+
+const loadText = (text, sourceLabel) => {
+  try {
+    render(JSON.parse(text), sourceLabel);
+  } catch (error) {
+    const status = document.getElementById("status");
+    status.className = "err";
+    status.textContent = "JSON 파싱 실패 — " + error.message;
+  }
+};
+
+const loadFile = (file) => {
+  const reader = new FileReader();
+  reader.onload = () => loadText(String(reader.result), file.name);
+  reader.readAsText(file);
+};
+
+document.getElementById("file").addEventListener("change", (event) => {
+  const file = event.target.files?.[0];
+  if (file) loadFile(file);
+});
+
+document.addEventListener("dragover", (event) => event.preventDefault());
+document.addEventListener("drop", (event) => {
+  event.preventDefault();
+  const file = event.dataTransfer?.files?.[0];
+  if (file) loadFile(file);
+});
+
+fetch("remains.json")
+  .then((response) => {
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    return response.text();
+  })
+  .then((text) => loadText(text, "remains.json"))
+  .catch((error) => {
+    const status = document.getElementById("status");
+    status.className = "err";
+    status.textContent = "자동 로드 실패(" + error.message + ") — “다른 JSON 열기”로 이 파일을 선택하세요.";
+  });
+</script>
+</body>
+</html>
