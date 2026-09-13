@@ -4,22 +4,28 @@
 
 ## 사람이 최초로 부르는 스킬
 
-**`novel-workflow`** — 라우터다. 요청이 **두 단계 이상**을 요구할 때 사람이 이것을 먼저 부르고, 이 스킬이 모드 하나를 정해 아래 파생 경로를 만든다.
+정답은 하나가 아니다. **라우터를 거치는 경우와 거치지 않는 경우가 있고**, 거치지 않는 쪽이 오히려 기본값에 가깝다.
 
-들어가기 전에 걸리는 관문이 둘 있다.
+| 경우 | 먼저 부르는 것 |
+|---|---|
+| 한 스킬로 끝나는 요청 (예: "장면 하나 사양 만들어줘") | 그 스킬을 직접. `novel-workflow`의 「사용하지 말아야 할 때」가 "단일 스킬 하나로 끝나는 요청이면 그 스킬을 직접 호출한다"고 못박는다 |
+| G28 → G29 → G30 종합 | synthesis 스킬을 직접. 순서가 이미 고정돼 있어 라우터의 모드가 아니다 |
+| 그 외 **두 단계 이상** | **`novel-workflow`** — 모드 하나를 정해 아래 파생 경로를 만든다 |
+
+라우터 앞에도 관문이 하나 있다.
 
 | 경우 | 먼저 할 일 |
 |---|---|
-| 한 스킬로 끝나는 요청 (예: "장면 하나 사양 만들어줘") | 라우터를 거치지 않는다. 그 스킬(`scene-architect`)을 직접 부른다 |
 | 세계관 설정을 **새로** 주는 경우 | 사람 승인 → `remains-ledger-maintenance`가 원장에 반영(새 도메인이면 `schema` 모드) → 그 뒤에 발산. `divergent-ideator`의 입력은 원장·원고로 고정돼 있어 붙여넣은 텍스트는 읽히지 않는다 |
 
 ## 파생도 — 모드가 정해지면 각 단계가 이어 붙는다
 
 ```mermaid
 flowchart TD
-  H["사람이 요청 문장을 낸다"] --> Q{"두 단계 이상인가"}
-  Q -->|"한 스킬로 끝난다"| DIRECT["해당 스킬을 직접 부른다"]
-  Q -->|"두 단계 이상"| R["novel-workflow: 모드 하나를 정한다"]
+  H["사람이 요청 문장을 낸다"] --> Q{"라우터를 거치는가"}
+  Q -->|"단일 스킬로 끝난다"| DIRECT["그 스킬을 직접 부른다"]
+  Q -->|"G28~G30 체인"| SYNCHAIN["synthesis 스킬을 직접 부른다"]
+  Q -->|"그 외 2단계 이상"| R["novel-workflow: 모드 하나를 정한다"]
 
   R --> A1
   subgraph SGA["ideation"]
@@ -75,9 +81,9 @@ flowchart LR
   GRAPH --> RUN["route-replay-runner"]
   RUN --> EV["runtime evidence"]
 
-  PROSE --> SCENE["narrative-scene-after-generation"]
-  GRAPH --> SCENE
+  PROSE --> SCENE["narrative-scene-after-generation: 장면 하나"]
   EV --> ROUTE["narrative-ending-route-review"]
+  SCENE -.->|"장면 메모 지문"| ROUTE
   EV --> MULTI["narrative-multi-ending-integration"]
 
   SCENE --> SPEC["narrative-gate-specialist: G01~G27"]
@@ -87,6 +93,8 @@ flowchart LR
   G28 --> G29["narrative-final-verdict: G29"]
   G29 --> G30["narrative-report-assembly: G30"]
 ```
+
+장면 검수는 그래프를 읽지 않는다 — 입력이 장면 본문 인라인과 원장 인라인뿐이라 **그래프가 컴파일되기 전에도 돈다**(다음 장면으로 넘어가기 전에 돌리는 가장 싼 검사다). 다만 경로 검수는 그 장면 메모의 지문을 필수 입력으로 받는다(점선).
 
 `ending-set-architect`(엔딩 세트 설계)와 `story-graph-architect`(그래프 형태 설계)는 아직 없다. 제안 상태는 [후보 스킬 제안서](reference/candidate-skills.html)에 있다.
 
