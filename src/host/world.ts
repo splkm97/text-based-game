@@ -5,7 +5,7 @@ import type { ComponentType } from "react";
 import type { EditorAdapterHandle } from "../editor/adapter";
 import type { Sprite } from "../shared/art/sprite";
 
-export type WorldId = "adventurer" | "voyage";
+export type WorldId = "adventurer" | "voyage" | "reclaim";
 
 export const TOKEN_NAMES = [
   "ink",
