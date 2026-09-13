@@ -1,18 +1,23 @@
 // @vitest-environment jsdom
 
+// 앱 셸 계약(일감 구조): 새 회차는 사무실 화면으로 들어가고, 종결이면 종결 화면이 카드를
+// 보여주며, 기록 화면은 **달성한 종결만** 이름과 횟수를 내보낸다 — 미달성 종결의 이름은
+// 어디에도 없다(설계 §4.2: 이름을 읽는 순간이 그 결말에 도달한 순간이다).
+//
+// 앱 싱글턴이 아니라 메모리 스토리지 위에서 만든 스토어를 컨텍스트로 주입한다.
+// onStart·onEnding은 프로덕션 싱글턴과 같은 연결로 meta에 기록을 남긴다.
+
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import type { StoreApi } from "zustand/vanilla";
 import { memoryStorage } from "../../../shared/storage";
 import { CONTENT } from "../content";
-import type { ActionId } from "../ids";
+import { ENDING_IDS } from "../ids";
 import { makeRun } from "../rules/testContent";
-import type { MetaStore } from "../store/metaStore";
-import { createMetaStore } from "../store/metaStore";
+import { createMetaStore, type MetaStore } from "../store/metaStore";
 import { createMetaPersistence, createPersistence } from "../store/persistence";
-import type { RunStore } from "../store/runStore";
-import { createRunStore } from "../store/runStore";
+import { createRunStore, type RunStore } from "../store/runStore";
 import { App } from "./App";
 import { MetaStoreContext } from "./metaStoreContext";
 import { RunStoreContext } from "./runStoreContext";
@@ -22,8 +27,6 @@ type Stores = { readonly meta: StoreApi<MetaStore>; readonly run: StoreApi<RunSt
 
 const NOW = "2026-09-14T09:00:00.000Z";
 
-// 앱 싱글턴이 아니라 메모리 스토리지 위에서 만든 스토어를 컨텍스트로 주입한다.
-// onStart·onEnding은 프로덕션 싱글턴과 같은 연결로 meta에 기록을 남긴다.
 const makeStores = (): Stores => {
   const meta = createMetaStore({
     now: () => NOW,
@@ -49,9 +52,7 @@ const renderApp = (stores: Stores = makeStores(), onExit: () => void = () => {})
   return { stores, onExit };
 };
 
-const choose = async (id: ActionId) => {
-  await userEvent.click(screen.getByRole("button", { name: CONTENT.actions[id].label }));
-};
+const button = (name: string) => screen.getByRole<HTMLButtonElement>("button", { name });
 
 beforeEach(() => {
   useScreenStore.setState({ screen: "title" });
@@ -59,58 +60,54 @@ beforeEach(() => {
 
 afterEach(cleanup);
 
-test("타이틀에서 새 회차를 시작하면 플레이 화면으로 들어간다", async () => {
+test("타이틀에서 새 회차를 시작하면 첫 일감의 사무실 화면으로 들어간다", async () => {
   const { stores } = renderApp();
   expect(screen.queryByRole("button", { name: "이어하기" })).toBeNull();
-  await userEvent.click(screen.getByRole("button", { name: "새 회차" }));
-  expect(stores.run.getState().run?.placement).toBe("ru_first");
-  expect(stores.run.getState().run?.stage).toBe("field");
-  expect(screen.getByRole("heading", { name: CONTENT.stages.field.title })).toBeDefined();
-  expect(screen.getByRole("button", { name: CONTENT.actions.call_respond.label })).toBeDefined();
+  await userEvent.click(button("새 회차"));
+  expect(stores.run.getState().run?.jobStep).toBe("office");
+  expect(stores.run.getState().run?.jobIndex).toBe(0);
+  expect(screen.getByRole("heading", { name: CONTENT.jobs.gwanak.title })).toBeDefined();
+  expect(button(CONTENT.actions.office_printer.label)).toBeDefined();
 });
 
 test("종결 상태면 종결 화면이 카드를 보여준다", () => {
   const stores = makeStores();
-  stores.run.setState({ run: makeRun({ stage: "gate", terminal: "death" }) });
+  stores.run.setState({ run: makeRun({ jobStep: "site", terminal: "death" }) });
   renderApp(stores);
   expect(screen.getByRole("heading", { name: CONTENT.endings.death.title })).toBeDefined();
   expect(screen.getByText(CONTENT.endings.death.text)).toBeDefined();
   expect(screen.getByRole("list", { name: "에필로그" })).toBeDefined();
-  expect(screen.getByRole("button", { name: "새 회차" })).toBeDefined();
-  expect(screen.getByRole("button", { name: "기록 보기" })).toBeDefined();
+  expect(button("새 회차")).toBeDefined();
+  expect(button("기록 보기")).toBeDefined();
 });
 
-test("끝까지 진행하면 종결이 열리고 기록에 횟수가 남는다", async () => {
-  renderApp();
-  await userEvent.click(screen.getByRole("button", { name: "새 회차" }));
-  await choose("call_respond");
-  await choose("dispatch_send_other");
-  await choose("obs_send_other");
-  await choose("radio_business_only");
-  await choose("archive_with_dusik");
-  await choose("archive_leave");
-  await choose("xcheck_skip");
-  await choose("gate_to_venue");
-  await choose("venue_silence");
-  expect(screen.getByRole("heading", { name: CONTENT.endings.death.title })).toBeDefined();
+test("기록 화면은 달성한 종결만 이름을 내보내고 미달성은 감춘다", async () => {
+  const stores = makeStores();
+  stores.meta.getState().recordRun();
+  stores.meta.getState().recordEnding("death");
+  stores.run.setState({ run: makeRun({ jobStep: "site", terminal: "death" }) });
+  renderApp(stores);
 
-  await userEvent.click(screen.getByRole("button", { name: "기록 보기" }));
+  await userEvent.click(button("기록 보기"));
   expect(screen.getByRole("heading", { name: "기록" })).toBeDefined();
   expect(screen.getByText("시작한 회차 1회")).toBeDefined();
   expect(screen.getByText(CONTENT.endings.death.title)).toBeDefined();
   expect(screen.getByText("1회")).toBeDefined();
-  // 미달성 종결의 이름은 어디에도 없다 — 자리와 횟수만 남는다.
-  expect(screen.queryByText(CONTENT.endings.true_ru.title)).toBeNull();
-  expect(screen.queryByText(CONTENT.endings.true_dusik.title)).toBeNull();
-  expect(screen.queryByText(CONTENT.endings.general.title)).toBeNull();
 
-  await userEvent.click(screen.getByRole("button", { name: "뒤로 가기" }));
+  // 미달성 종결의 이름은 어디에도 없다 — 자리(???)와 횟수 자리(—)만 남는다.
+  const hidden = ENDING_IDS.filter((id) => id !== "death");
+  for (const id of hidden) {
+    expect(screen.queryByText(CONTENT.endings[id].title)).toBeNull();
+  }
+  expect(screen.getAllByText("???")).toHaveLength(hidden.length);
+
+  await userEvent.click(button("뒤로 가기"));
   expect(screen.getByRole("heading", { name: CONTENT.endings.death.title })).toBeDefined();
 });
 
 test("나가기는 화면을 타이틀로 되돌려 놓고 허브로 나간다", async () => {
   const { onExit } = renderApp(makeStores(), vi.fn());
-  await userEvent.click(screen.getByRole("button", { name: "나가기" }));
+  await userEvent.click(button("나가기"));
   expect(onExit).toHaveBeenCalledOnce();
   expect(useScreenStore.getState().screen).toBe("title");
 });

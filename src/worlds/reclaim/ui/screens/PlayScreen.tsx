@@ -1,39 +1,43 @@
-// 플레이 화면 — 문서(BriefingPanel)·장면 서술·동행(PartyRow)·현황(StatePanel)·행동
-// (ActionList)의 조립만 한다. 문면과 가드는 content·rules의 정본을 쓴다. 종결 상태에서는
-// null을 돌려준다 — 종결 화면은 App의 EndingScreen이 그린다(계약). 저장·이어하기·
-// 나가기 버튼도 App이 소유하므로 여기에 두지 않는다.
+// 플레이 화면 — 지금 상태가 어느 화면인지 고르는 배선만 한다. 체인 절차가 끼어 있으면
+// 절차 화면, 아니면 일감의 순서(office → briefing → party → site)가 화면을 정한다.
+//
+// 가드는 규칙의 것이다: 화면은 availableActions·lastReason·act만 쓰고 판정하지 않는다
+// (거부도 예외가 아니라 문면이다). 종결 상태에서는 null을 돌려준다 — 종결 화면은 App의
+// EndingScreen이 그린다(계약).
 
-import { ActionList } from "../components/ActionList";
-import { BriefingPanel } from "../components/BriefingPanel";
-import { PartyRow } from "../components/PartyRow";
-import { StatePanel } from "../components/StatePanel";
+import { JOB_IDS } from "../../ids";
 import { useContent } from "../contentContext";
 import { useRunStore } from "../runStoreContext";
+import { BriefingScreen } from "./BriefingScreen";
+import { ChainScreen } from "./ChainScreen";
+import { OfficeScreen } from "./OfficeScreen";
+import { PartyScreen } from "./PartyScreen";
+import { SiteScreen } from "./SiteScreen";
 
 export function PlayScreen() {
   const run = useRunStore((state) => state.run);
-  const availableActions = useRunStore((state) => state.availableActions);
-  const lastReason = useRunStore((state) => state.lastReason);
-  const act = useRunStore((state) => state.act);
   const content = useContent();
 
   if (run === null || run.terminal !== null) {
     return null;
   }
-  const stage = content.stages[run.stage];
-  return (
-    <section aria-label="복구 현장" className="flex flex-1 flex-col gap-3 p-3">
-      <BriefingPanel document={stage.document} />
-      <p className="text-sm leading-prose text-parchment">{stage.prompt}</p>
-      {stage.partyLines.length > 0 && (
-        <ul aria-label="동행" className="flex flex-col gap-2">
-          {stage.partyLines.map((line) => (
-            <PartyRow key={line.character} character={line.character} text={line.text} />
-          ))}
-        </ul>
-      )}
-      <StatePanel run={run} />
-      <ActionList ids={availableActions} onAct={act} reason={lastReason} />
-    </section>
-  );
+  if (run.chainStep !== null) {
+    return <ChainScreen run={run} chain={content.chains[run.chainStep]} />;
+  }
+  const jobId = JOB_IDS[run.jobIndex];
+  if (jobId === undefined) {
+    // 마지막 일감 뒤에는 규칙이 체인 절차나 종결로 보낸다 — 여기 남는 경우는 없다.
+    return null;
+  }
+  const job = content.jobs[jobId];
+  if (run.jobStep === "office") {
+    return <OfficeScreen run={run} job={job} />;
+  }
+  if (run.jobStep === "briefing") {
+    return <BriefingScreen job={job} />;
+  }
+  if (run.jobStep === "party") {
+    return <PartyScreen run={run} job={job} />;
+  }
+  return <SiteScreen run={run} job={job} />;
 }
