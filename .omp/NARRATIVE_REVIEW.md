@@ -22,7 +22,7 @@
 
 ## Authoring surface
 
-상류(authoring) 스킬은 후보·설계·시뮬레이션·진단까지만 내고, 전체 품질 판정과 등급은 검수 surface가 담당한다. 이 11개 스킬은 `prototype/remains.json`, `prototype/stories/example.md`, `docs/ideation/`을 읽기 전용으로 직접 읽고 `RUN_DIR/inputs/`에 스냅샷을 남긴다. 위 「공통 실행 계약」의 "외부 프로젝트 경로는 읽지 않는다"는 검수 스킬에만 적용한다. 원장·원고 쓰기는 `remains-ledger-maintenance` 하나로 유지한다.
+상류(authoring) 스킬은 후보·설계·시뮬레이션·진단까지만 내고, 전체 품질 판정과 등급은 검수 surface가 담당한다. 이 11개 스킬은 `prototype/remains.json`, `prototype/stories/example.md`, `docs/ideation/`을 읽기 전용으로 직접 읽고 `RUN_DIR/inputs/`에 스냅샷을 남긴다. 위 「공통 실행 계약」의 "외부 프로젝트 경로는 읽지 않는다"는 검수 스킬에만 적용한다. 정본 쓰기의 소유자는 나뉜다 — 원장은 `remains-ledger-maintenance`, 원고는 `narrative-rewriter`(지정 범위)·사람이며, 산문 초고 작성은 위 `DRAFT` 라벨로 라우팅된다.
 
 | Label | 호출 시점 | 담당 skill | 출력 |
 |---|---|---|---|
