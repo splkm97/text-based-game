@@ -1,0 +1,145 @@
+{
+  "title": "테마 및 설정 원장",
+  "mainTheme": [
+    "괴수가 출몰하고 히어로들이 활약하며 겨우 유지되고 있는 사회.",
+    "주인공은 토목 회사의 젊은 CEO로서, 히어로와 빌런, 괴수 사이의 전투에서 발생한 폐허를 복구한다.",
+    "주인공은 사람을 뽑고, 일을 맡기고, 괴수의 잔당과의 전투도 해야 하며, 사고와 낙석 등의 상황에 대처해야 한다."
+  ],
+  "settings": {
+    "association": {
+      "officialName": "서울특별시 괴수재해대처본부 도시재건협회",
+      "commonName": "협회",
+      "nameUsage": [
+        "아무도 공식 명칭 전체를 기억하지 못하지만, 협회라고 하면 모두 알아듣는다.",
+        "공식 명칭 전체가 실제로 쓰이는 자리는 공문의 발신명의 한 줄뿐이다.",
+        "주인공은 그 공문을 매일 아침 읽는다."
+      ],
+      "narrativeRole": "얼굴 없는 악역",
+      "appearanceChannels": ["공문", "청구서", "방송"],
+      "dialogueRule": "대화하는 인물로 등장하지 않는다.",
+      "history": "방역·격리 기구로 출발해 지금은 도시 행정의 반 이상을 담당한다.",
+      "heroRegistrationAuthority": true,
+      "registrationRule": "히어로 등록을 받지 않으면 빌런으로 분류된다.",
+      "heroRegistrationGrades": ["1종", "2종", "제한", "무자격(빌런)"],
+      "monsterAlertGrades": ["특보", "경보", "주의보", "해제"],
+      "officialDocumentStyleReference": "prototype/prototype-briefing-format.html",
+      "officialDocumentStyleVariant": "A안"
+    },
+    "company": {
+      "type": "토목 회사",
+      "playerRole": "젊은 CEO",
+      "coreMission": "히어로·빌런·괴수의 전투가 남긴 폐허를 복구한다.",
+      "responsibilities": [
+        "사람을 뽑는다.",
+        "사람을 배치한다.",
+        "사고에 대처한다.",
+        "괴수 잔당을 처리한다."
+      ],
+      "combatPosition": "싸우러 가는 조직이 아니라, 싸움이 끝난 뒤 폐허를 뒷정리하러 가는 조직이다.",
+      "history": [
+        "플레이어보다 오래된 회사다.",
+        "아버지 대부터 이어진 토목 회사다.",
+        "괴수 도래 이전에는 도로와 다리를 놓았다."
+      ],
+      "playerAddress": "사장님",
+      "playerNarrativeRule": "주인공인 ‘나’는 이름 있는 인물이며, 인물의 대사가 플레이어를 향할 수 있다."
+    },
+    "characters": {
+      "dusik": {
+        "name": "강두식",
+        "role": "회사 직원",
+        "financialStatus": "협회에 배상금을 물어야 하므로 급여의 절반이 자동으로 압류된다.",
+        "heroHistory": {
+          "careerLength": "도래 7년 중 약 5년",
+          "retirementCause": "루시퍼를 막는 데 힘을 너무 많이 소모해 퇴역했다.",
+          "relatedIncident": "6개월 전 루시퍼와의 전투에서 도시의 상당 부분을 폐허로 만들었다.",
+          "associationDebt": "협회로부터 부당하게 복구 비용을 청구받아 빚더미에 앉았다."
+        },
+        "secretCausality": "강두식이 루시퍼와 싸운 결과, 루시퍼가 루와 시퍼로 분리되었다."
+      },
+      "ru": {
+        "name": "루",
+        "role": "회사 인물",
+        "surfaceRule": "다른 사람들과 무언가 다른 분위기를 풍긴다.",
+        "hiddenIdentity": "도래한 괴수의 일부다.",
+        "originTimeline": {
+          "firstArrival": "7년 전 첫 도래",
+          "humanLife": "사람으로 6년 반을 살았다.",
+          "collapse": "6개월 전 무너져 특보급 개체가 되었다."
+        },
+        "separation": {
+          "cause": "진압 과정에서 발생한 모종의 사건",
+          "originalEntity": "루시퍼",
+          "parts": [
+            {
+              "name": "루",
+              "form": "사람 모습",
+              "publicIdentityAtGameStart": true,
+              "memory": "분리 당시의 기억을 가지고 있다."
+            },
+            {
+              "name": "시퍼",
+              "form": "괴수 잔당으로 취급되는 개체",
+              "discovery": "최종 정리해야 하는 폐허에서 발견된다."
+            }
+          ]
+        },
+        "knowledge": {
+          "knowsOriginalIdentityFromStart": true,
+          "knowsDusikWasTheHeroInitially": false,
+          "realizesDusikIdentity": "이야기 중에 알아차린다."
+        },
+        "publicExposure": "루시퍼는 6개월간 아침 뉴스에 자주 등장했다."
+      },
+      "banjang": {
+        "name": "최 반장",
+        "role": "회사 인물",
+        "hiddenActivity": "초반에는 공개되지 않지만 협회에 별도의 감시 보고서를 따로 제출하고 있었다."
+      },
+      "taesan": {
+        "name": "배태산",
+        "role": "회사 인물",
+        "traits": ["유머러스하다.", "마당발이다.", "회사 외적인 정보를 많이 물고 온다."]
+      }
+    },
+    "monsterRemnants": {
+      "nature": "괴수다.",
+      "behavior": "먼저 공격적으로 대응하지 않는다.",
+      "livingCondition": "괴수가 처리된 이후 폐허에 눌러앉아 살아간다.",
+      "narrativeTreatment": "시퍼를 포함해 괴수 잔당으로 취급받는다."
+    }
+  },
+  "chronology": [
+    {
+      "when": "7년 전",
+      "event": "첫 도래 때 루가 건너왔다."
+    },
+    {
+      "when": "도래 후 6년 6개월",
+      "event": "루는 사람으로 살았다."
+    },
+    {
+      "when": "6개월 전",
+      "event": "루가 무너져 특보급 개체 루시퍼가 되었다."
+    },
+    {
+      "when": "6개월 전 진압 과정",
+      "event": "강두식이 루시퍼와 싸웠고, 모종의 사건으로 루시퍼가 루와 시퍼로 분리되었다."
+    },
+    {
+      "when": "게임 시작 시점",
+      "event": "루는 사람 모습으로 회사에 있으며, 게임 시작 시 공개되는 신분을 그대로 쓴다."
+    },
+    {
+      "when": "시점 미지정",
+      "event": "시퍼는 최종 정리해야 하는 폐허에서 발견된다."
+    }
+  ],
+  "narrativeRules": {
+    "characterVoice": {
+      "status": "별도 규칙 필요",
+      "requirement": "등장인물 네 명의 문장만 읽어도 서로 구별되도록 독특한 말투를 부여한다.",
+      "characters": ["dusik", "ru", "banjang", "taesan"]
+    }
+  }
+}
