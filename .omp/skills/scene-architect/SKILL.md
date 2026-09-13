@@ -36,6 +36,7 @@ description: "장면 설계가 필요하거나 장면 목표 정하기를 요청
 
 - 장면 대상(장면 번호·제목)과 장면 목표 초안, `RUN_ID`.
 - `prototype/remains.json`, 관련 `prototype/stories/example.md` 구간, 발산 제안에 기반하면 `docs/ideation/` 항목. 직전 장면의 종료 상태와 확정·미확정 세계 규칙의 구분을 함께 확인한다.
+- 게임 메커니즘 파라미터(있으면): `prototype/game-mechanics.md` — 동행 인원·분기 조합 이벤트·부상 규칙이 장면 제약이 된다.
 
 장면 대상, `RUN_ID`, 진입 상태를 얻을 정본 근거 중 하나라도 없으면 `input-blocked`로 처리하고 파일을 작성하지 않는다.
 

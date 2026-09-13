@@ -5,7 +5,7 @@ description: "prototype/remains.json의 테마 및 설정 원장에 항목을 �
 
 ## 계약
 
-`prototype/remains.json`을 프로토타입의 테마·세계관·인물·사건을 기록하는 기준 원장으로 취급한다. 관련 서사 근거가 필요하면 현재 원고인 `prototype/stories/example.md`를 읽는다. `prototype/remains.md`는 현재 권위 자료가 아니며 참조하거나 새로 만들지 않는다. 이 스킬은 되돌릴 수 있는 로컬 수정만 수행한다. 커밋, 게시, 원격 상태 변경은 수행하지 않는다.
+`prototype/remains.json`을 프로토타입의 테마·세계관·인물·사건을 기록하는 기준 원장으로 취급한다. 관련 서사 근거가 필요하면 현재 원고인 `prototype/stories/example.md`를 읽는다. 게임 메커니즘 파라미터는 `prototype/game-mechanics.md`가 단일 출처다 — 원장에는 세계 사실만 두고 파라미터를 복제하지 않는다. 원장이 `narrativeRules.gameMechanics.reference`로 가리키는 경로는 실제로 존재해야 한다. `prototype/remains.md`는 현재 권위 자료가 아니며 참조하거나 새로 만들지 않는다. 이 스킬은 되돌릴 수 있는 로컬 수정만 수행한다. 커밋, 게시, 원격 상태 변경은 수행하지 않는다.
 
 ## 모드
 

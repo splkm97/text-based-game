@@ -35,6 +35,7 @@ description: "승인된 정본·scene card·원고에서 기계가 검증할 수
 
 - `RUN_ID`와 컴파일 범위(장면 범위 또는 전체).
 - `prototype/remains.json`, `prototype/stories/example.md`.
+- 게임 메커니즘 파라미터(있으면): `prototype/game-mechanics.md` — 분기점 조합 이벤트·플래그 판정 제약.
 - 선택: 승인된 scene card(`RUN_DIR/outputs/scenes/<SCENE_ID>-card.md`), 확정 플래그 목록.
 - `RUN_ID`나 컴파일 범위가 없으면 `input-blocked`로 처리하고 파일을 작성하지 않는다.
 

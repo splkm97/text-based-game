@@ -38,6 +38,7 @@ Rules a future agent must keep. Each entry is an obligation and the reason it ex
 ## 프로토타입 원장
 
 - `prototype/remains.json`은 프로토타입의 테마·세계관·인물·사건을 기록하는 기준 원장이다. `prototype/stories/example.md`는 현재 1인칭 스토리라인 원고다. `prototype/remains.md`는 현재 권위 자료가 아니므로 참조하거나 새로 만들지 않는다.
+- `prototype/game-mechanics.md`는 게임 메커니즘 파라미터의 단일 출처다. 세계 사실은 원장에, 파라미터는 이 문서에만 적고, 원장은 `narrativeRules.gameMechanics.reference`로 이 문서를 가리킨다. 같은 값을 두 곳에 적으면 이터레이션마다 드리프트한다.
 - `prototype/remains.json`에 항목을 추가·삭제·수정할 때는 `remains-ledger-maintenance` 스킬을 사용한다.
 - 원장 항목의 의미, 정보 공개 범위, 기존 관계, 참조 무결성을 보존한다.
 - 인물의 공개 정보와 비밀 정보는 별도 필드로 기록한다. 비밀 정보를 게임 시작 시 공개된 것처럼 기록하지 않는다.
