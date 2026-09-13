@@ -2,19 +2,40 @@
 // 판별 가능한 짧은 문자열만 둔다: 거부·결과 문면이 id를 따라가므로 리듀서가 정확한 카드의
 // 문면을 골랐는지 문자열 비교로 검증된다. Record 키는 리터럴이라 union total이 컴파일로 강제된다.
 
-import type { ActionId, CharacterId, EndingId, StageId } from "../ids";
-import type { ActionText, CharacterCard, Content, EndingCard, RunState, StageCard } from "../types";
+import type { ActionId, ChainStepId, CharacterId, EndingId, JobId } from "../ids";
+import type {
+  ActionText,
+  ChainCard,
+  CharacterCard,
+  CharacterState,
+  Content,
+  EndingCard,
+  JobCard,
+  RunState,
+  StageDocument,
+} from "../types";
 import { RECHANCE_LIMIT } from "./run";
 
-const stageCard = (id: StageId): StageCard => ({
+const documentOf = (id: string): StageDocument => ({
+  heading: `문서 ${id}`,
+  meta: [`메타 ${id}`],
+  items: [`항목 ${id}`],
+  tail: `끝 ${id}`,
+});
+
+const jobCard = (id: JobId): JobCard => ({
   id,
   title: `제목 ${id}`,
-  document: {
-    heading: `문서 ${id}`,
-    meta: [`메타 ${id}`],
-    items: [`항목 ${id}`],
-    tail: `끝 ${id}`,
-  },
+  office: { prompt: `지문 ${id}`, news: `뉴스 ${id}`, printer: `프린터 ${id}`, chatter: [] },
+  briefing: { prompt: `지문 ${id}`, document: documentOf(id), talk: [] },
+  party: { prompt: `인원 ${id}`, notes: [] },
+  site: { title: `현장 ${id}`, document: documentOf(id), prompt: `지시 ${id}`, partyLines: [] },
+});
+
+const chainCard = (id: ChainStepId): ChainCard => ({
+  id,
+  title: `제목 ${id}`,
+  document: documentOf(id),
   prompt: `지시 ${id}`,
   partyLines: [],
 });
@@ -42,21 +63,29 @@ const characterCard = (id: CharacterId): CharacterCard => ({
 });
 
 export const TEST_CONTENT: Content = {
-  stages: {
-    field: stageCard("field"),
-    office: stageCard("office"),
-    obs: stageCard("obs"),
-    radio: stageCard("radio"),
-    archive: stageCard("archive"),
-    xcheck: stageCard("xcheck"),
-    gate: stageCard("gate"),
-    site: stageCard("site"),
-    night: stageCard("night"),
-    venue: stageCard("venue"),
-    gun: stageCard("gun"),
-    submit: stageCard("submit"),
+  jobs: {
+    gwanak: jobCard("gwanak"),
+    observatory: jobCard("observatory"),
+    hq: jobCard("hq"),
+    ruins: jobCard("ruins"),
+  },
+  chains: {
+    xcheck: chainCard("xcheck"),
+    gate: chainCard("gate"),
+    night: chainCard("night"),
+    venue: chainCard("venue"),
+    gun: chainCard("gun"),
+    submit: chainCard("submit"),
   },
   actions: {
+    office_printer: actionText("office_printer"),
+    briefing_ack: actionText("briefing_ack"),
+    party_pick_dusik: actionText("party_pick_dusik"),
+    party_pick_ru: actionText("party_pick_ru"),
+    party_pick_banjang: actionText("party_pick_banjang"),
+    party_pick_taesan: actionText("party_pick_taesan"),
+    party_reset: actionText("party_reset"),
+    party_go: actionText("party_go"),
     call_respond: actionText("call_respond"),
     dispatch_send_taesan: actionText("dispatch_send_taesan"),
     dispatch_send_other: actionText("dispatch_send_other"),
@@ -110,10 +139,23 @@ export const TEST_CONTENT: Content = {
   },
 };
 
+/** 4명 균일 초기 인물 상태(0/0/false) — startRun과 같은 기본값이다. */
+export const zeroCharacters = (): Readonly<Record<CharacterId, CharacterState>> => ({
+  dusik: { fatigue: 0, injured: false, suspicion: 0, trust: 0 },
+  ru: { fatigue: 0, injured: false, suspicion: 0, trust: 0 },
+  banjang: { fatigue: 0, injured: false, suspicion: 0, trust: 0 },
+  taesan: { fatigue: 0, injured: false, suspicion: 0, trust: 0 },
+});
+
 /** startRun과 같은 기본값의 회차. 테스트는 원하는 지점만 overrides로 연다. */
 export const makeRun = (overrides: Partial<RunState> = {}): RunState => ({
   placement: "ru_first",
-  stage: "field",
+  jobIndex: 0,
+  jobStep: "office",
+  party: [],
+  characters: zeroCharacters(),
+  pendingChain: [],
+  chainStep: null,
   terminal: null,
   dispatchTaesan: false,
   broadcast: false,

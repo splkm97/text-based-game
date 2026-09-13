@@ -1,333 +1,478 @@
-// 리듀서 계약 테스트 — 시작 상태, 단계 전이, 거부 3종, 종결 단방향, 상한·하한 단조성, 배치 delta.
+// 리듀서 계약 테스트 — 일감 구조(2026-09-14): 시작 상태, office→briefing→party→site 전이,
+// 인원 선택 가드, 일감 완료의 인물 증감, 체인 대기 FIFO와 배치 라우팅, 라디오 아침,
+// 종결 단방향, 상한·하한 단조성.
 
 import { describe, expect, test } from "vitest";
-import { CONTENT } from "../content";
-import type { ActionId, EndingId, StageId } from "../ids";
 import { ACTION_IDS } from "../ids";
+import type { ActionId } from "../ids";
 import type { RunState } from "../types";
 import { applyAction, availableActions, RECHANCE_LIMIT, REVIEW_LIMIT, startRun } from "./run";
-import { makeRun, TEST_CONTENT } from "./testContent";
+import { makeRun, TEST_CONTENT, zeroCharacters } from "./testContent";
 
-describe("startRun", () => {
-  test("첫 출동 대기 상태 — 배치 ru_first 기본, 기회 2, 방문 0, 로그 비었음", () => {
+/** 성공을 가정한 액션 적용 — 실패하면 사유와 함께 테스트를 때린다. */
+const act = (run: RunState, id: ActionId): RunState => {
+  const outcome = applyAction(run, id, TEST_CONTENT);
+  expect(outcome.ok, `${id}: ${outcome.reason ?? ""}`).toBe(true);
+  return outcome.run;
+};
+
+describe("startRun — 시작 상태 계약(표 「공통」)", () => {
+  test("첫 일감(gwanak) 사무실, 빈 동행, 균일 인물, 빈 체인 대기", () => {
     const run = startRun(TEST_CONTENT);
     expect(run).toEqual(makeRun());
     expect(run.placement).toBe("ru_first");
-    expect(run.stage).toBe("field");
+    expect(run.jobIndex).toBe(0);
+    expect(run.jobStep).toBe("office");
+    expect(run.party).toEqual([]);
+    expect(run.characters).toEqual(zeroCharacters());
+    expect(run.pendingChain).toEqual([]);
+    expect(run.chainStep).toBeNull();
+    expect(run.terminal).toBeNull();
     expect(run.chances).toBe(RECHANCE_LIMIT);
     expect(run.reviews).toBe(0);
-    expect(run.terminal).toBeNull();
     expect(run.log).toEqual([]);
+  });
+
+  test("배치를 지정하면 그 배치로 시작한다", () => {
     expect(startRun(TEST_CONTENT, "dusik_first").placement).toBe("dusik_first");
   });
 
-  test("첫 단계에서 누를 수 있는 액션은 출동 하나뿐이다", () => {
-    expect(availableActions(startRun(TEST_CONTENT))).toEqual(["call_respond"]);
+  test("시작 사무실에서 열리는 액션은 프린터 하나뿐이다", () => {
+    expect(availableActions(startRun(TEST_CONTENT))).toEqual(["office_printer"]);
   });
 });
 
-describe("happy path — 단계 전이는 각각 한 번씩", () => {
-  test("field부터 night까지 루 진엔딩으로 닫힌다", () => {
+describe("사무실 → 공문 → 인원 선택 → 현장 — 모든 일감이 같은 순서를 탄다", () => {
+  test("첫 일감의 네 단계를 지나 완료하면 다음 일감 사무실에 선다", () => {
     let run = startRun(TEST_CONTENT);
-    const stages: StageId[] = [];
-    const act = (id: ActionId) => {
-      const outcome = applyAction(run, id, TEST_CONTENT);
-      expect(outcome.ok).toBe(true);
-      run = outcome.run;
-      stages.push(run.stage);
-    };
-
-    act("call_respond"); // office
-    act("dispatch_send_taesan"); // obs
-    act("obs_send_ru_alone"); // radio — 단서
-    act("radio_morning_on"); // archive — 방송 좌표
-    act("archive_with_dusik"); // archive — 문서
-    act("archive_with_ru"); // archive — 물건(night_use의 require)
-    act("archive_leave"); // xcheck
-    act("xcheck_compare"); // gate — 좌표 일치
-    act("gate_dispatch"); // site
-    act("site_hold"); // night — 접점
-    act("night_use"); // 종결
-
-    expect(stages).toEqual([
-      "office",
-      "obs",
-      "radio",
-      "archive",
-      "archive",
-      "archive",
-      "xcheck",
-      "gate",
-      "site",
-      "night",
-      "night",
+    expect(availableActions(run)).toEqual(["office_printer"]);
+    run = act(run, "office_printer");
+    expect(run.jobStep).toBe("briefing");
+    expect(availableActions(run)).toEqual(["briefing_ack"]);
+    run = act(run, "briefing_ack");
+    expect(run.jobStep).toBe("party");
+    expect(availableActions(run)).toEqual([
+      "party_pick_dusik",
+      "party_pick_ru",
+      "party_pick_banjang",
+      "party_pick_taesan",
+      "party_reset",
+      "party_go",
     ]);
-    expect(run.terminal).toBe("true_ru");
-    expect(run.clue).toBe(true);
-    expect(run.broadcast).toBe(true);
-    expect(run.documents).toBe(true);
-    expect(run.coord).toBe(true);
-    expect(run.relic).toBe(true);
-    expect(run.contact).toBe(true);
-    expect(run.log).toHaveLength(11);
-    // 로그 위치는 결과 단계를 따른다: 대조 뒤 gate, 재통합 뒤에도 night.
-    expect(run.log[7]).toEqual({ stage: "gate", text: TEST_CONTENT.actions.xcheck_compare.result });
-    expect(run.log[10]).toEqual({ stage: "night", text: TEST_CONTENT.actions.night_use.result });
+    run = act(run, "party_pick_dusik");
+    run = act(run, "party_go");
+    expect(run.jobStep).toBe("site");
+    expect(availableActions(run)).toEqual(["call_respond"]);
+    run = act(run, "call_respond");
+    expect(run.jobIndex).toBe(1);
+    expect(run.jobStep).toBe("office");
+    expect(run.party).toEqual([]);
+    // 둘째 일감 사무실 — 파견 선택이 함께 열린다
+    expect(availableActions(run)).toEqual([
+      "office_printer",
+      "dispatch_send_taesan",
+      "dispatch_send_other",
+    ]);
+    run = act(run, "dispatch_send_taesan");
+    expect(run.dispatchTaesan).toBe(true);
+    expect(run.jobStep).toBe("briefing");
   });
 
-  test("단계를 바꾸지 않은 본부 방문은 로그 위치를 archive로 남긴다", () => {
-    const outcome = applyAction(makeRun({ stage: "archive" }), "archive_with_ru", TEST_CONTENT);
-    expect(outcome.ok).toBe(true);
-    expect(outcome.run.relic).toBe(true);
-    expect(outcome.run.reviews).toBe(1);
-    expect(outcome.run.log).toEqual([
-      { stage: "archive", text: TEST_CONTENT.actions.archive_with_ru.result },
-    ]);
+  test("로그에는 액션이 일어난 일감 위치와 결과 문면이 남는다", () => {
+    let run = startRun(TEST_CONTENT);
+    run = act(run, "office_printer");
+    run = act(run, "briefing_ack");
+    run = act(run, "party_pick_ru");
+    run = act(run, "party_go");
+    run = act(run, "call_respond");
+    expect(run.log).toHaveLength(5);
+    expect(run.log[0]).toEqual({
+      place: { kind: "job", job: "gwanak" },
+      text: "결과 office_printer",
+    });
+    expect(run.log.at(-1)).toEqual({
+      place: { kind: "job", job: "gwanak" },
+      text: "결과 call_respond",
+    });
   });
 });
 
-describe("거부 3종 — 상태를 그대로 돌려주고 사유를 붙인다", () => {
-  test("단계 아닌 액션은 그 카드의 deny로 거부된다", () => {
-    const run = makeRun({ stage: "field" });
-    const outcome = applyAction(run, "dispatch_send_taesan", TEST_CONTENT);
+describe("인원 선택 가드", () => {
+  test("결장 인물은 고를 수 없다", () => {
+    const run = makeRun({
+      jobStep: "party",
+      characters: { ...zeroCharacters(), ru: { fatigue: 0, injured: true, suspicion: 0, trust: 0 } },
+    });
+    const outcome = applyAction(run, "party_pick_ru", TEST_CONTENT);
     expect(outcome.ok).toBe(false);
-    expect(outcome.reason).toBe(TEST_CONTENT.actions.dispatch_send_taesan.deny);
+    expect(outcome.reason).toBe("거부 party_pick_ru");
+    expect(outcome.run).toBe(run);
+  });
+
+  test("정원은 2명 — 2명 찬 자리에 셋째는 거부된다", () => {
+    const run = makeRun({ jobStep: "party", party: ["dusik", "ru"] });
+    const outcome = applyAction(run, "party_pick_banjang", TEST_CONTENT);
+    expect(outcome.ok).toBe(false);
+    expect(outcome.run.party).toEqual(["dusik", "ru"]);
+  });
+
+  test("중복 선택은 거부된다", () => {
+    const run = makeRun({ jobStep: "party", party: ["dusik"] });
+    expect(applyAction(run, "party_pick_dusik", TEST_CONTENT).ok).toBe(false);
+  });
+
+  test("빈 동행으로는 출발할 수 없다 — 한 명 이상이면 현장으로 간다", () => {
+    const run = makeRun({ jobStep: "party" });
+    expect(applyAction(run, "party_go", TEST_CONTENT).ok).toBe(false);
+    const ready = act(run, "party_pick_banjang");
+    expect(availableActions(ready)).toContain("party_go");
+    expect(act(ready, "party_go").jobStep).toBe("site");
+  });
+
+  test("초기화하면 동행이 비워진다", () => {
+    const run = makeRun({ jobStep: "party", party: ["taesan", "ru"] });
+    expect(act(run, "party_reset").party).toEqual([]);
+  });
+});
+
+describe("일감 완료 — 인물 상태 증감(표 「공통」)", () => {
+  test("동행은 fatigue·trust가 오르고 비동행은 fatigue가 내린다(0 하한)", () => {
+    const run = makeRun({
+      jobIndex: 0,
+      jobStep: "site",
+      party: ["dusik", "ru"],
+      characters: {
+        ...zeroCharacters(),
+        banjang: { fatigue: 1, injured: false, suspicion: 0, trust: 0 },
+      },
+    });
+    const after = act(run, "call_respond");
+    expect(after.characters.dusik).toEqual({ fatigue: 1, injured: false, suspicion: 0, trust: 1 });
+    expect(after.characters.ru).toEqual({ fatigue: 1, injured: false, suspicion: 0, trust: 1 });
+    expect(after.characters.banjang.fatigue).toBe(0); // 1 − 1
+    expect(after.characters.taesan.fatigue).toBe(0); // 0 − 1 → 0 하한
+  });
+});
+
+describe("체인 대기 — 일감 완료 시점 평가, FIFO 소진", () => {
+  test("A(ru_first): 방송·문서·단서를 쥔 본부 완료는 xcheck → gate 순서로 세워 night까지 간다", () => {
+    const run = makeRun({
+      jobIndex: 2,
+      jobStep: "site",
+      reviews: 1,
+      broadcast: true,
+      documents: true,
+      clue: true,
+      placement: "ru_first",
+    });
+    const left = act(run, "archive_leave");
+    expect(left.chainStep).toBe("xcheck"); // FIFO 머리
+    expect(left.pendingChain).toEqual(["gate"]); // 대기열 뒤
+    expect(left.jobIndex).toBe(3); // 다음 일감(폐허) 사무실이 그 아래 깔려 있다
+    expect(left.jobStep).toBe("office");
+    const compared = act(left, "xcheck_compare");
+    expect(compared.coord).toBe(true);
+    expect(compared.chainStep).toBe("gate");
+    const dispatched = act(compared, "gate_dispatch");
+    expect(dispatched.chainStep).toBe("night"); // gate_dispatch는 night을 넣고 pop
+    expect(act(dispatched, "night_not_use").terminal).toBe("general");
+  });
+
+  test("체인 결과는 체인 위치로 기록된다", () => {
+    const after = act(makeRun({ chainStep: "xcheck" }), "xcheck_skip");
+    expect(after.log.at(-1)).toEqual({
+      place: { kind: "chain", chain: "xcheck" },
+      text: "결과 xcheck_skip",
+    });
+  });
+
+  test("A: 단서 없이 문서만 있으면 gate 대신 venue가 바로 선다", () => {
+    // A의 venue 대기 조건은 documents && !clue — 단서가 없으니 수신자 무대가 직접 온다.
+    const left = act(
+      makeRun({ jobIndex: 2, jobStep: "site", reviews: 1, documents: true }),
+      "archive_leave",
+    );
+    expect(left.chainStep).toBe("venue");
+    expect(left.pendingChain).toEqual([]);
+  });
+
+  test("B는 증거가 없어도 수신자 허브를 대기열에 넣는다 — 무대는 그 자리에서 열린다", () => {
+    const run = makeRun({ placement: "dusik_first", jobIndex: 2, jobStep: "site", reviews: 1 });
+    const left = act(run, "archive_leave");
+    expect(left.chainStep).toBe("venue");
+    expect(left.pendingChain).toEqual([]);
+  });
+
+  test("gate_reopen은 관측소 site로 되돌려 재대조를 대기열에 넣는다", () => {
+    const run = makeRun({
+      placement: "dusik_first",
+      chainStep: "venue",
+      documents: true,
+      chances: 1,
+    });
+    const reopened = act(run, "gate_reopen");
+    expect(reopened.jobIndex).toBe(1);
+    expect(reopened.jobStep).toBe("site");
+    expect(reopened.chainStep).toBeNull();
+    expect(reopened.pendingChain).toEqual(["xcheck"]);
+    expect(reopened.chances).toBe(0);
+  });
+
+  test("gun_with_banjang은 군 경로를 잠그고 수신자 무대로 되돌린다", () => {
+    const back = act(makeRun({ chainStep: "gun" }), "gun_with_banjang");
+    expect(back.gunLocked).toBe(true);
+    expect(back.chainStep).toBe("venue");
+  });
+});
+
+describe("배치 delta — 관문과 수신자 무대의 순서가 갈린다", () => {
+  const base = {
+    jobIndex: 2,
+    jobStep: "site",
+    reviews: 1,
+    broadcast: true,
+    documents: true,
+    clue: true,
+  } as const;
+
+  test("A는 gate가 venue보다 먼저 서고 단서를 쥔 채 venue에 설 수 없다", () => {
+    const left = act(makeRun({ ...base, placement: "ru_first" }), "archive_leave");
+    expect(left.pendingChain).toEqual(["gate"]);
+    const atGate = act(left, "xcheck_skip");
+    expect(atGate.chainStep).toBe("gate");
+    expect(availableActions(atGate)).not.toContain("venue_government");
+    expect(availableActions(atGate)).toEqual(
+      expect.arrayContaining(["gate_dispatch", "gate_hold"]),
+    );
+  });
+
+  test("B는 venue가 먼저 서서 그 단계에서 gate_*와 venue_*가 함께 열린다", () => {
+    const left = act(makeRun({ ...base, placement: "dusik_first" }), "archive_leave");
+    expect(left.pendingChain).toEqual(["venue"]); // gate는 대기열에 넣지 않는다
+    const atVenue = act(left, "xcheck_skip");
+    expect(atVenue.chainStep).toBe("venue");
+    expect(atVenue.clue).toBe(true); // B는 단서를 쥔 채 venue에 오른다
+    const listed = availableActions(atVenue);
+    expect(listed).toEqual(
+      expect.arrayContaining(["gate_dispatch", "gate_hold", "venue_government", "venue_silence"]),
+    );
+    expect(act(atVenue, "venue_government").terminal).toBe("gov");
+  });
+});
+
+describe("라디오 아침 — hq 사무실은 프린터 대신 라디오 두 갈래다", () => {
+  test("파견됐으면 radio_morning_on이 좌표를 적고, 아니면 흘려보낸다", () => {
+    const dispatched = act(
+      makeRun({ jobIndex: 2, jobStep: "office", dispatchTaesan: true }),
+      "radio_morning_on",
+    );
+    expect(dispatched.broadcast).toBe(true);
+    expect(dispatched.jobStep).toBe("briefing");
+    const stayed = act(
+      makeRun({ jobIndex: 2, jobStep: "office", dispatchTaesan: false }),
+      "radio_morning_on",
+    );
+    expect(stayed.broadcast).toBe(false);
+  });
+
+  test("radio_business_only는 좌표를 흘려보낸다 — broadcast는 false로 남는다", () => {
+    const run = act(
+      makeRun({ jobIndex: 2, jobStep: "office", dispatchTaesan: true }),
+      "radio_business_only",
+    );
+    expect(run.broadcast).toBe(false);
+    expect(run.jobStep).toBe("briefing");
+  });
+
+  test("hq 사무실에서는 프린터가 열리지 않는다", () => {
+    expect(availableActions(makeRun({ jobIndex: 2, jobStep: "office" }))).toEqual([
+      "radio_morning_on",
+      "radio_business_only",
+    ]);
+  });
+
+  test("다른 일감 사무실에서는 라디오가 열리지 않는다", () => {
+    expect(
+      availableActions(makeRun({ jobIndex: 1, jobStep: "office", dispatchTaesan: true })),
+    ).toEqual(expect.arrayContaining(["office_printer"]));
+    expect(
+      availableActions(makeRun({ jobIndex: 1, jobStep: "office", dispatchTaesan: true })),
+    ).not.toContain("radio_morning_on");
+  });
+});
+
+describe("상실 신호 — 위험 선택은 동행자 전원에게 소문난다(결정적 규칙)", () => {
+  test("obs_send_other: 신호를 깐 뒤 완료 처리 — 동행 전원 suspicion+1·trust−1(0 하한)", () => {
+    const base = zeroCharacters();
+    const run = makeRun({
+      jobIndex: 1,
+      jobStep: "site",
+      party: ["dusik", "banjang"],
+      chances: 1,
+      characters: {
+        ...base,
+        dusik: { fatigue: 0, injured: false, suspicion: 0, trust: 2 },
+        banjang: { fatigue: 1, injured: false, suspicion: 1, trust: 0 },
+      },
+    });
+    const after = act(run, "obs_send_other");
+    expect(after.chances).toBe(0);
+    // 신호(trust −1) → 완료(trust +1) — 표의 화살표 순서. 그리고 동행의 첫 사람이 다친다.
+    expect(after.characters.dusik).toEqual({ fatigue: 1, injured: true, suspicion: 1, trust: 2 });
+    expect(after.characters.banjang).toEqual({ fatigue: 2, injured: false, suspicion: 2, trust: 1 });
+    expect(after.characters.ru).toEqual(base.ru);
+    expect(after.characters.taesan).toEqual(base.taesan);
+  });
+
+  test("archive_with_taesan: 완료 처리 없이 신호만 남긴다", () => {
+    const run = makeRun({ jobIndex: 2, jobStep: "site", party: ["taesan"] });
+    const after = act(run, "archive_with_taesan");
+    expect(after.jobStep).toBe("site");
+    expect(after.reviews).toBe(1);
+    expect(after.chances).toBe(RECHANCE_LIMIT - 1);
+    expect(after.characters.taesan).toEqual({
+      fatigue: 0,
+      injured: true,
+      suspicion: 1,
+      trust: 0,
+    });
+  });
+});
+
+describe("폐허 — 마지막 일감은 체인으로 닫는다", () => {
+  test("site_hold는 contact를 남기고 night을 세워 완료한다", () => {
+    const run = makeRun({ jobIndex: 3, jobStep: "site", party: ["banjang"], relic: true });
+    const held = act(run, "site_hold");
+    expect(held.contact).toBe(true);
+    expect(held.chainStep).toBe("night");
+    expect(held.jobIndex).toBe(3); // 일감 흐름은 닫혔다 — 위치는 마지막 site에 머문다
+    expect(act(held, "night_use").terminal).toBe("true_ru");
+  });
+
+  test("처리 요청으로 닫으면 일반 종결이다", () => {
+    expect(act(makeRun({ jobIndex: 3, jobStep: "site" }), "site_process").terminal).toBe("general");
+  });
+
+  test("배태산과 들어가는 길은 배태산이 동행할 때만 열린다", () => {
+    expect(
+      applyAction(makeRun({ jobIndex: 3, jobStep: "site", party: ["taesan"] }), "site_with_taesan", TEST_CONTENT).ok,
+    ).toBe(true);
+    expect(
+      applyAction(makeRun({ jobIndex: 3, jobStep: "site" }), "site_with_taesan", TEST_CONTENT).ok,
+    ).toBe(false);
+  });
+});
+
+describe("거부 — 상태를 그대로 돌려주고 사유를 붙인다", () => {
+  test("단계가 아닌 액션은 그 카드의 deny로 거부된다", () => {
+    const run = startRun(TEST_CONTENT);
+    const outcome = applyAction(run, "briefing_ack", TEST_CONTENT);
+    expect(outcome.ok).toBe(false);
+    expect(outcome.reason).toBe("거부 briefing_ack");
     expect(outcome.run).toBe(run);
   });
 
   test("require 불충족 — 대조는 방송·문서가, 관문 파견은 단서가 필요하다", () => {
-    const bare = makeRun({ stage: "xcheck" });
-    const compare = applyAction(bare, "xcheck_compare", TEST_CONTENT);
-    expect(compare.ok).toBe(false);
-    expect(compare.reason).toBe(TEST_CONTENT.actions.xcheck_compare.deny);
-    expect(compare.run).toBe(bare);
-
-    const gate = makeRun({ stage: "gate" });
-    const dispatch = applyAction(gate, "gate_dispatch", TEST_CONTENT);
-    expect(dispatch.ok).toBe(false);
-    expect(dispatch.reason).toBe(TEST_CONTENT.actions.gate_dispatch.deny);
-    expect(dispatch.run).toBe(gate);
+    expect(applyAction(makeRun({ chainStep: "xcheck" }), "xcheck_compare", TEST_CONTENT).ok).toBe(
+      false,
+    );
+    expect(applyAction(makeRun({ chainStep: "gate" }), "gate_dispatch", TEST_CONTENT).ok).toBe(
+      false,
+    );
   });
+});
 
-  test("종결 후에는 모든 액션이 종결 안내로 거부되고 목록도 비었다", () => {
-    const ended = makeRun({ terminal: "death" });
+describe("종결 — 단방향이다", () => {
+  test("종결 후에는 모든 액션이 안내로 거부되고 목록도 비었다", () => {
+    const run = makeRun({ terminal: "general" });
+    expect(availableActions(run)).toEqual([]);
     for (const id of ACTION_IDS) {
-      const outcome = applyAction(ended, id, TEST_CONTENT);
+      const outcome = applyAction(run, id, TEST_CONTENT);
       expect(outcome.ok).toBe(false);
-      expect(outcome.run).toBe(ended);
-      expect(outcome.run.terminal).toBe("death");
+      expect(outcome.reason).toBe("회차가 이미 종결되었다");
     }
-    expect(availableActions(ended)).toEqual([]);
   });
 
   test("실제 종결 진입 뒤에도 terminal은 바뀌지 않는다", () => {
-    let run = makeRun({ stage: "night", relic: true });
-    run = applyAction(run, "night_use", TEST_CONTENT).run;
-    expect(run.terminal).toBe("true_ru");
-    const refused = applyAction(run, "submit_original", TEST_CONTENT);
-    expect(refused.ok).toBe(false);
-    expect(refused.reason).toBe("회차가 이미 종결되었다");
-    expect(refused.run.terminal).toBe("true_ru");
+    const ended = act(makeRun({ chainStep: "night" }), "night_not_use");
+    expect(ended.terminal).toBe("general");
+    expect(applyAction(ended, "office_printer", TEST_CONTENT).ok).toBe(false);
+    expect(applyAction(ended, "office_printer", TEST_CONTENT).run.terminal).toBe("general");
   });
 });
 
 describe("상한·하한 단조성", () => {
   test("chances는 0 아래로 내려가지 않는다", () => {
-    const outcome = applyAction(
-      makeRun({ stage: "obs", chances: 0 }),
-      "obs_boss_joins",
-      TEST_CONTENT,
-    );
-    expect(outcome.ok).toBe(true);
-    expect(outcome.run.chances).toBe(0);
+    const run = makeRun({ jobIndex: 1, jobStep: "site", party: ["dusik"], chances: 0 });
+    expect(act(run, "obs_send_other").chances).toBe(0);
   });
 
-  test("reviews는 REVIEW_LIMIT를 넘지 않는다 — 마지막 방문 뒤 방문 액션이 닫힌다", () => {
-    const last = applyAction(
-      makeRun({ stage: "archive", reviews: REVIEW_LIMIT - 1 }),
-      "archive_alone",
-      TEST_CONTENT,
-    );
-    expect(last.ok).toBe(true);
-    expect(last.run.reviews).toBe(REVIEW_LIMIT);
-
-    const capped = makeRun({ stage: "archive", reviews: REVIEW_LIMIT });
-    const refused = applyAction(capped, "archive_alone", TEST_CONTENT);
-    expect(refused.ok).toBe(false);
-    expect(refused.reason).toBe(TEST_CONTENT.actions.archive_alone.deny);
-    expect(refused.run).toBe(capped);
-    expect(availableActions(capped)).toEqual(["archive_leave"]);
+  test("reviews는 REVIEW_LIMIT 위로 올라가지 않고, 한도에 닿으면 방문 액션이 닫힌다", () => {
+    const run = makeRun({ jobIndex: 2, jobStep: "site", party: ["dusik"], reviews: REVIEW_LIMIT });
+    expect(availableActions(run)).toEqual(["archive_leave"]);
+    expect(act(run, "archive_leave").reviews).toBe(REVIEW_LIMIT);
   });
 });
 
-describe("배치 delta", () => {
-  test("xcheck 이후 목적지: ru_first는 gate, dusik_first는 venue", () => {
-    const ru = applyAction(
-      makeRun({ stage: "xcheck", placement: "ru_first" }),
-      "xcheck_skip",
-      TEST_CONTENT,
-    );
-    expect(ru.run.stage).toBe("gate");
-    const dusik = applyAction(
-      makeRun({ stage: "xcheck", placement: "dusik_first" }),
-      "xcheck_skip",
-      TEST_CONTENT,
-    );
-    expect(dusik.run.stage).toBe("venue");
+describe("일상 엔딩 경로와 부상 경로 — 표의 대기 조건·위험 선택", () => {
+  test("문서 없이 본부를 마친 A 회차는 수신자 허브에 서고 일상 엔딩으로 닫힌다", () => {
+    const prep = makeRun({
+      placement: "ru_first",
+      jobIndex: 2,
+      jobStep: "site",
+      party: ["dusik"],
+      reviews: 1,
+    });
+    const atVenue = act(prep, "archive_leave");
+    expect(atVenue.chainStep).toBe("venue");
+    // 무대가 열리지 않은 회차: 알릴 것이 없어 그 자리에서 닫힌다(원장 종결 라우팅 3항).
+    expect(act(atVenue, "venue_no_stage").terminal).toBe("routine");
   });
 
-  test("gate 단계 — ru_first에서는 gate_to_venue가 함께 열린다", () => {
-    const ru = makeRun({ stage: "gate", placement: "ru_first" });
-    expect(availableActions(ru)).toEqual(
-      expect.arrayContaining(["gate_to_venue", "gate_dispatch", "gate_reopen"]),
+  test("A에서 단서를 쥔 회차는 수신자 허브에 서지 못한다 — 대기열이 관문으로 간다", () => {
+    const prep = makeRun({
+      placement: "ru_first",
+      jobIndex: 2,
+      jobStep: "site",
+      party: ["ru"],
+      clue: true,
+      documents: true,
+      reviews: 1,
+    });
+    const after = act(prep, "archive_leave");
+    expect(after.chainStep).toBe("gate");
+    expect(after.pendingChain).not.toContain("venue");
+  });
+
+  test("B에서 단서를 쥔 회차도 수신자 허브에 선다 — 두 체인이 그 자리에서 함께 열린다", () => {
+    const prep = makeRun({
+      placement: "dusik_first",
+      jobIndex: 2,
+      jobStep: "site",
+      party: ["ru"],
+      clue: true,
+      reviews: 1,
+    });
+    const after = act(prep, "archive_leave");
+    expect(after.chainStep).toBe("venue");
+    expect(availableActions(after)).toContain("gate_dispatch");
+  });
+
+  test("위험 선택은 동행의 첫 사람을 다치게 하고, 그는 한 일감을 결장한 뒤 돌아온다", () => {
+    const atObs = makeRun({ jobIndex: 1, jobStep: "site", party: ["dusik", "taesan"] });
+    const afterRisk = act(atObs, "obs_send_other");
+    expect(afterRisk.characters.dusik.injured).toBe(true);
+    expect(afterRisk.characters.taesan.injured).toBe(false);
+
+    const atParty = makeRun({ jobIndex: 2, jobStep: "party", characters: afterRisk.characters });
+    const blocked = applyAction(atParty, "party_pick_dusik", TEST_CONTENT);
+    expect(blocked.ok).toBe(false);
+    expect(blocked.reason).toBe(TEST_CONTENT.actions.party_pick_dusik.deny);
+
+    const rested = act(
+      { ...atParty, jobStep: "site", party: ["taesan"], reviews: 1 },
+      "archive_leave",
     );
-    const dusik = makeRun({ stage: "gate", placement: "dusik_first" });
-    expect(availableActions(dusik)).not.toContain("gate_to_venue");
-  });
-
-  test("venue 단계 — dusik_first에서 gate_*와 venue_*가 함께, ru_first에서는 venue_*만", () => {
-    const ru = makeRun({ stage: "venue", placement: "ru_first" });
-    expect(availableActions(ru)).toEqual(
-      expect.arrayContaining(["venue_military", "venue_no_stage"]),
-    );
-    expect(availableActions(ru)).not.toContain("gate_to_venue");
-    expect(availableActions(ru)).not.toContain("gate_dispatch");
-
-    const dusik = makeRun({ stage: "venue", placement: "dusik_first" });
-    expect(availableActions(dusik)).toEqual(
-      expect.arrayContaining(["gate_dispatch", "gate_reopen", "venue_military"]),
-    );
-    expect(availableActions(dusik)).not.toContain("gate_to_venue");
-  });
-});
-
-describe("종결 매핑 — 실제 CONTENT로 종결 액션을 돌린다", () => {
-  // (준비 상태 → 액션 → 기대 terminal) 표. makeRun은 startRun과 같은 기본값이므로 오버라이드로
-  // 목표 단계로 점프해도 시작 상태 모양은 그대로다. 적용은 전부 실제 CONTENT를 넣은
-  // applyAction 하나 — 두 액션의 apply를 맞바꾸면 이 표가 어긋난다.
-  type TerminalRow = { action: ActionId; terminal: EndingId; prep: RunState; why: string };
-  const rows: readonly TerminalRow[] = [
-    {
-      action: "gate_hold",
-      terminal: "death",
-      prep: makeRun({ stage: "gate", clue: true }),
-      why: "루 대신 다른 인원 배치는 단서를 쥔 회차에서만 고른다(require clue)",
-    },
-    {
-      action: "venue_association",
-      terminal: "death",
-      prep: makeRun({ stage: "venue", documents: true }),
-      why: "협회 통보는 서면 근거가 필요하다(require documents)",
-    },
-    {
-      action: "venue_silence",
-      terminal: "death",
-      prep: makeRun({ stage: "venue" }),
-      why: "침묵은 요건 없이 언제나 고를 수 있다(require 없음)",
-    },
-    {
-      action: "venue_government",
-      terminal: "gov",
-      prep: makeRun({ stage: "venue", documents: true }),
-      why: "관청 이관도 넘길 서면이 필요하다(require documents)",
-    },
-    {
-      action: "venue_press",
-      terminal: "press",
-      prep: makeRun({ stage: "venue", documents: true }),
-      why: "언론 통보도 기사가 될 서면이 필요하다(require documents)",
-    },
-    {
-      action: "venue_no_stage",
-      terminal: "routine",
-      prep: makeRun({ stage: "venue" }),
-      why: "알릴 것이 없는 닫기는 문서가 없을 때만 고른다(require !documents)",
-    },
-    {
-      action: "site_process",
-      terminal: "general",
-      prep: makeRun({ stage: "site" }),
-      why: "처리 요청은 site 단계에서만 고른다",
-    },
-    {
-      action: "site_with_taesan",
-      terminal: "general",
-      prep: makeRun({ stage: "site" }),
-      why: "배태산 동행도 site 단계에서만 고른다",
-    },
-    {
-      action: "night_use",
-      terminal: "true_ru",
-      prep: makeRun({ stage: "night", relic: true }),
-      why: "재통합은 삼킬 물건이 있어야 열린다(require relic)",
-    },
-    {
-      action: "night_not_use",
-      terminal: "general",
-      prep: makeRun({ stage: "night" }),
-      why: "물건을 쓰지 않는 선택에는 요건이 없다",
-    },
-    {
-      action: "night_no_item",
-      terminal: "general",
-      prep: makeRun({ stage: "night" }),
-      why: "물건 없는 마무리는 물건이 없을 때만 고른다(require !relic)",
-    },
-    {
-      action: "submit_original",
-      terminal: "true_dusik",
-      prep: makeRun({ stage: "submit" }),
-      why: "원본 대조 요구는 submit 단계에서만 고른다",
-    },
-    {
-      action: "submit_copy",
-      terminal: "true_dusik",
-      prep: makeRun({ stage: "submit" }),
-      why: "사본 제출도 submit 단계에서만 고른다",
-    },
-  ];
-
-  test("종결 액션 전부는 각자 자기 종결로만 닫는다", () => {
-    for (const { action, terminal, prep, why } of rows) {
-      const outcome = applyAction(prep, action, CONTENT);
-      expect(
-        outcome.ok,
-        `${action}이(가) 거부되었다(사유: ${outcome.reason}) — 준비 상태가 어긋났다: ${why}`,
-      ).toBe(true);
-      expect(
-        outcome.run.terminal,
-        `${action} → 기대 ${terminal}, 실제 ${String(outcome.run.terminal)} — ${why}`,
-      ).toBe(terminal);
-    }
-  });
-
-  test("gun_with_banjang 뒤 — venue로 되돌아가고 군 통보는 거부되며 잠금은 풀리지 않는다", () => {
-    // 군 접점 요건(방송·문서·좌표)을 전부 채운 venue에서 접점에 진입한다.
-    const venue = makeRun({ stage: "venue", broadcast: true, documents: true, coord: true });
-    const enter = applyAction(venue, "venue_military", CONTENT);
-    expect(enter.ok, `군 접점 진입이 막혔다(사유: ${enter.reason})`).toBe(true);
-    expect(enter.run.stage).toBe("gun");
-
-    const banjang = applyAction(enter.run, "gun_with_banjang", CONTENT);
-    expect(banjang.ok, `최 반장 동행이 거부되었다(사유: ${banjang.reason})`).toBe(true);
-    // 인맥 없는 동행: 접점은 다시 열리지 않고 수신자 선택으로 되돌아온다.
-    expect(banjang.run.stage).toBe("venue");
-    expect(banjang.run.gunLocked).toBe(true);
-
-    const refused = applyAction(banjang.run, "venue_military", CONTENT);
-    expect(refused.ok, "gunLocked인데 군 통보가 열리면 잠금 루프가 무너진 것이다").toBe(false);
-    expect(refused.reason).toBe(CONTENT.actions.venue_military.deny);
-    expect(refused.run.gunLocked, "거부만으로 잠금이 풀려서는 안 된다").toBe(true);
-  });
-});
-
-describe("순수성", () => {
-  test("같은 입력에 같은 출력, 입력을 훼손하지 않는다", () => {
-    const run = makeRun({ stage: "xcheck", broadcast: true, documents: true });
-    const snapshot = structuredClone(run);
-    const first = applyAction(run, "xcheck_compare", TEST_CONTENT);
-    expect(run).toEqual(snapshot);
-    expect(applyAction(run, "xcheck_compare", TEST_CONTENT)).toEqual(first);
-    expect(first.run).not.toBe(run);
+    expect(rested.characters.dusik.injured).toBe(false);
   });
 });
