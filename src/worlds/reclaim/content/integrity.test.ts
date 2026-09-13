@@ -3,13 +3,13 @@
 // 대조한다. 단언값은 열거 리포트와 콘텐츠에서 읽는다 — 수치 하드코딩 금지. 실패 시 문제 id를
 // 메시지로 보인다.
 import { describe, expect, test } from "vitest";
-import { ACTION_IDS, ENDING_IDS, EVIDENCE_IDS, STAGE_IDS } from "../ids";
 import type { ActionId, EndingId, StageId } from "../ids";
-import type { Placement, RunState } from "../types";
+import { ACTION_IDS, ENDING_IDS, EVIDENCE_IDS, STAGE_IDS } from "../ids";
 import { ACTION_SPECS } from "../rules/actions";
-import { applyAction, availableActions, REVIEW_LIMIT, startRun } from "../rules/run";
 import type { EnumerationReport } from "../rules/enumerate";
 import { enumerateRuns } from "../rules/enumerate";
+import { applyAction, availableActions, REVIEW_LIMIT, startRun } from "../rules/run";
+import type { Placement, RunState } from "../types";
 import { CONTENT } from "./index";
 
 const PLACEMENTS: readonly Placement[] = ["ru_first", "dusik_first"];
@@ -145,10 +145,9 @@ describe("도달성 — 시작 상태에서 만족 가능한 경로", () => {
 describe("구조 무결성 — 실제 콘텐츠 기준 재확인", () => {
   test.each(PLACEMENTS)("%s — 막다른 비종결 상태 0, 순환 0", (placement) => {
     const report = reports[placement];
-    expect(
-      report.deadEnds,
-      `비종결 상태에서 선택지가 막히지 않는다. ${aux(placement)}`,
-    ).toEqual([]);
+    expect(report.deadEnds, `비종결 상태에서 선택지가 막히지 않는다. ${aux(placement)}`).toEqual(
+      [],
+    );
     expect(report.cycles, `경로 내 상태 재방문이 없다. ${aux(placement)}`).toEqual([]);
   });
 });
@@ -184,8 +183,7 @@ describe("선택지 최소 수 — 비종결 상태의 선택지", () => {
     const unexplained = thin
       .filter(
         ({ run }) =>
-          run.stage !== "field" &&
-          !(run.stage === "archive" && run.reviews >= REVIEW_LIMIT),
+          run.stage !== "field" && !(run.stage === "archive" && run.reviews >= REVIEW_LIMIT),
       )
       .map(({ run, offered }) => `${run.stage}:${offered.length}개(${offered.join(", ")})`);
     expect(
@@ -203,9 +201,7 @@ describe("문면 총체성 — 콘텐츠 리터럴", () => {
   test("모든 액션의 label·deny·result가 비어 있지 않다", () => {
     const blanks = ACTION_IDS.flatMap((id) => {
       const card = CONTENT.actions[id];
-      const fields = (["label", "deny", "result"] as const).filter((field) =>
-        isBlank(card[field]),
-      );
+      const fields = (["label", "deny", "result"] as const).filter((field) => isBlank(card[field]));
       return fields.length === 0 ? [] : [`${id}(${fields.join(", ")})`];
     });
     expect(blanks, `빈 문면이 있는 액션: ${blanks.join(", ") || "없음"}`).toEqual([]);
@@ -244,8 +240,7 @@ describe("종결 8종의 잠금 서술 — 형식 단언(길이 진단)", () => 
     const offenders = lengths
       .filter(
         (e) =>
-          isBlank(CONTENT.endings[e.id].text) ||
-          (TRUE_ENDINGS.includes(e.id) && e.chars < floor),
+          isBlank(CONTENT.endings[e.id].text) || (TRUE_ENDINGS.includes(e.id) && e.chars < floor),
       )
       .map((e) => `${e.id}=${e.chars}`);
     expect(
