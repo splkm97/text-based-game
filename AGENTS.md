@@ -35,6 +35,15 @@ Rules a future agent must keep. Each entry is an obligation and the reason it ex
 - Add a world to `EDITABLE_WORLDS` in `tools/content-editor/worlds.ts` once it ships an `editor/model.ts`. The editable-coverage test runs over every entry, so an unlisted world gets no write-back check.
 - Write user-visible text in Korean and original. Never name any existing game or studio in `src`, `public`, or `index.html`. Use 골드 as the only currency word in `모험가 이야기`.
 
+## 프로토타입 원장
+
+- `prototype/remains.json`은 프로토타입의 테마·세계관·인물·사건을 기록하는 기준 원장이다. `prototype/stories/example.md`는 현재 1인칭 스토리라인 원고다. `prototype/remains.md`는 현재 권위 자료가 아니므로 참조하거나 새로 만들지 않는다.
+- `prototype/remains.json`에 항목을 추가·삭제·수정할 때는 `remains-ledger-maintenance` 스킬을 사용한다.
+- 원장 항목의 의미, 정보 공개 범위, 기존 관계, 참조 무결성을 보존한다.
+- 인물의 공개 정보와 비밀 정보는 별도 필드로 기록한다. 비밀 정보를 게임 시작 시 공개된 것처럼 기록하지 않는다.
+- 원장에 기록한 경로는 저장소에 실제로 존재해야 한다.
+- 원장을 변경한 후 Node 24에서 JSON이 유효해야 하며, 변경 필드와 참조가 일관되어야 한다.
+
 ## Persistence
 
 - Give each world its own save keys, `lia.<worldId>.run.v1` and, where the world keeps cross-run records, `lia.<worldId>.meta.v1`. Worlds share one `localStorage`, so an unprefixed key would let one world read another's payload.
