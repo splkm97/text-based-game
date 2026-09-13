@@ -215,6 +215,8 @@ export const ACTION_SPECS: Readonly<Record<ActionId, ActionSpec>> = {
   },
   obs_boss_joins: {
     when: (run) => atStep(run, "site") && run.jobIndex === 1,
+    // 루가 동행이면 파편의 첫 기록은 루의 몫이다 — 사장이 먼저 기록하는 분기는 루 없이 간 현장에만 있다.
+    require: (run) => !run.party.includes("ru"),
     apply: (run) => completeJob(run),
   },
   obs_send_other: {
@@ -261,6 +263,9 @@ export const ACTION_SPECS: Readonly<Record<ActionId, ActionSpec>> = {
   // 현장 ruins — 마지막 일감
   site_hold: {
     when: ruinsSite,
+    // 관찰 유보는 루가 먼저 손을 든 회차에만 성립한다 — 데모에서도 이 자리는 gate_dispatch(require clue)
+    // 뒤에만 있었다. 폐허가 정규 일감이 된 지금 그 조건을 명시한다.
+    require: (run) => run.clue,
     apply: (run) => {
       const after = { ...run, contact: true };
       return { contact: true, ...completeJob(after) };
@@ -291,7 +296,8 @@ export const ACTION_SPECS: Readonly<Record<ActionId, ActionSpec>> = {
   gate_dispatch: {
     when: gateStage,
     require: (run) => run.clue,
-    apply: (run) => popChain({ ...run, pendingChain: enqueueChain(run.pendingChain, "night") }),
+    // 파견은 관문을 닫고 폐허 일감으로 넘긴다 — 심야는 그 현장을 마친 뒤의 일이다(표 「체인 대기 조건」 공통 줄).
+    apply: (run) => popChain(run),
   },
   gate_hold: {
     when: gateStage,
@@ -301,13 +307,14 @@ export const ACTION_SPECS: Readonly<Record<ActionId, ActionSpec>> = {
   gate_reopen: {
     when: gateStage,
     require: (run) => !run.clue && run.chances > 0,
-    // 관측소 재방문 — 일감 1의 site로 복귀하고 재대조 xcheck을 대기열에 넣는다.
+    // 재등장은 **조합을 다시 고를 수 있는 자리**로 되돌린다: 기회는 요구 조합을 실제로 고를 수 있는
+    // 디스패치에서만 소모된다(game-mechanics 「재등장」). 일감 1의 인원 선택으로 복귀한다.
     apply: (run) => ({
       chances: run.chances - 1,
       pendingChain: enqueueChain(run.pendingChain, "xcheck"),
       chainStep: null,
       jobIndex: 1,
-      jobStep: "site",
+      jobStep: "party",
     }),
   },
   gate_to_venue: {

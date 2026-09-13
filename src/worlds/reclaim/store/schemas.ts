@@ -8,9 +8,9 @@ import {
   CHAIN_STEP_IDS,
   CHARACTER_IDS,
   ENDING_IDS,
+  type EndingId,
   JOB_IDS,
   JOB_STEP_IDS,
-  type EndingId,
 } from "../ids";
 import { RECHANCE_LIMIT, REVIEW_LIMIT } from "../rules/run";
 import type { RunState } from "../types";
@@ -42,7 +42,11 @@ const logEntry = z.object({ place: logPlace, text: z.string() });
 
 const runState = z.object({
   placement: z.enum(["ru_first", "dusik_first"]),
-  jobIndex: z.number().int().min(0).max(JOB_IDS.length - 1), // JOB_IDS 위치 전체
+  jobIndex: z
+    .number()
+    .int()
+    .min(0)
+    .max(JOB_IDS.length - 1), // JOB_IDS 위치 전체
   jobStep: jobStepId,
   // 인원 선택은 1~2명(설계 §5) — 선택 전 빈 배열까지 포함해 최대 2다.
   party: z.array(characterId).max(2),

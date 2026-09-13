@@ -6,15 +6,15 @@
 import { describe, expect, test } from "vitest";
 import {
   ACTION_IDS,
-  CHARACTER_IDS,
-  CHAIN_STEP_IDS,
-  ENDING_IDS,
-  JOB_IDS,
-  JOB_STEP_IDS,
   type ActionId,
+  CHAIN_STEP_IDS,
+  CHARACTER_IDS,
   type ChainStepId,
   type CharacterId,
+  ENDING_IDS,
   type EndingId,
+  JOB_IDS,
+  JOB_STEP_IDS,
   type JobId,
 } from "../ids";
 import type { StageDocument, TalkLine } from "../types";
@@ -141,7 +141,8 @@ describe("카드 존재 — (일감 × 순서)와 체인", () => {
   test("모든 카드의 id 필드가 키와 같다", () => {
     const offenders: string[] = [];
     for (const job of JOB_IDS) if (CONTENT.jobs[job].id !== job) offenders.push(`jobs.${job}`);
-    for (const id of CHAIN_STEP_IDS) if (CONTENT.chains[id].id !== id) offenders.push(`chains.${id}`);
+    for (const id of CHAIN_STEP_IDS)
+      if (CONTENT.chains[id].id !== id) offenders.push(`chains.${id}`);
     for (const id of ACTION_IDS) if (CONTENT.actions[id].id !== id) offenders.push(`actions.${id}`);
     for (const id of ENDING_IDS) if (CONTENT.endings[id].id !== id) offenders.push(`endings.${id}`);
     for (const id of CHARACTER_IDS)
@@ -219,7 +220,8 @@ describe("중복 문면 — 목록 키가 문면이다", () => {
       check(`jobs.${job}.party.notes`, card.party.notes);
       check(`jobs.${job}.site.partyLines`, card.site.partyLines);
     }
-    for (const id of CHAIN_STEP_IDS) check(`chains.${id}.partyLines`, CONTENT.chains[id].partyLines);
+    for (const id of CHAIN_STEP_IDS)
+      check(`chains.${id}.partyLines`, CONTENT.chains[id].partyLines);
     expect(dupes, `인물 중복: ${dupes.join(", ") || "없음"}`).toEqual([]);
   });
 

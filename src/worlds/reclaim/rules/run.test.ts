@@ -3,8 +3,8 @@
 // 종결 단방향, 상한·하한 단조성.
 
 import { describe, expect, test } from "vitest";
-import { ACTION_IDS } from "../ids";
 import type { ActionId } from "../ids";
+import { ACTION_IDS } from "../ids";
 import type { RunState } from "../types";
 import { applyAction, availableActions, RECHANCE_LIMIT, REVIEW_LIMIT, startRun } from "./run";
 import { makeRun, TEST_CONTENT, zeroCharacters } from "./testContent";
@@ -101,7 +101,10 @@ describe("인원 선택 가드", () => {
   test("결장 인물은 고를 수 없다", () => {
     const run = makeRun({
       jobStep: "party",
-      characters: { ...zeroCharacters(), ru: { fatigue: 0, injured: true, suspicion: 0, trust: 0 } },
+      characters: {
+        ...zeroCharacters(),
+        ru: { fatigue: 0, injured: true, suspicion: 0, trust: 0 },
+      },
     });
     const outcome = applyAction(run, "party_pick_ru", TEST_CONTENT);
     expect(outcome.ok).toBe(false);
@@ -155,7 +158,7 @@ describe("일감 완료 — 인물 상태 증감(표 「공통」)", () => {
 });
 
 describe("체인 대기 — 일감 완료 시점 평가, FIFO 소진", () => {
-  test("A(ru_first): 방송·문서·단서를 쥔 본부 완료는 xcheck → gate 순서로 세워 night까지 간다", () => {
+  test("A(ru_first): 방송·문서·단서를 쥔 본부 완료는 xcheck → gate 순서로 세우고, 파견 뒤 폐허 일감이 열린다", () => {
     const run = makeRun({
       jobIndex: 2,
       jobStep: "site",
@@ -174,8 +177,17 @@ describe("체인 대기 — 일감 완료 시점 평가, FIFO 소진", () => {
     expect(compared.coord).toBe(true);
     expect(compared.chainStep).toBe("gate");
     const dispatched = act(compared, "gate_dispatch");
-    expect(dispatched.chainStep).toBe("night"); // gate_dispatch는 night을 넣고 pop
-    expect(act(dispatched, "night_not_use").terminal).toBe("general");
+    expect(dispatched.chainStep).toBeNull(); // 관문을 닫고 폐허 일감으로 넘긴다
+    expect(dispatched.pendingChain).toEqual([]);
+    expect(dispatched.jobIndex).toBe(3);
+    expect(dispatched.jobStep).toBe("office");
+    // 폐허 현장의 관찰 유보가 밤을 세우고, 그 밤이 루 진엔딩으로 닫힌다.
+    const atRuins = act(
+      { ...dispatched, jobStep: "site", party: ["ru"], relic: true },
+      "site_hold",
+    );
+    expect(atRuins.chainStep).toBe("night");
+    expect(act(atRuins, "night_use").terminal).toBe("true_ru");
   });
 
   test("체인 결과는 체인 위치로 기록된다", () => {
@@ -203,7 +215,7 @@ describe("체인 대기 — 일감 완료 시점 평가, FIFO 소진", () => {
     expect(left.pendingChain).toEqual([]);
   });
 
-  test("gate_reopen은 관측소 site로 되돌려 재대조를 대기열에 넣는다", () => {
+  test("gate_reopen은 조합을 다시 고를 수 있는 자리(일감 1 인원 선택)로 되돌린다", () => {
     const run = makeRun({
       placement: "dusik_first",
       chainStep: "venue",
@@ -212,7 +224,7 @@ describe("체인 대기 — 일감 완료 시점 평가, FIFO 소진", () => {
     });
     const reopened = act(run, "gate_reopen");
     expect(reopened.jobIndex).toBe(1);
-    expect(reopened.jobStep).toBe("site");
+    expect(reopened.jobStep).toBe("party"); // 기회는 고를 수 있는 디스패치에서만 소모된다
     expect(reopened.chainStep).toBeNull();
     expect(reopened.pendingChain).toEqual(["xcheck"]);
     expect(reopened.chances).toBe(0);
@@ -319,7 +331,12 @@ describe("상실 신호 — 위험 선택은 동행자 전원에게 소문난다
     expect(after.chances).toBe(0);
     // 신호(trust −1) → 완료(trust +1) — 표의 화살표 순서. 그리고 동행의 첫 사람이 다친다.
     expect(after.characters.dusik).toEqual({ fatigue: 1, injured: true, suspicion: 1, trust: 2 });
-    expect(after.characters.banjang).toEqual({ fatigue: 2, injured: false, suspicion: 2, trust: 1 });
+    expect(after.characters.banjang).toEqual({
+      fatigue: 2,
+      injured: false,
+      suspicion: 2,
+      trust: 1,
+    });
     expect(after.characters.ru).toEqual(base.ru);
     expect(after.characters.taesan).toEqual(base.taesan);
   });
@@ -341,7 +358,13 @@ describe("상실 신호 — 위험 선택은 동행자 전원에게 소문난다
 
 describe("폐허 — 마지막 일감은 체인으로 닫는다", () => {
   test("site_hold는 contact를 남기고 night을 세워 완료한다", () => {
-    const run = makeRun({ jobIndex: 3, jobStep: "site", party: ["banjang"], relic: true });
+    const run = makeRun({
+      jobIndex: 3,
+      jobStep: "site",
+      party: ["banjang"],
+      clue: true,
+      relic: true,
+    });
     const held = act(run, "site_hold");
     expect(held.contact).toBe(true);
     expect(held.chainStep).toBe("night");
@@ -355,7 +378,11 @@ describe("폐허 — 마지막 일감은 체인으로 닫는다", () => {
 
   test("배태산과 들어가는 길은 배태산이 동행할 때만 열린다", () => {
     expect(
-      applyAction(makeRun({ jobIndex: 3, jobStep: "site", party: ["taesan"] }), "site_with_taesan", TEST_CONTENT).ok,
+      applyAction(
+        makeRun({ jobIndex: 3, jobStep: "site", party: ["taesan"] }),
+        "site_with_taesan",
+        TEST_CONTENT,
+      ).ok,
     ).toBe(true);
     expect(
       applyAction(makeRun({ jobIndex: 3, jobStep: "site" }), "site_with_taesan", TEST_CONTENT).ok,

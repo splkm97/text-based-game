@@ -34,8 +34,10 @@ export type EnumerationReport = {
   readonly bothChainsReady: number;
 };
 
-/** 고유 상태 수 안전 상한 — 상태 공간 폭발을 테스트 실패(throw)로 만든다. */
-const STATE_LIMIT = 20_000;
+/** 고유 상태 수 안전 상한 — 상태 공간 폭발을 테스트 실패(throw)로 만든다.
+ * 실측(2026-09-14, TEST_CONTENT): ru_first 5,847 · dusik_first 25,698 상태, 각 19ms·74ms.
+ * 폐허 일감이 실제로 도달 가능해지면서 공간이 커졌으므로 상한을 실측의 약 8배로 둔다. */
+const STATE_LIMIT = 100_000;
 
 /** 상태 서명 — 데모 sig()와 같은 역할의 축. log는 경로의 함수라 서명에서 뺀다.
  * 인물 상태 축(fatigue·injured·suspicion·trust)도 뺀다: 가드가 읽는 유일한 인물 축인

@@ -2,11 +2,12 @@
 // lastReason만 남기고 상태(과 세이브)를 건드리지 않고, 종결은 세이브를 비우며 onEnding
 // 콜백으로 기록을 남기고, reset은 키를 비운다. 규칙은 mock으로 갈아낀다 — 이 테스트의
 // 대상은 저장·사유·콜백 경로지 규칙의 내부가 아니다(규칙 자체는 rules/ 테스트가 검증한다).
-import type { EndingId } from "../ids";
-import { applyAction, availableActions, startRun } from "../rules/run";
-import type * as rulesRun from "../rules/run";
+
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { memoryStorage } from "../../../shared/storage";
+import type { EndingId } from "../ids";
+import type * as rulesRun from "../rules/run";
+import { applyAction, availableActions, startRun } from "../rules/run";
 import { makeRun, TEST_CONTENT } from "../rules/testContent";
 import type { RunState } from "../types";
 import { createMetaStore } from "./metaStore";

@@ -5,8 +5,8 @@
 // 각각 단언하고, 실제로 적용까지 통과하는지 applyAction으로 확인한다(공허한 통과 없음).
 
 import { describe, expect, test } from "vitest";
-import { ACTION_IDS } from "../ids";
 import type { ActionId } from "../ids";
+import { ACTION_IDS } from "../ids";
 import type { RunState } from "../types";
 import { ACTION_SPECS, REVIEW_LIMIT } from "./actions";
 import { applyAction } from "./run";
@@ -41,7 +41,7 @@ const OPEN_STATES: Readonly<Record<ActionId, RunState>> = {
   gate_hold: makeRun({ chainStep: "gate", clue: true }),
   gate_reopen: makeRun({ chainStep: "gate", clue: false, chances: 1 }),
   gate_to_venue: makeRun({ placement: "ru_first", chainStep: "gate", clue: false }),
-  site_hold: makeRun({ jobIndex: 3, jobStep: "site" }),
+  site_hold: makeRun({ jobIndex: 3, jobStep: "site", clue: true }), // 관찰 유보는 단서를 쥔 회차에만
   site_process: makeRun({ jobIndex: 3, jobStep: "site" }),
   site_with_taesan: makeRun({ jobIndex: 3, jobStep: "site", party: ["taesan"] }),
   night_use: makeRun({ chainStep: "night", relic: true }),
@@ -77,9 +77,7 @@ describe("관문 단계 술어 — 배치를 따른다(데모 gateStage)", () =>
   test("gate_dispatch는 gate에서는 항상, venue에서는 dusik_first에서만 연다", () => {
     expect(ACTION_SPECS.gate_dispatch.when(makeRun({ chainStep: "gate" }))).toBe(true);
     expect(
-      ACTION_SPECS.gate_dispatch.when(
-        makeRun({ chainStep: "venue", placement: "dusik_first" }),
-      ),
+      ACTION_SPECS.gate_dispatch.when(makeRun({ chainStep: "venue", placement: "dusik_first" })),
     ).toBe(true);
     expect(
       ACTION_SPECS.gate_dispatch.when(makeRun({ chainStep: "venue", placement: "ru_first" })),
