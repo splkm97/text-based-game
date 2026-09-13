@@ -15,6 +15,7 @@
         "주인공은 그 공문을 매일 아침 읽는다."
       ],
       "narrativeRole": "얼굴 없는 악역",
+      "secretSummoning": "협회가 도래자들을 불러들인 주체다. 이 사실은 게임 시작 시점에 공개되지 않는 세계의 비밀이다.",
       "appearanceChannels": ["공문", "청구서", "방송"],
       "dialogueRule": "대화하는 인물로 등장하지 않는다.",
       "history": "방역·격리 기구로 출발해 지금은 도시 행정의 반 이상을 담당한다.",
@@ -55,7 +56,8 @@
           "relatedIncident": "6개월 전 루시퍼와의 전투에서 도시의 상당 부분을 폐허로 만들었다.",
           "associationDebt": "협회로부터 부당하게 복구 비용을 청구받아 빚더미에 앉았다."
         },
-        "secretCausality": "강두식이 루시퍼와 싸운 결과, 루시퍼가 루와 시퍼로 분리되었다."
+        "secretCausality": "강두식이 루시퍼와 싸운 결과, 루시퍼가 루와 시퍼로 분리되었다.",
+        "trueEnding": "협회가 도래를 불렀다는 사실을 밝혀내 배상금 누명을 벗고 당당하게 다시 히어로가 된다."
       },
       "ru": {
         "name": "루",
@@ -70,6 +72,7 @@
         "separation": {
           "cause": "진압 과정에서 발생한 모종의 사건",
           "originalEntity": "루시퍼",
+          "secretReunion": "루와 시퍼는 다시 하나가 될 수 있다. 재통합하면 루시퍼로서 본래의 힘을 되찾는다. 이 가능성은 게임 시작 시점에 공개되지 않는다.",
           "parts": [
             {
               "name": "루",
@@ -89,24 +92,31 @@
           "knowsDusikWasTheHeroInitially": false,
           "realizesDusikIdentity": "이야기 중에 알아차린다."
         },
-        "publicExposure": "루시퍼는 6개월간 아침 뉴스에 자주 등장했다."
+        "publicExposure": "루시퍼는 6개월간 아침 뉴스에 자주 등장했다.",
+        "trueEnding": "루와 시퍼가 다시 하나가 되어 루시퍼로 본래의 힘을 되찾고, 원래 세계에서 군단을 소환한다."
       },
       "banjang": {
         "name": "최 반장",
         "role": "회사 인물",
-        "hiddenActivity": "초반에는 공개되지 않지만 협회에 별도의 감시 보고서를 따로 제출하고 있었다."
+        "hiddenActivity": "초반에는 공개되지 않지만 협회에 별도의 감시 보고서를 따로 제출하고 있었다.",
+        "trueEnding": "철저한 조사와 부단한 노력으로 배태산이 사실 협회의 수장급 인물임을 밝혀낸다."
       },
       "taesan": {
         "name": "배태산",
         "role": "회사 인물",
-        "traits": ["유머러스하다.", "마당발이다.", "회사 외적인 정보를 많이 물고 온다."]
+        "traits": ["유머러스하다.", "마당발이다.", "회사 외적인 정보를 많이 물고 온다."],
+        "misnaming": "사장은 그의 이름을 자꾸 잊어 종종 '배태식'이라고 부른다.",
+        "hiddenIdentity": "사실 협회의 수장급 인물이다. 이 사실은 게임 시작 시점에 공개되지 않는다.",
+        "secretScheme": "협회의 도래 소환은 루를 실험실로 보내 생체실험하려는 목적이었고, 그러려면 루시퍼의 힘을 빼놓아야 했다. 그 도구로 강두식을 이용했다. 유머러스한 태도는 사람들을 속이기 위한 위장이었다. 이 사실은 게임 시작 시점에 공개되지 않는다.",
+        "trueEnding": "시퍼를 죽이게 되고, 힘을 잃은 루를 실험실에 가두는 것."
       }
     },
     "monsterRemnants": {
       "nature": "괴수다.",
       "behavior": "먼저 공격적으로 대응하지 않는다.",
       "livingCondition": "괴수가 처리된 이후 폐허에 눌러앉아 살아간다.",
-      "narrativeTreatment": "시퍼를 포함해 괴수 잔당으로 취급받는다."
+      "narrativeTreatment": "시퍼를 포함해 괴수 잔당으로 취급받는다.",
+      "secretOriginWorld": "괴수는 원래 세계에서 건너왔다. 루시퍼가 본래의 힘을 되찾으면 원래 세계에서 군단을 소환할 수 있다. 이 사실은 게임 시작 시점에 공개되지 않는다."
     }
   },
   "chronology": [
@@ -140,6 +150,60 @@
       "status": "별도 규칙 필요",
       "requirement": "등장인물 네 명의 문장만 읽어도 서로 구별되도록 독특한 말투를 부여한다.",
       "characters": ["dusik", "ru", "banjang", "taesan"]
+    },
+    "trueEnding": {
+      "status": "확정",
+      "rule": "등장인물 네 명은 각각 하나의 진엔딩을 가진다.",
+      "characters": ["dusik", "ru", "banjang", "taesan"],
+      "exclusivity": "한 인물의 진엔딩은 다른 인물의 진엔딩과 별개이며, 한 회차에서 둘 이상이 동시에 성립하지 않는다."
+    }
+  },
+  "trueEndingRoutes": {
+    "status": "골격 확정 — 중간 구간 일부 미확정",
+    "legend": "'?' 노드와 점선 화살표(-.->)는 아직 원고·근거가 없어 이어지지 않는 구간이다.",
+    "routes": {
+      "dusik": {
+        "endNodeRef": "settings.characters.dusik.trueEnding",
+        "steps": [
+          "시작 · prototype/stories/example.md 「1. 첫 출동」 — 괴수 출현과 첫 조사 출동",
+          "중간 · 압류 속 현장 조사 (「2. 긴급 피해 조사 명령」, settings.characters.dusik.financialStatus)",
+          "[?] 폭로의 계기와 증거 사슬 — 미확정",
+          "진엔딩 · settings.characters.dusik.trueEnding"
+        ],
+        "mermaid": "flowchart LR\n  S[\"시작 · example.md 첫 출동\"] --> M1[\"압류 속 현장 조사\"]\n  M1 -.-> Q[\"?\"]\n  Q -.-> E[\"진엔딩 · 누명 탈출과 히어로 복귀\"]"
+      },
+      "ru": {
+        "endNodeRef": "settings.characters.ru.trueEnding",
+        "steps": [
+          "시작 · prototype/stories/example.md 「1. 첫 출동」 — 회사 직원으로 출동 대기",
+          "중간 · 회사 생활 (chronology: 게임 시작 시점)",
+          "중간 · 시퍼 발견 (chronology: 시점 미지정)",
+          "[?] 재통합의 계기 — 미확정",
+          "진엔딩 · settings.characters.ru.trueEnding"
+        ],
+        "mermaid": "flowchart LR\n  S[\"시작 · example.md 첫 출동\"] --> M1[\"회사 생활\"] --> M2[\"시퍼 발견\"]\n  M2 -.-> Q[\"?\"]\n  Q -.-> E[\"진엔딩 · 재통합과 군단 소환\"]"
+      },
+      "banjang": {
+        "endNodeRef": "settings.characters.banjang.trueEnding",
+        "steps": [
+          "시작 · prototype/stories/example.md 「1. 첫 출동」",
+          "중간 · 협회에 별도 감시 보고서 제출 (settings.characters.banjang.hiddenActivity, 비공개)",
+          "[?] 배태산의 수장급 정체를 캐내는 조사 경로 — 미확정",
+          "진엔딩 · settings.characters.banjang.trueEnding"
+        ],
+        "mermaid": "flowchart LR\n  S[\"시작 · example.md 첫 출동\"] --> M1[\"감시 보고서 · 비공개\"]\n  M1 -.-> Q[\"?\"]\n  Q -.-> E[\"진엔딩 · 배태산 정체 폭로\"]"
+      },
+      "taesan": {
+        "endNodeRef": "settings.characters.taesan.trueEnding",
+        "steps": [
+          "배경 · 도래 소환과 루시퍼 힘 추출 계획 (settings.characters.taesan.secretScheme, chronology 6개월 전 — 이야기 시작 전)",
+          "시작 · prototype/stories/example.md 「1. 첫 출동」 — 회사 인물로 합류",
+          "중간 · 시퍼 발견 (chronology: 시점 미지정)",
+          "[?] 시퍼 처리와 루 감금 실행 — 미확정",
+          "진엔딩 · settings.characters.taesan.trueEnding"
+        ],
+        "mermaid": "flowchart LR\n  B[\"배경 · 소환과 힘 추출 · 게임 시작 전\"] -.-> S[\"시작 · example.md 첫 출동\"]\n  S --> M1[\"시퍼 발견\"]\n  M1 -.-> Q[\"?\"]\n  Q -.-> E[\"진엔딩 · 시퍼 사망과 루 실험실 감금\"]"
+      }
     }
   }
 }
