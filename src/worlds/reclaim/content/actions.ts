@@ -245,7 +245,7 @@ export const ACTIONS_TEXT: Readonly<Record<ActionId, ActionText>> = {
   gate_dispatch: {
     id: "gate_dispatch",
     label: "루를 최종 정리에 파견한다",
-    deny: "루가 시퍼의 존재를 모른다 — 그는 손을 들지 않는다",
+    deny: "아직 그 방향으로 나설 근거가 없다 — 루는 손을 들지 않는다",
     result: "루가 먼저 손을 들었다. 나는 이유를 물었지만 답을 듣지 못했다.",
   },
   gate_hold: {
