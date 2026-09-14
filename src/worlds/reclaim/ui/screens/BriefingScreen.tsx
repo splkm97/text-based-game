@@ -38,7 +38,7 @@ export function BriefingScreen({ job }: BriefingScreenProps) {
           <Prose text={lead} />
         </div>
       )}
-      <BriefingPanel document={job.briefing.document} />
+      <BriefingPanel document={job.briefing.document} fill />
       {job.briefing.talk.length > 0 && (
         <ul aria-label="공문 대사" className={`flex flex-col ${INNER_GAP}`}>
           {job.briefing.talk.map((line) => (
