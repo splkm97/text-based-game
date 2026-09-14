@@ -180,7 +180,7 @@ export const ACTIONS_TEXT: Readonly<Record<ActionId, ActionText>> = {
   cleanup_finish: {
     id: "cleanup_finish",
     label: "뒷정리를 마치고 현장으로 들어선다",
-    deny: "지침의 작업이 남아 있다 — 네 작업을 모두 마쳐야 현장에 선다",
+    deny: "지침의 작업이 남아 있다 — 지침서가 정한 작업을 다 마쳐야 현장에 선다",
     result:
       "뒷정리를 마치고 현장 안쪽으로 들어선다. 손에 남은 것은 지침서 사본과, 아직 아무것도 적히지 않은 보고용지다.",
   },
