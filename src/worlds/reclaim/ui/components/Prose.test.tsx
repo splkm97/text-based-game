@@ -142,6 +142,20 @@ test("지문 키는 문면마다 다르고 같은 문면이면 같다", () => {
   expect(lineKey(RU_TEXT)).toMatch(/^[0-9a-f]{8}$/);
 });
 
+test("목소리 규칙은 서체만 들고 있다 — 크기는 자리(호출부 클래스)가 정한다", () => {
+  // 이 분리가 없던 동안 루의 줄은 격자에서도 18px이었다: voice 클래스의 font-size가 호출부의
+  // text-xs를 이겼다. className만 보는 단언은 그 어긋남을 못 잡으므로 CSS 계약을 직접 건다.
+  const voice = REVEAL_CSS.slice(REVEAL_CSS.indexOf(".reclaim-voice-ru {"));
+  const voiceRule = voice.slice(0, voice.indexOf("}"));
+  expect(voiceRule).toContain("font-family");
+  expect(voiceRule, "voice 규칙이 크기를 들면 자리별 크기가 무시된다").not.toContain("font-size");
+  // 크기는 지문 자리 전용 클래스가 나른다.
+  expect(REVEAL_CSS).toContain(".reclaim-voice-ru.reclaim-voice-lg");
+  expect(REVEAL_CSS.slice(REVEAL_CSS.indexOf(".reclaim-voice-ru.reclaim-voice-lg"))).toContain(
+    "font-size",
+  );
+});
+
 test("키프레임·모션 최소화·레이어 승격 금지", () => {
   expect(REVEAL_CSS).toContain("@keyframes reclaim-reveal");
   expect(REVEAL_CSS).toContain("blur(");
