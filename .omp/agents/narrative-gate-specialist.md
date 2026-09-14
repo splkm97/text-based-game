@@ -12,7 +12,7 @@ Report shape: `Gate`, `Status` (PASS/FAIL/UNVERIFIABLE), `Reason`, `Score` (0-10
 
 ## Assigned gate
 
-`GATE=<NN>` 입력을 받는다. `GATE`가 없거나 `G01`~`G27` 밖이면 `input-blocked`로 처리하고 파일을 쓰지 않는다. 담당 게이트의 제목·판정 범위·`Required output`·추가 점수는 `.omp/narrative-gate-rubrics.md`의 해당 항목에서 읽는다. 루브릭에 없는 게이트를 발명하지 않는다.
+`GATE=<NN>` 입력을 받는다. `GATE`가 없거나 `G01`~`G27` 밖이면 `input-blocked`로 처리하고 파일을 쓰지 않는다. 담당 게이트의 제목·판정 범위·`Required output`·추가 점수는 `.omp/narrative-gate-rubrics.md`의 해당 항목에서 읽는다(이 루브릭과 `.omp/skills/_baseline/**`는 계약 정본이라 스냅샷 대상이 아니며 제자리에서 읽는다). 루브릭에 없는 게이트를 발명하지 않는다.
 
 ## Shared status rule
 Use one status rule across all specialists: unresolved `Critical` or `Major` finding in this gate => `FAIL`; missing evidence for a core judgment => `UNVERIFIABLE`; otherwise => `PASS` when the gate's acceptance conditions are met. A score such as 60 does not by itself decide status. Minor findings may coexist with `PASS`, but must remain in `Findings` and `Required revisions`. Never use `UNVERIFIABLE` to hide a supported failure or `FAIL` to punish missing scope outside the assigned gate.
