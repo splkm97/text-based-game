@@ -41,14 +41,20 @@ export const NARRATOR_CADENCE: Cadence = {
   ellipsisPause: 0,
 };
 
-/** 루의 박자 — 단어 사이가 세 배쯤 길고, 끊긴 조각마다 멈춘다. */
+/** 루의 박자 — 단어 사이가 세 배쯤 길고, 끊긴 조각마다 멈춘다(여전히 가장 느리다). */
 export const RU_CADENCE: Cadence = {
-  wordMs: 520,
-  stagger: 44,
-  staggerGrowth: 0.9,
+  wordMs: 480,
+  stagger: 38,
+  staggerGrowth: 0.8,
   growthCap: 24,
-  ellipsisPause: 340,
+  ellipsisPause: 260,
 };
+
+/**
+ * 사람들 화면(田자 창문)의 차례 시차(ms) — 아침 조회처럼 창문이 하나씩 이어서 뜬다.
+ * 네 창문이 동시에 차오르면 "조회"가 아니라 "로딩"으로 읽힌다.
+ */
+export const ROLL_CALL_STEP_MS = 220;
 
 /** 그 문단의 단어 시차(ms) — 길수록 느리다(성장 상한까지). */
 export const staggerFor = (wordCount: number, cadence: Cadence): number =>

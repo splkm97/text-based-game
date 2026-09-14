@@ -20,15 +20,20 @@ type VoicedLineProps = {
    * 문단 나눔을 살린다). 자리에 따라 무게가 다르므로 문면의 클래스는 여기서 정한다.
    */
   readonly mode?: "line" | "prose";
+  /**
+   * 차례 시차(ms)를 주면 이 문면도 뜬다 — 사람들 화면이 창문을 하나씩 세울 때 쓴다.
+   * 주지 않으면 대사 줄은 조용히 앉는다(움직이는 목소리는 루의 표식).
+   */
+  readonly startDelay?: number;
 };
 
-export function VoicedLine({ character, text, mode = "line" }: VoicedLineProps) {
+export function VoicedLine({ character, text, mode = "line", startDelay }: VoicedLineProps) {
   const taken = useRunStore(
     (state) => state.run?.cutLines.find((line) => line.key === lineKey(text))?.words ?? null,
   );
   const cutLine = useRunStore((state) => state.cutLine);
   // 대사 줄 자리에서 목소리 연출이 없는 사람은 정지한 한 줄로 앉는다(움직이는 목소리는 루의 표식).
-  if (mode === "line" && !performsVoice(character)) {
+  if (mode === "line" && startDelay === undefined && !performsVoice(character)) {
     return <p className={MUTED}>{text}</p>;
   }
   return (
@@ -36,6 +41,7 @@ export function VoicedLine({ character, text, mode = "line" }: VoicedLineProps) 
       text={text}
       voice={character}
       {...(mode === "line" ? { className: MUTED } : {})}
+      {...(startDelay === undefined ? {} : { startDelay })}
       {...(performsVoice(character)
         ? { cut: { taken, onCut: (words) => cutLine(lineKey(text), words) } }
         : {})}

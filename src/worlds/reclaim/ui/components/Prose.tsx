@@ -32,16 +32,18 @@ type ProseProps = {
   readonly className?: string;
   /** 끊을 수 있는 문면이면 넘긴다(루의 목소리). */
   readonly cut?: CutHandle;
+  /** 이 문면이 뜨기 시작하는 시각(ms) — 여러 문면이 차례로 뜰 때의 시차. */
+  readonly startDelay?: number;
 };
 
-export function Prose({ text, voice, className, cut }: ProseProps) {
+export function Prose({ text, voice, className, cut, startDelay = 0 }: ProseProps) {
   const cadence = cadenceFor(voice);
   const paragraphs = text.split("\n\n");
   const delays = schedule(paragraphs, cadence);
   const started = useRef(Date.now());
   const [grown, setGrown] = useState(false);
   const [settled, setSettled] = useState(false);
-  const total = (delays.at(-1)?.at(-1) ?? 0) + cadence.wordMs;
+  const total = startDelay + (delays.at(-1)?.at(-1) ?? 0) + cadence.wordMs;
   const block = `${className ?? PROSE}${voice === "ru" ? " reclaim-voice-ru" : ""}`;
 
   // 자라는 것은 마운트 뒤 한 번 뒤집어야 CSS 전환이 걸린다(첫 프레임은 0fr로 그린다).
@@ -71,7 +73,9 @@ export function Prose({ text, voice, className, cut }: ProseProps) {
           type="button"
           className={`inline-flex min-h-11 items-center self-end px-2 ${META} underline`}
           onClick={() =>
-            cut.onCut(Math.max(settledWords(delays, cadence, Date.now() - started.current), 1))
+            cut.onCut(
+              Math.max(settledWords(delays, cadence, Date.now() - started.current - startDelay), 1),
+            )
           }
         >
           말을 끊는다
@@ -82,7 +86,7 @@ export function Prose({ text, voice, className, cut }: ProseProps) {
         style={{ "--reclaim-word-ms": `${cadence.wordMs}ms` } as CSSProperties}
       >
         {paragraphs.map((paragraph, index) => {
-          const start = delays[index]?.[0] ?? 0;
+          const start = startDelay + (delays[index]?.[0] ?? 0);
           const span = Math.max((delays[index]?.at(-1) ?? start) - start + cadence.wordMs, 1);
           const words: ReactNode[] = paragraph.split(" ").flatMap((word, wordIndex) => {
             const span_ = (
@@ -90,7 +94,7 @@ export function Prose({ text, voice, className, cut }: ProseProps) {
                 // biome-ignore lint/suspicious/noArrayIndexKey: 문단·단어 위치가 곧 서열이다(문면은 불변).
                 key={`${index}-${wordIndex}`}
                 className="reclaim-reveal-word"
-                style={{ animationDelay: `${delays[index]?.[wordIndex] ?? 0}ms` }}
+                style={{ animationDelay: `${startDelay + (delays[index]?.[wordIndex] ?? 0)}ms` }}
               >
                 {word}
               </span>

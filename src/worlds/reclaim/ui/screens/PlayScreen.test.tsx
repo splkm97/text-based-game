@@ -817,16 +817,23 @@ test("사람들 화면은 네 사람을 田자 창문 격자로 세운다 — �
     const pane = windowOf(character);
     const name = CONTENT.characters[character].name;
     const label = CONTENT.actions[`talk_${character}`].label;
-    // 창문은 격자의 칸(li)이고 2px 프레임을 두른다 — 버튼이 아니라 프레임이다(안에 문단이 산다).
+    // 창문은 격자의 칸(li)이고 그 안의 상자가 2px 명패 프레임을 두른다(창문 자체는 버튼이 아니다).
     expect(pane.tagName).toBe("LI");
-    expect(pane.className).toContain("border-2");
+    expect(pane.firstElementChild?.className).toContain("border-2");
     // 창문마다 초상 한 장 — 얼굴이 면담보다 먼저 걸린다(초상 → 이름 → 잡담 → 말 걸기).
     expect(
       [...pane.querySelectorAll("svg[role='img']")].map((svg) => svg.getAttribute("aria-label")),
       `${name}의 초상`,
     ).toEqual([name]);
+    // 이름 띠가 먼저 걸리고, 초상은 그 아래 두 칸(초상·잡담)의 왼쪽이다.
+    const nameplate = [...pane.querySelectorAll("span")].find(
+      (element) => element.textContent === name && element.children.length === 0,
+    );
     const portrait = pane.querySelector("svg[role='img']");
-    if (portrait !== null) expect(isBefore(portrait, paragraph(name))).toBe(true);
+    expect(nameplate, `${name}의 이름 띠`).not.toBeUndefined();
+    if (portrait !== null && nameplate !== undefined) {
+      expect(isBefore(nameplate, portrait)).toBe(true);
+    }
     expect(pane.contains(paragraph(chatterOf(job, character)))).toBe(true);
     // 창문 안에서 만질 수 있는 것은 말 걸기 버튼 하나뿐이다 — 컨트롤 최소 높이(44px)를 지킨다.
     const talk = within(pane).getByRole("button", { name: label });
@@ -850,18 +857,31 @@ test("사람들 화면은 네 사람을 田자 창문 격자로 세운다 — �
     isBefore(screen.getByLabelText("현황"), screen.getByRole("region", { name: "행동" })),
   ).toBe(true);
 
-  // 루의 잡담만 단어 span으로 그려진다 — 느린 박자와 다른 서체가 이 화면에서도 보인다.
+  // 네 창문의 잡담이 모두 떠오른다(아침 조회는 한 사람씩 말한다) — 원문은 그대로다.
+  for (const character of CHARACTER_IDS) {
+    const line = paragraph(chatterOf(job, character));
+    const words = [...line.querySelectorAll("span.reclaim-reveal-word")];
+    expect(words, `${character}의 잡담`).toHaveLength(chatterOf(job, character).split(" ").length);
+    expect(words.map((span) => span.textContent).join(" ")).toBe(chatterOf(job, character));
+  }
+  // 그중 **루만** 느린 박자·다른 서체다 — 목소리가 붙는 사람과 아닌 사람이 갈린다.
   const ru = paragraph(chatterOf(job, "ru"));
   expect(ru.className).toContain("reclaim-voice-ru");
-  const words = [...ru.querySelectorAll("span.reclaim-reveal-word")];
-  expect(words).toHaveLength(chatterOf(job, "ru").split(" ").length);
-  expect(words.map((span) => span.textContent).join(" ")).toBe(chatterOf(job, "ru"));
-  // 나머지 셋은 한 줄 문면 그대로다 — 목소리가 붙는 사람과 아닌 사람이 갈린다.
   for (const character of CHARACTER_IDS.filter((id) => id !== "ru")) {
-    const plain = paragraph(chatterOf(job, character));
-    expect(plain.className, `${character}의 잡담`).not.toContain("reclaim-voice-ru");
-    expect(plain.querySelectorAll("span")).toHaveLength(0);
+    expect(paragraph(chatterOf(job, character)).className, `${character}의 잡담`).not.toContain(
+      "reclaim-voice-ru",
+    );
   }
+  // 차례 시차 — 첫 창문은 0ms, 다음 창문들은 그만큼 늦게 시작한다.
+  const starts = CHARACTER_IDS.map((character) => {
+    const span = paragraph(chatterOf(job, character)).querySelector<HTMLElement>(
+      ".reclaim-reveal-word",
+    );
+    return span === null ? -1 : Number.parseFloat(span.style.animationDelay);
+  });
+  expect(starts[0]).toBe(0);
+  expect(starts[1]).toBeGreaterThan(starts[0] ?? 0);
+  expect(starts[3]).toBeGreaterThan(starts[2] ?? 0);
 });
 
 test("오늘 이야기를 나눈 사람에게는 말 걸기 버튼이 서지 않고 거부 문면이 남는다", async () => {
