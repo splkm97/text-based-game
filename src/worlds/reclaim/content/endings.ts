@@ -1,4 +1,4 @@
-// Ending cards of 복구 기록. Pure data: imports only ../types and ../ids.
+// Ending cards of (주) 재해복구 DR. Pure data: imports only ../types and ../ids.
 // Every card narrates the fate of the locked opposing chain as an explicit signal —
 // no chain closes quietly (plan.md §3.5). Secret disclosures follow plan.md §4:
 // the association's summoning is named in true_dusik, ru's identity and origin

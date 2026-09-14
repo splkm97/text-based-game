@@ -35,14 +35,17 @@ export type EnumerationReport = {
 };
 
 /** 고유 상태 수 안전 상한 — 상태 공간 폭발을 테스트 실패(throw)로 만든다.
- * 실측(2026-09-14, TEST_CONTENT, 뒷정리 축 투영 후): ru_first 44,671 · dusik_first 222,940 상태,
- * 각 155ms·765ms. 뒷정리 미니게임이 현장의 등급을 셋으로 갈라 상태가 약 8배가 됐으므로,
- * 상한을 실측 최대의 약 4.5배로 둔다(그 이상은 새 축이 곱해진 폭발로 본다). */
+ * 실측(2026-09-14, TEST_CONTENT, 뒷정리 축 투영 + 아침 조회 축): ru_first 65,775 ·
+ * dusik_first 335,052 상태, 각 260ms·1,432ms. 아침 조회(면담)가 사무실 단계에 축을 더해
+ * 이전 실측(57,855·298,332)에서 약 1.14배가 됐으므로, 상한을 실측 최대의 약 3배로 둔다
+ * (그 이상은 새 축이 곱해진 폭발로 본다). */
 const STATE_LIMIT = 1_000_000;
 
 /** 상태 서명 — 데모 sig()와 같은 역할의 축. log는 경로의 함수라 서명에서 뺀다.
  * 인물 상태 축(fatigue·injured·suspicion·trust)도 뺀다: 가드가 읽는 유일한 인물 축인
  * injured의 분기는 party 축에 대표되므로, 같은 서명의 미래 분기는 동일하게 보존된다.
+ * 면담 응답의 효과(work suspicion−1·comfort trust+1·joke fatigue−1)와 고른 값 자체도
+ * 가드가 읽지 않으므로 뺀다 — 면담에서 미래를 가르는 것은 "응답을 골랐는가"뿐이다.
  * 뒷정리 순서도 단계별로 접어 넣는다(cleanupAxis) — 원시 배열을 그대로 넣으면 순서 24가지가
  * 전 단계에 곱해져 열거가 실측 267k/1.24M로 폭발한다(2026-09-14). */
 const signature = (run: RunState): string =>
@@ -50,6 +53,15 @@ const signature = (run: RunState): string =>
     run.placement,
     run.jobIndex,
     run.jobStep,
+    // 아침 조회의 세 축 — office 단계에서만 값을 갖는다(떠날 때 초기값으로 돌아간다).
+    run.officeStage,
+    // 면담의 미래를 가르는 것은 **응답을 골랐는가**뿐이다: 셋(work·comfort·joke) 중 무엇을
+    // 골랐는지는 어떤 가드도 읽지 않는다(효과는 위에서 뺀 인물 축으로만 간다). 그래서
+    // choice는 고른 값이 아니라 open/answered로 접는다 — close의 require가 그 경계다.
+    run.interview === null
+      ? "-"
+      : `${run.interview.character}:${run.interview.choice === null ? "open" : "answered"}`,
+    [...run.talks].sort().join(","),
     run.chainStep,
     run.terminal,
     run.party.join(","),
@@ -76,7 +88,7 @@ const signature = (run: RunState): string =>
  *   ([sign,power,search] 대 [search,sign,power])가 한 서명으로 접혀, 메모이즈가 대표 하나만
  *   확장해 탐험되는 등급이 ACTION_IDS 반복 순서에 종속된다(리뷰 실측: 48순열 중 44런에서
  *   site 등급이 poor만 발견됨, 2026-09-14). pfx를 더한 뒤에는 48순열 전부가 등급 3종을 덮는다
- *   (실측 ru_first 57,855 · dusik_first 298,332 — 상한 내).
+ *   (실측 ru_first 65,775 · dusik_first 335,052 — 상한 내).
  * - 넷을 다 고른 뒤·현장에서는 **등급**만이 미래를 가른다(위험 선택의 부상).
  * - 그 밖의 단계에서는 어떤 가드도 순서를 읽지 않는다: 다음 뒷정리는 party_go가 비우고 시작한다.
  * 원시 순서 배열을 그대로 넣으면 순서 24가지가 전 단계에 곱해져 열거가 폭발한다

@@ -20,8 +20,10 @@ import {
   CLEANUP_PICK_IDS,
   CleanupTaskPick,
 } from "../components/CleanupTaskPick";
+import { Prose } from "../components/Prose";
 import { StatePanel } from "../components/StatePanel";
 import { useContent } from "../contentContext";
+import { INNER_GAP, META, MUTED, SCREEN_PAD, SECTION_GAP } from "../density";
 import { useRunStore } from "../runStoreContext";
 
 type CleanupScreenProps = {
@@ -36,25 +38,26 @@ export function CleanupScreen({ run, job }: CleanupScreenProps) {
   const act = useRunStore((state) => state.act);
   const decisions = available.filter((id) => !CLEANUP_PICK_IDS.includes(id));
   return (
-    <section aria-label="뒷정리" className="flex flex-1 flex-col gap-3 p-3">
+    <section aria-label="뒷정리" className={`flex flex-1 flex-col ${SECTION_GAP} ${SCREEN_PAD}`}>
       <h2 className="text-base text-parchment">{job.title}</h2>
       <BriefingPanel document={job.site.document} />
-      <p className="whitespace-pre-line text-sm leading-prose text-parchment">
-        {job.cleanup.prompt}
-      </p>
+      <Prose text={job.cleanup.prompt} />
       {run.cleanupPicks.length > 0 && (
-        <section aria-label="고른 순서" className="border-2 border-slate bg-ink-deep p-2">
-          <h3 className="text-xs text-ash">고른 순서</h3>
-          <ol className="flex list-decimal flex-col gap-1 pl-5">
+        <section
+          aria-label="고른 순서"
+          className={`flex flex-col ${INNER_GAP} border-t border-slate pt-2`}
+        >
+          <h3 className={META}>고른 순서</h3>
+          <ol className={`flex list-decimal flex-col ${INNER_GAP} pl-5`}>
             {run.cleanupPicks.map((task) => (
-              <li key={task} className="text-sm text-parchment">
+              <li key={task} className={MUTED}>
                 {content.cleanupTasks[task]}
               </li>
             ))}
           </ol>
         </section>
       )}
-      <ul aria-label="작업" className="flex flex-col gap-2">
+      <ul aria-label="작업" className={`flex flex-col ${INNER_GAP}`}>
         {CLEANUP_DISPLAY_ORDER.map((task) => {
           const order = run.cleanupPicks.indexOf(task);
           return (

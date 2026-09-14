@@ -14,6 +14,61 @@ export const ACTIONS_TEXT: Readonly<Record<ActionId, ActionText>> = {
     result: "두식이 자기 압류 통지서를 꺼냈다. 협회 공문은 여전히 매일 아침 온다.",
   },
 
+  office_next: {
+    id: "office_next",
+    label: "사무실을 둘러본다",
+    deny: "이미 자리를 살폈다 — 사람들이 각자 할 일을 하고 있다",
+    result: "커피잔을 명단 위에서 치우고 자리에서 일어난다. 사무실이 한 걸음 멀어진다.",
+  },
+  talk_dusik: {
+    id: "talk_dusik",
+    label: "강두식에게 말을 건다",
+    deny: "오늘은 이미 이야기를 나눴다 — 그는 다시 서류로 눈을 내린다",
+    result: "강두식이 서류에서 눈을 떼고 이쪽을 본다.",
+  },
+  talk_ru: {
+    id: "talk_ru",
+    label: "루에게 말을 건다",
+    deny: "오늘은 이미 이야기를 나눴다 — 그녀는 지도 모서리만 만지고 있다",
+    result: "루가 반쯤 접힌 지도를 내려놓고 고개를 든다.",
+  },
+  talk_banjang: {
+    id: "talk_banjang",
+    label: "최 반장에게 말을 건다",
+    deny: "오늘은 이미 이야기를 나눴다 — 그는 명부를 다시 펼친다",
+    result: "최 반장이 명부를 덮고 자세를 고쳐 앉는다.",
+  },
+  talk_taesan: {
+    id: "talk_taesan",
+    label: "배태산에게 말을 건다",
+    deny: "오늘은 이미 이야기를 나눴다 — 그는 커피만 젓고 있다",
+    result: "배태산이 커피를 내려놓고 의자를 이쪽으로 돌린다.",
+  },
+  interview_reply_work: {
+    id: "interview_reply_work",
+    label: "일을 묻는다",
+    deny: "대답은 이미 들었다 — 같은 질문을 두 번 하지는 않는다",
+    result: "일 얘기로 물었더니, 돌아오는 말도 일 얘기다.",
+  },
+  interview_reply_comfort: {
+    id: "interview_reply_comfort",
+    label: "사정을 묻는다",
+    deny: "대답은 이미 들었다 — 사정은 한 번만 묻는 것이 예의다",
+    result: "사정을 묻자, 잠깐의 침묵 뒤에 대답이 온다.",
+  },
+  interview_reply_joke: {
+    id: "interview_reply_joke",
+    label: "농담으로 넘긴다",
+    deny: "대답은 이미 들었다 — 농담은 한 번이어야 농담이다",
+    result: "농담이 사무실 공기에 잠깐 얹혔다가, 원래 밀도로 돌아간다.",
+  },
+  interview_close: {
+    id: "interview_close",
+    label: "면담을 마친다",
+    deny: "아직 대답을 듣지 않았다 — 이야기는 끝나지 않았다",
+    result: "의자를 물리고 일어선다. 사무실 소리가 원래 크기로 돌아온다.",
+  },
+
   office_printer: {
     id: "office_printer",
     label: "프린터에서 공문을 뽑는다",

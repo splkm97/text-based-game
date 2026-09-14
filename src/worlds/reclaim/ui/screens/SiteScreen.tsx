@@ -10,7 +10,9 @@ import type { JobCard, RunState } from "../../types";
 import { ActionList } from "../components/ActionList";
 import { BriefingPanel } from "../components/BriefingPanel";
 import { PartyRow } from "../components/PartyRow";
+import { Prose } from "../components/Prose";
 import { StatePanel } from "../components/StatePanel";
+import { INNER_GAP, SCREEN_PAD, SECTION_GAP } from "../density";
 import { useRunStore } from "../runStoreContext";
 
 type SiteScreenProps = {
@@ -24,12 +26,12 @@ export function SiteScreen({ run, job }: SiteScreenProps) {
   const act = useRunStore((state) => state.act);
   const partyLines = job.site.partyLines.filter((line) => run.party.includes(line.character));
   return (
-    <section aria-label="현장" className="flex flex-1 flex-col gap-3 p-3">
+    <section aria-label="현장" className={`flex flex-1 flex-col ${SECTION_GAP} ${SCREEN_PAD}`}>
       <h2 className="text-base text-parchment">{job.site.title}</h2>
       <BriefingPanel document={job.site.document} />
-      <p className="whitespace-pre-line text-sm leading-prose text-parchment">{job.site.prompt}</p>
+      <Prose text={job.site.prompt} />
       {partyLines.length > 0 && (
-        <ul aria-label="동행" className="flex flex-col gap-2">
+        <ul aria-label="동행" className={`flex flex-col ${INNER_GAP}`}>
           {partyLines.map((line) => (
             <PartyRow key={line.character} character={line.character} text={line.text} />
           ))}

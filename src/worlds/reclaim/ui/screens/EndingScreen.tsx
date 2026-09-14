@@ -4,7 +4,9 @@
 
 import type { WorldRootProps } from "../../../../host/world";
 import { Button } from "../../../../shared/ui/Button";
+import { Prose } from "../components/Prose";
 import { useContent } from "../contentContext";
+import { INNER_GAP, META, SCREEN_PAD, SECTION_GAP } from "../density";
 import { useRunStore } from "../runStoreContext";
 import { useScreenStore } from "../screenStore";
 
@@ -21,17 +23,17 @@ export function EndingScreen({ onExit }: WorldRootProps) {
   const ending = content.endings[terminal];
 
   return (
-    <section aria-label="종결" className="flex flex-1 flex-col gap-4 p-4">
+    <section aria-label="종결" className={`flex flex-1 flex-col ${SECTION_GAP} ${SCREEN_PAD}`}>
       <h2 className="text-base text-ember">{ending.title}</h2>
-      <p className="text-sm leading-prose text-parchment">{ending.text}</p>
-      <ul aria-label="에필로그" className="flex flex-col gap-2">
+      <Prose text={ending.text} />
+      <ul aria-label="에필로그" className={`flex flex-col ${INNER_GAP}`}>
         {ending.epilogue.map((line) => (
-          <li key={line} className="text-xs leading-prose text-ash">
+          <li key={line} className={META}>
             · {line}
           </li>
         ))}
       </ul>
-      <nav aria-label="종결 메뉴" className="mt-auto flex flex-col gap-2 pt-4">
+      <nav aria-label="종결 메뉴" className={`mt-auto flex flex-col ${INNER_GAP} pt-4`}>
         <Button
           variant="primary"
           block

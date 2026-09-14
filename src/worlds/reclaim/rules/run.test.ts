@@ -3,7 +3,7 @@
 // 배치 라우팅, 라디오 아침, 종결 단방향, 상한·하한 단조성.
 
 import { describe, expect, test } from "vitest";
-import type { ActionId, CleanupTaskId } from "../ids";
+import type { ActionId, CharacterId, CleanupTaskId, TalkChoice } from "../ids";
 import { ACTION_IDS, CLEANUP_TASK_IDS } from "../ids";
 import type { RunState } from "../types";
 import {
@@ -48,6 +48,9 @@ describe("startRun — 시작 상태 계약(표 「공통」)", () => {
     expect(run.placement).toBe("ru_first");
     expect(run.jobIndex).toBe(0);
     expect(run.jobStep).toBe("office");
+    expect(run.officeStage).toBe("scene");
+    expect(run.talks).toEqual([]);
+    expect(run.interview).toBeNull();
     expect(run.party).toEqual([]);
     expect(run.characters).toEqual(zeroCharacters());
     expect(run.pendingChain).toEqual([]);
@@ -62,15 +65,17 @@ describe("startRun — 시작 상태 계약(표 「공통」)", () => {
     expect(startRun(TEST_CONTENT, "dusik_first").placement).toBe("dusik_first");
   });
 
-  test("시작 사무실에서 열리는 액션은 프린터 하나뿐이다", () => {
-    expect(availableActions(startRun(TEST_CONTENT))).toEqual(["office_printer"]);
+  test("시작 사무실은 산문 화면이다 — 열리는 액션은 사람들 쪽으로 건너가는 하나뿐이다", () => {
+    expect(availableActions(startRun(TEST_CONTENT))).toEqual(["office_next"]);
   });
 });
 
 describe("사무실 → 공문 → 인원 선택 → 뒷정리 → 현장 — 모든 일감이 같은 순서를 탄다", () => {
   test("첫 일감의 다섯 단계를 지나 완료하면 다음 일감 사무실에 선다", () => {
     let run = startRun(TEST_CONTENT);
-    expect(availableActions(run)).toEqual(["office_printer"]);
+    expect(availableActions(run)).toEqual(["office_next"]);
+    run = act(run, "office_next");
+    expect(run.officeStage).toBe("people");
     run = act(run, "office_printer");
     expect(run.jobStep).toBe("briefing");
     expect(availableActions(run)).toEqual(["briefing_ack"]);
@@ -102,9 +107,15 @@ describe("사무실 → 공문 → 인원 선택 → 뒷정리 → 현장 — �
     expect(run.jobIndex).toBe(1);
     expect(run.jobStep).toBe("office");
     expect(run.party).toEqual([]);
-    // 둘째 일감 사무실 — 파견 선택이 함께 열린다
+    // 둘째 일감 사무실 — 산문 화면에서는 여전히 하나뿐이고, 사람들 화면에서 파견 선택이 열린다
+    expect(availableActions(run)).toEqual(["office_next"]);
+    run = act(run, "office_next");
     expect(availableActions(run)).toEqual([
       "office_printer",
+      "talk_dusik",
+      "talk_ru",
+      "talk_banjang",
+      "talk_taesan",
       "dispatch_send_taesan",
       "dispatch_send_other",
     ]);
@@ -115,6 +126,7 @@ describe("사무실 → 공문 → 인원 선택 → 뒷정리 → 현장 — �
 
   test("로그에는 액션이 일어난 일감 위치와 결과 문면이 남는다", () => {
     let run = startRun(TEST_CONTENT);
+    run = act(run, "office_next");
     run = act(run, "office_printer");
     run = act(run, "briefing_ack");
     run = act(run, "party_pick_ru");
@@ -122,12 +134,16 @@ describe("사무실 → 공문 → 인원 선택 → 뒷정리 → 현장 — �
     run = act(run, "cleanup_pick_sign");
     run = cleanupThrough(run, ["power", "search", "photo"]);
     run = act(run, "call_respond");
-    expect(run.log).toHaveLength(10);
+    expect(run.log).toHaveLength(11);
     expect(run.log[0]).toEqual({
+      place: { kind: "job", job: "gwanak" },
+      text: "결과 office_next",
+    });
+    expect(run.log[1]).toEqual({
       place: { kind: "job", job: "gwanak" },
       text: "결과 office_printer",
     });
-    expect(run.log[4]).toEqual({
+    expect(run.log[5]).toEqual({
       place: { kind: "job", job: "gwanak" },
       text: "결과 cleanup_pick_sign",
     });
@@ -135,6 +151,154 @@ describe("사무실 → 공문 → 인원 선택 → 뒷정리 → 현장 — �
       place: { kind: "job", job: "gwanak" },
       text: "결과 call_respond",
     });
+  });
+});
+
+describe("아침 조회(면회실) — 장면 → 사람들 → 면담(응답 셋) → 프린터", () => {
+  /** 사람들 화면에 선 회차 — 면담·프린터·파견이 모두 이 화면에서 나간다. */
+  const atPeople = (overrides: Partial<RunState> = {}): RunState =>
+    makeRun({ jobStep: "office", officeStage: "people", ...overrides });
+
+  const REPLY: Readonly<Record<TalkChoice, ActionId>> = {
+    work: "interview_reply_work",
+    comfort: "interview_reply_comfort",
+    joke: "interview_reply_joke",
+  };
+
+  /** 면담 하나를 연 상태에서 응답 하나를 고른 회차 — apply가 한 번만 지나간다. */
+  const replied = (
+    character: CharacterId,
+    choice: TalkChoice,
+    overrides: Partial<RunState> = {},
+  ): RunState =>
+    act(atPeople({ interview: { character, choice: null }, ...overrides }), REPLY[choice]);
+
+  test("(a) 다섯 걸음이 이어진다 — 장면 → 사람들 → 면담 → 응답 → 닫기 → 프린터", () => {
+    let run = startRun(TEST_CONTENT);
+    expect(availableActions(run)).toEqual(["office_next"]);
+    run = act(run, "office_next");
+    expect(run.officeStage).toBe("people");
+    run = act(run, "talk_ru");
+    expect(run.interview).toEqual({ character: "ru", choice: null });
+    run = act(run, "interview_reply_comfort");
+    expect(run.interview).toEqual({ character: "ru", choice: "comfort" });
+    run = act(run, "interview_close");
+    expect(run.interview).toBeNull();
+    expect(run.talks).toEqual(["ru"]);
+    run = act(run, "office_printer");
+    expect(run.jobStep).toBe("briefing");
+  });
+
+  test("(b) 하루 한 번 — 말을 걸면 그 사람은 오늘의 명단에 들고, 다시 두드리면 거부 문면이 답한다", () => {
+    const talking = act(atPeople(), "talk_ru");
+    // 면담이 열려 있는 동안에는 다른 사람의 문도 닫힌다 — 갈아 끼우면 앞 대화가 응답 없이 버려진다.
+    expect(availableActions(talking)).not.toContain("talk_ru");
+    expect(availableActions(talking)).not.toContain("talk_dusik");
+    const talked = act(act(talking, "interview_reply_work"), "interview_close");
+    expect(talked.talks).toEqual(["ru"]);
+    const again = applyAction(talked, "talk_ru", TEST_CONTENT);
+    expect(again.ok).toBe(false);
+    expect(again.reason).toBe(TEST_CONTENT.actions.talk_ru.deny); // "오늘은 이미 이야기를 나눴다…"
+    expect(again.run).toBe(talked);
+    expect(availableActions(talked)).toContain("talk_ru"); // 버튼은 남고 require가 사유를 답한다
+    expect(applyAction(talked, "talk_dusik", TEST_CONTENT).ok).toBe(true); // 다른 사람은 열린다
+  });
+
+  test("(c) 응답 셋의 효과는 그 상대에게만 간다 — work suspicion−1 · comfort trust+1 · joke fatigue−1", () => {
+    const characters = {
+      ...zeroCharacters(),
+      dusik: { fatigue: 2, injured: false, suspicion: 0, trust: 0 },
+      ru: { fatigue: 0, injured: false, suspicion: 3, trust: 0 },
+    };
+    const work = replied("dusik", "work", { characters });
+    expect(work.characters.dusik.suspicion).toBe(0); // 0 하한 — 이미 0이다
+    expect(work.characters.ru.suspicion).toBe(3); // 다른 사람은 그대로다
+    expect(work.characters.dusik).toEqual({
+      fatigue: 2,
+      injured: false,
+      suspicion: 0,
+      trust: 0,
+    });
+    expect(replied("ru", "work", { characters }).characters.ru.suspicion).toBe(2); // 3 − 1
+
+    const comfort = replied("dusik", "comfort", { characters });
+    expect(comfort.characters.dusik.trust).toBe(1);
+    expect(comfort.characters.ru.trust).toBe(0);
+    expect(comfort.characters.dusik.fatigue).toBe(2); // 다른 축은 건드리지 않는다
+
+    expect(replied("ru", "joke", { characters }).characters.ru.fatigue).toBe(0); // 0 하한
+    expect(replied("dusik", "joke", { characters }).characters.dusik.fatigue).toBe(1); // 2 − 1
+    expect(replied("dusik", "joke", { characters }).characters.ru.fatigue).toBe(0);
+  });
+
+  test("(d) 면담 밖의 응답과 응답 없는 닫기는 거부된다 — 사유는 그 카드의 문면", () => {
+    const outside = atPeople();
+    const replies: readonly ActionId[] = [
+      "interview_reply_work",
+      "interview_reply_comfort",
+      "interview_reply_joke",
+      "interview_close",
+    ];
+    for (const id of replies) {
+      const outcome = applyAction(outside, id, TEST_CONTENT);
+      expect(outcome.ok, `${id}가 면담 밖에서 성사됐다`).toBe(false);
+      expect(outcome.reason).toBe(TEST_CONTENT.actions[id].deny);
+      expect(outcome.run).toBe(outside); // 상태를 그대로 돌려준다
+    }
+    const open = act(outside, "talk_banjang");
+    const unanswered = applyAction(open, "interview_close", TEST_CONTENT);
+    expect(unanswered.ok).toBe(false);
+    expect(unanswered.reason).toBe(TEST_CONTENT.actions.interview_close.deny); // "아직 대답을 듣지 않았다…"
+    expect(unanswered.run).toBe(open);
+    const answered = act(open, "interview_reply_joke");
+    expect(answered.interview).toEqual({ character: "banjang", choice: "joke" });
+    const twice = applyAction(answered, "interview_reply_joke", TEST_CONTENT);
+    expect(twice.ok).toBe(false);
+    expect(twice.reason).toBe(TEST_CONTENT.actions.interview_reply_joke.deny);
+    expect(answered.characters.banjang.fatigue).toBe(0); // 효과는 한 번만 남는다
+  });
+
+  test("(e) 사무실 밖 불변식 — 나가는 다섯 문 전부가 세 축을 초기값으로 되돌린다", () => {
+    const exits: readonly (readonly [RunState, ActionId])[] = [
+      [atPeople(), "office_printer"],
+      [atPeople({ jobIndex: 1 }), "dispatch_send_taesan"],
+      [atPeople({ jobIndex: 1 }), "dispatch_send_other"],
+      [atPeople({ jobIndex: 2 }), "radio_morning_on"],
+      [atPeople({ jobIndex: 2 }), "radio_business_only"],
+    ];
+    for (const [before, id] of exits) {
+      const left = act(before, id);
+      expect(left.jobStep, id).toBe("briefing");
+      expect([left.officeStage, left.talks, left.interview], id).toEqual(["scene", [], null]);
+    }
+    // 면담까지 마친 회차도 같다 — 오늘의 명단은 사무실 안에서만 뜻이 있다.
+    const talked = act(
+      act(act(act(startRun(TEST_CONTENT), "office_next"), "talk_taesan"), "interview_reply_joke"),
+      "interview_close",
+    );
+    expect(talked.talks).toEqual(["taesan"]);
+    const out = act(talked, "office_printer");
+    expect([out.officeStage, out.talks, out.interview]).toEqual(["scene", [], null]);
+  });
+
+  test("면담 중에는 사무실의 다른 문이 전부 닫힌다 — 두 화면이 겹치지 않는다", () => {
+    const doors: readonly ActionId[] = [
+      "office_next",
+      "office_printer",
+      "dispatch_send_taesan",
+      "dispatch_send_other",
+      "radio_morning_on",
+      "radio_business_only",
+    ];
+    const open = act(
+      atPeople({ jobIndex: 2, dispatchTaesan: true, officeStage: "people" }),
+      "talk_dusik",
+    );
+    expect(open.interview).toEqual({ character: "dusik", choice: null });
+    for (const id of doors) {
+      expect(availableActions(open), `${id}가 면담 화면 위로 샜다`).not.toContain(id);
+      expect(applyAction(open, id, TEST_CONTENT).ok, id).toBe(false);
+    }
   });
 });
 
@@ -389,13 +553,13 @@ describe("배치 delta — 관문과 수신자 무대의 순서가 갈린다", (
 describe("라디오 아침 — hq 사무실은 프린터 대신 라디오 두 갈래다", () => {
   test("파견됐으면 radio_morning_on이 좌표를 적고, 아니면 흘려보낸다", () => {
     const dispatched = act(
-      makeRun({ jobIndex: 2, jobStep: "office", dispatchTaesan: true }),
+      makeRun({ jobIndex: 2, jobStep: "office", officeStage: "people", dispatchTaesan: true }),
       "radio_morning_on",
     );
     expect(dispatched.broadcast).toBe(true);
     expect(dispatched.jobStep).toBe("briefing");
     const stayed = act(
-      makeRun({ jobIndex: 2, jobStep: "office", dispatchTaesan: false }),
+      makeRun({ jobIndex: 2, jobStep: "office", officeStage: "people", dispatchTaesan: false }),
       "radio_morning_on",
     );
     expect(stayed.broadcast).toBe(false);
@@ -403,7 +567,7 @@ describe("라디오 아침 — hq 사무실은 프린터 대신 라디오 두 �
 
   test("radio_business_only는 좌표를 흘려보낸다 — broadcast는 false로 남는다", () => {
     const run = act(
-      makeRun({ jobIndex: 2, jobStep: "office", dispatchTaesan: true }),
+      makeRun({ jobIndex: 2, jobStep: "office", officeStage: "people", dispatchTaesan: true }),
       "radio_business_only",
     );
     expect(run.broadcast).toBe(false);
@@ -411,19 +575,28 @@ describe("라디오 아침 — hq 사무실은 프린터 대신 라디오 두 �
   });
 
   test("hq 사무실에서는 프린터가 열리지 않는다", () => {
-    expect(availableActions(makeRun({ jobIndex: 2, jobStep: "office" }))).toEqual([
+    expect(availableActions(makeRun({ jobIndex: 2, jobStep: "office" }))).toEqual(["office_next"]);
+    expect(
+      availableActions(makeRun({ jobIndex: 2, jobStep: "office", officeStage: "people" })),
+    ).toEqual([
+      "talk_dusik",
+      "talk_ru",
+      "talk_banjang",
+      "talk_taesan",
       "radio_morning_on",
       "radio_business_only",
     ]);
   });
 
   test("다른 일감 사무실에서는 라디오가 열리지 않는다", () => {
-    expect(
-      availableActions(makeRun({ jobIndex: 1, jobStep: "office", dispatchTaesan: true })),
-    ).toEqual(expect.arrayContaining(["office_printer"]));
-    expect(
-      availableActions(makeRun({ jobIndex: 1, jobStep: "office", dispatchTaesan: true })),
-    ).not.toContain("radio_morning_on");
+    const atPeople = makeRun({
+      jobIndex: 1,
+      jobStep: "office",
+      officeStage: "people",
+      dispatchTaesan: true,
+    });
+    expect(availableActions(atPeople)).toContain("office_printer");
+    expect(availableActions(atPeople)).not.toContain("radio_morning_on");
   });
 });
 

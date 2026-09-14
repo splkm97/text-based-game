@@ -1,4 +1,4 @@
-// Domain types of 복구 기록. Every field is readonly; state changes produce new objects.
+// Domain types of (주) 재해복구 DR. Every field is readonly; state changes produce new objects.
 // Content files may import only this file and ./ids.
 
 import type {
@@ -9,6 +9,8 @@ import type {
   EndingId,
   JobId,
   JobStepId,
+  OfficeStage,
+  TalkChoice,
 } from "./ids";
 
 // ---------------------------------------------------------------------------
@@ -33,8 +35,16 @@ export type RunState = {
   readonly placement: Placement;
   /** JOB_IDS에서의 위치(0..JOB_IDS.length-1) — 목록 순서가 곧 회차의 순서다. */
   readonly jobIndex: number;
-  /** 이번 일감에서 진행 중인 순서 — 모든 일감이 office → briefing → party → site를 탄다. */
+  /** 이번 일감에서 진행 중인 순서 — 모든 일감이 office → briefing → party → cleanup → site를 탄다. */
   readonly jobStep: JobStepId;
+  /** 아침 조회의 두 화면: 산문(장면) → 사람들(군상). office 단계에서만 뜻이 있다. */
+  readonly officeStage: OfficeStage;
+  /** 오늘 면담한 사람 — 하루 한 번이다. 일감이 바뀌면 비운다. */
+  readonly talks: readonly CharacterId[];
+  /** 열려 있는 면담. null이면 면담 밖이다. choice가 null이면 아직 응답을 고르지 않았다. */
+  readonly interview: Interview | null;
+  /** 루의 말을 끊은 자리들 — 회차 동안 남고, 다시 열어도 뒷말은 돌아오지 않는다. */
+  readonly cutLines: readonly CutLine[];
   /** 이번 일감의 동행. 인원 선택 전엔 빈 배열이고 최대 2명이다(설계 §5). */
   readonly party: readonly CharacterId[];
   readonly characters: Readonly<Record<CharacterId, CharacterState>>;
@@ -97,6 +107,11 @@ export type TalkLine = {
 export type OfficeCard = {
   /** 사무실 장면의 1인칭 아침 지문. */
   readonly prompt: string;
+  /**
+   * 장면 화면을 두 장으로 가르는 문단 index(0이면 한 장) — 두 번째 장은 이 index의 문단에서
+   * 시작한다. 문장을 UI가 임의로 자르지 않도록 분할점은 콘텐츠가 정한다.
+   */
+  readonly pageBreak: number;
   readonly news: string;
   readonly printer: string;
   readonly chatter: readonly TalkLine[];
@@ -166,6 +181,27 @@ export type EndingCard = {
   readonly epilogue: readonly string[];
 };
 
+/**
+ * 끊긴 줄 — 루의 말을 끊은 자리와, 그때까지 보였던 단어 수. 이 수를 넘는 뒷말은 다시
+ * 화면에 오지 않는다(끊은 것은 되돌릴 수 없다). key는 그 문면의 지문이다.
+ */
+export type CutLine = {
+  readonly key: string;
+  readonly words: number;
+};
+
+/** 면담 하나의 상태 — 누구와 이야기 중이고, 응답을 골랐는가. */
+export type Interview = {
+  readonly character: CharacterId;
+  readonly choice: TalkChoice | null;
+};
+
+/** 면담 카드 — 그 사람이 먼저 하는 말(opening)과 응답 셋에 대한 답(replies). */
+export type InterviewCard = {
+  readonly opening: string;
+  readonly replies: Readonly<Record<TalkChoice, string>>;
+};
+
 export type CharacterCard = {
   readonly id: CharacterId;
   readonly name: string;
@@ -183,6 +219,8 @@ export type Content = {
   readonly characters: Readonly<Record<CharacterId, CharacterCard>>;
   /** 뒷정리 작업 넷의 이름 — 세계 공통 절차라 일감이 아니라 세계가 소유한다. */
   readonly cleanupTasks: Readonly<Record<CleanupTaskId, string>>;
+  /** 일감 × 인물의 면담 16편 — 인물별 파일 넷을 일감 축으로 뒤집어 조립한다. */
+  readonly interviews: Readonly<Record<JobId, Readonly<Record<CharacterId, InterviewCard>>>>;
 };
 
 // ---------------------------------------------------------------------------

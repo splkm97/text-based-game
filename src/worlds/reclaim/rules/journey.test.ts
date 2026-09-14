@@ -11,9 +11,10 @@ import { cleanupAxis } from "./enumerate";
 import { applyAction, availableActions, cleanupGrade, startRun } from "./run";
 
 const PLACEMENTS: readonly Placement[] = ["ru_first", "dusik_first"];
-/** 상태 폭발 방어 — 실측(2026-09-14, 실 CONTENT, 뒷정리 축 투영 후) ru_first 39,446 ·
- * dusik_first 258,305 상태(0.14s·0.84s)의 여유 배수(약 4배). 뒷정리 미니게임이 현장 등급을
- * 셋으로 갈라 이전 실측(2.6만)의 약 10배가 됐다. */
+/** 상태 폭발 방어 — 실측(2026-09-14, 실 CONTENT, 뒷정리 축 투영 + 아침 조회 축) ru_first
+ * 107,478 · dusik_first 512,927 상태(0.33s·1.66s)의 여유 배수(약 2배). 아침 조회가 사무실
+ * 단계에 면담 축을 더해 이전 실측(39,446·258,305)의 약 2.7배가 됐다 — 사무실 상태가
+ * 일감마다 곱해지는 만큼, 새 축이 하나 더 얹히면 이 상한이 먼저 걸린다. */
 const STATE_LIMIT = 1_000_000;
 
 type Signature = string;
@@ -23,6 +24,12 @@ const signature = (run: RunState): Signature =>
     run.placement,
     run.jobIndex,
     run.jobStep,
+    // 아침 조회의 세 축 — 여기서도 담는다: 면담을 어디서 멈췄는지가 다음 수를 가른다.
+    run.officeStage,
+    run.interview === null
+      ? "-"
+      : `${run.interview.character}:${run.interview.choice === null ? "open" : "answered"}`,
+    [...run.talks].sort().join(","),
     run.chainStep,
     run.terminal,
     run.party.join(","),
@@ -117,10 +124,12 @@ const intoJob = (run: RunState, party: readonly CharacterId[], office?: ActionId
     search: "cleanup_pick_search",
     photo: "cleanup_pick_photo",
   };
-  // hq(jobIndex 2)의 사무실은 라디오 아침이라 프린터가 닫혀 있다.
+  // hq(jobIndex 2)의 사무실은 라디오 아침이라 프린터가 닫혀 있다. 어느 일감이든 산문 화면을
+  // 먼저 덮어야(office_next) 사람들 화면이 열리고, 그 화면에서만 사무실 밖으로 나갈 수 있다.
   const openOffice: ActionId =
     office ?? (run.jobIndex === 2 ? "radio_business_only" : "office_printer");
   const script: readonly ActionId[] = [
+    "office_next",
     openOffice,
     "briefing_ack",
     ...party.map((id) => picks[id]),
@@ -137,7 +146,7 @@ const intoJob = (run: RunState, party: readonly CharacterId[], office?: ActionId
   return next;
 };
 
-describe("실제 콘텐츠 도달성 — (일감 × 순서)가 전부 열리고, 48개 액션이 전부 제공된다", () => {
+describe("실제 콘텐츠 도달성 — (일감 × 순서)가 전부 열리고, 57개 액션이 전부 제공된다", () => {
   test.each(PLACEMENTS)("%s: 네 일감 × 다섯 순서가 모두 도달한다", (placement) => {
     const missing: string[] = [];
     for (const job of JOB_IDS) {

@@ -66,8 +66,17 @@ test("타이틀에서 새 회차를 시작하면 첫 일감의 사무실 화면�
   await userEvent.click(button("새 회차"));
   expect(stores.run.getState().run?.jobStep).toBe("office");
   expect(stores.run.getState().run?.jobIndex).toBe(0);
+  // 아침은 사무실의 첫 하위 단계(산문 화면)에서 시작한다 — 사람들 화면과 그 책상 위 프린터는
+  // 그다음 단계의 것이다(면회실 구조). 여기서 거는 것은 "어느 화면에 들어왔는가"다.
+  expect(stores.run.getState().run?.officeStage).toBe("scene");
   expect(screen.getByRole("heading", { name: CONTENT.jobs.gwanak.title })).toBeDefined();
-  expect(button(CONTENT.actions.office_printer.label)).toBeDefined();
+  // 산문 화면은 그 아침의 지문을 한 요소에 문단째로 내보낸다(문단 나눔은 pre-line이 살린다).
+  expect(
+    screen.getByText(
+      (_text, element) => element?.textContent === CONTENT.jobs.gwanak.office.prompt,
+    ),
+  ).toBeDefined();
+  expect(button(CONTENT.actions.office_next.label)).toBeDefined();
 });
 
 test("종결 상태면 종결 화면이 카드를 보여준다", () => {
@@ -75,7 +84,11 @@ test("종결 상태면 종결 화면이 카드를 보여준다", () => {
   stores.run.setState({ run: makeRun({ jobStep: "site", terminal: "death" }) });
   renderApp(stores);
   expect(screen.getByRole("heading", { name: CONTENT.endings.death.title })).toBeDefined();
-  expect(screen.getByText(CONTENT.endings.death.text)).toBeDefined();
+  // 종결 본문은 단어 span으로 렌더된다 — 직접 텍스트 노드를 보는 getByText 대신 원문 비교로 찾는다.
+  const endingText = [...document.querySelectorAll("p")].find(
+    (element) => element.textContent === CONTENT.endings.death.text,
+  );
+  expect(endingText).toBeDefined();
   expect(screen.getByRole("list", { name: "에필로그" })).toBeDefined();
   expect(button("새 회차")).toBeDefined();
   expect(button("기록 보기")).toBeDefined();

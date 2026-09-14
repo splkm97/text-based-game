@@ -1,4 +1,4 @@
-// 액션 가드 표 계약 테스트 — 48개 액션 각각에 대해 열리는 상태가 최소 하나 존재함을
+// 액션 가드 표 계약 테스트 — 57개 액션 각각에 대해 열리는 상태가 최소 하나 존재함을
 // 확인하는 총체성 테스트가 본체다. 키 집합 일치는 ACTION_SPECS: Readonly<Record<ActionId,
 // ActionSpec>> 타입이, 열림 상태 표는 Record<ActionId, RunState> 타입이 컴파일로 강제한다
 // — 하나라도 빠지면 런타임이 아니라 타입이 먼저 막는다. 열림 여부는 when·require를
@@ -14,7 +14,28 @@ import { makeRun, TEST_CONTENT } from "./testContent";
 
 /** 각 액션이 열리는 대표 상태 — when과 require가 동시에 참이어야 한다. */
 const OPEN_STATES: Readonly<Record<ActionId, RunState>> = {
-  office_printer: makeRun(),
+  office_next: makeRun(), // 장면 화면 — 아침 조회의 첫 버튼
+  office_printer: makeRun({ officeStage: "people" }),
+  talk_dusik: makeRun({ officeStage: "people" }),
+  talk_ru: makeRun({ officeStage: "people" }),
+  talk_banjang: makeRun({ officeStage: "people" }),
+  talk_taesan: makeRun({ officeStage: "people" }),
+  interview_reply_work: makeRun({
+    officeStage: "people",
+    interview: { character: "dusik", choice: null },
+  }),
+  interview_reply_comfort: makeRun({
+    officeStage: "people",
+    interview: { character: "ru", choice: null },
+  }),
+  interview_reply_joke: makeRun({
+    officeStage: "people",
+    interview: { character: "banjang", choice: null },
+  }),
+  interview_close: makeRun({
+    officeStage: "people",
+    interview: { character: "taesan", choice: "joke" },
+  }),
   briefing_ack: makeRun({ jobStep: "briefing" }),
   party_pick_dusik: makeRun({ jobStep: "party" }),
   party_pick_ru: makeRun({ jobStep: "party" }),
@@ -28,13 +49,23 @@ const OPEN_STATES: Readonly<Record<ActionId, RunState>> = {
   cleanup_pick_photo: makeRun({ jobStep: "cleanup" }),
   cleanup_finish: makeRun({ jobStep: "cleanup", cleanupPicks: [...CLEANUP_TASK_IDS] }),
   call_respond: makeRun({ jobIndex: 0, jobStep: "site" }),
-  dispatch_send_taesan: makeRun({ jobIndex: 1, jobStep: "office" }),
-  dispatch_send_other: makeRun({ jobIndex: 1, jobStep: "office" }),
+  dispatch_send_taesan: makeRun({ jobIndex: 1, jobStep: "office", officeStage: "people" }),
+  dispatch_send_other: makeRun({ jobIndex: 1, jobStep: "office", officeStage: "people" }),
   obs_send_ru_alone: makeRun({ jobIndex: 1, jobStep: "site", party: ["ru"] }),
   obs_boss_joins: makeRun({ jobIndex: 1, jobStep: "site" }),
   obs_send_other: makeRun({ jobIndex: 1, jobStep: "site", party: ["dusik"] }),
-  radio_morning_on: makeRun({ jobIndex: 2, jobStep: "office", dispatchTaesan: true }),
-  radio_business_only: makeRun({ jobIndex: 2, jobStep: "office", dispatchTaesan: true }),
+  radio_morning_on: makeRun({
+    jobIndex: 2,
+    jobStep: "office",
+    officeStage: "people",
+    dispatchTaesan: true,
+  }),
+  radio_business_only: makeRun({
+    jobIndex: 2,
+    jobStep: "office",
+    officeStage: "people",
+    dispatchTaesan: true,
+  }),
   archive_with_dusik: makeRun({ jobIndex: 2, jobStep: "site", party: ["dusik"] }),
   archive_with_ru: makeRun({ jobIndex: 2, jobStep: "site", party: ["ru"] }),
   archive_with_taesan: makeRun({ jobIndex: 2, jobStep: "site", party: ["taesan"] }),
@@ -64,8 +95,8 @@ const OPEN_STATES: Readonly<Record<ActionId, RunState>> = {
   submit_copy: makeRun({ chainStep: "submit" }),
 };
 
-test("48개 액션 전체에 열리는 상태가 존재하고 실제로 적용까지 통과한다", () => {
-  expect(ACTION_IDS).toHaveLength(48);
+test("57개 액션 전체에 열리는 상태가 존재하고 실제로 적용까지 통과한다", () => {
+  expect(ACTION_IDS).toHaveLength(57);
   for (const id of ACTION_IDS) {
     const run = OPEN_STATES[id];
     const spec = ACTION_SPECS[id];

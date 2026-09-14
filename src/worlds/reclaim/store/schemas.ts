@@ -12,6 +12,8 @@ import {
   type EndingId,
   JOB_IDS,
   JOB_STEP_IDS,
+  OFFICE_STAGE_IDS,
+  TALK_CHOICE_IDS,
 } from "../ids";
 import { RECHANCE_LIMIT, REVIEW_LIMIT } from "../rules/run";
 import type { RunState } from "../types";
@@ -41,46 +43,70 @@ const logPlace = z.discriminatedUnion("kind", [
 ]);
 const logEntry = z.object({ place: logPlace, text: z.string() });
 
-const runState = z.object({
-  placement: z.enum(["ru_first", "dusik_first"]),
-  jobIndex: z
-    .number()
-    .int()
-    .min(0)
-    .max(JOB_IDS.length - 1), // JOB_IDS 위치 전체
-  jobStep: jobStepId,
-  // 인원 선택은 1~2명(설계 §5) — 선택 전 빈 배열까지 포함해 최대 2다.
-  party: z.array(characterId).max(2),
-  // characters: CHARACTER_IDS 네 키를 리터럴로 전부 나열 — union total이 컴파일로 강제된다.
-  characters: z.object({
-    dusik: characterState,
-    ru: characterState,
-    banjang: characterState,
-    taesan: characterState,
-  }),
-  // 뒷정리 미니게임의 선택 순서 — 작업 넷을 중복 없이 고른 차례 그대로(전부 고르면 4).
-  // 중복까지 여기서 막는 이유: 마침 조건이 `길이 === 4`라, 중복이 실린 페이로드는 빠진 작업을
-  // 채우는 순간 길이가 5가 되어 그 회차가 영영 현장으로 넘어가지 못한다(반쯤 로드하지 않는다).
-  cleanupPicks: z
-    .array(z.enum(CLEANUP_TASK_IDS))
-    .max(CLEANUP_TASK_IDS.length)
-    .refine((picks) => new Set(picks).size === picks.length, "중복된 뒷정리 작업"),
-  pendingChain: z.array(chainStepId),
-  chainStep: chainStepId.nullable(),
-  terminal: endingId.nullable(),
-  dispatchTaesan: z.boolean(),
-  broadcast: z.boolean(),
-  documents: z.boolean(),
-  coord: z.boolean(),
-  gunLocked: z.boolean(),
-  clue: z.boolean(),
-  relic: z.boolean(),
-  banjangSeed: z.boolean(),
-  reviews: z.number().int().min(0).max(REVIEW_LIMIT),
-  chances: z.number().int().min(0).max(RECHANCE_LIMIT),
-  contact: z.boolean(),
-  log: z.array(logEntry),
-});
+const runState = z
+  .object({
+    placement: z.enum(["ru_first", "dusik_first"]),
+    jobIndex: z
+      .number()
+      .int()
+      .min(0)
+      .max(JOB_IDS.length - 1), // JOB_IDS 위치 전체
+    jobStep: jobStepId,
+    officeStage: z.enum(OFFICE_STAGE_IDS),
+    // 오늘 면담한 사람 — 하루 한 번이라 중복이 있을 수 없다(있으면 손상 페이로드다).
+    talks: z
+      .array(characterId)
+      .refine((ids) => new Set(ids).size === ids.length, "중복된 면담 상대"),
+    interview: z
+      .object({ character: characterId, choice: z.enum(TALK_CHOICE_IDS).nullable() })
+      .nullable(),
+    // 끊긴 줄 — 같은 줄을 두 번 끊을 수 없다(지문 키가 유일하다).
+    cutLines: z
+      .array(z.object({ key: z.string().min(1), words: z.number().int().nonnegative() }))
+      .refine(
+        (lines) => new Set(lines.map((line) => line.key)).size === lines.length,
+        "중복된 끊긴 줄",
+      ),
+    // 인원 선택은 1~2명(설계 §5) — 선택 전 빈 배열까지 포함해 최대 2다.
+    party: z.array(characterId).max(2),
+    // characters: CHARACTER_IDS 네 키를 리터럴로 전부 나열 — union total이 컴파일로 강제된다.
+    characters: z.object({
+      dusik: characterState,
+      ru: characterState,
+      banjang: characterState,
+      taesan: characterState,
+    }),
+    // 뒷정리 미니게임의 선택 순서 — 작업 넷을 중복 없이 고른 차례 그대로(전부 고르면 4).
+    // 중복까지 여기서 막는 이유: 마침 조건이 `길이 === 4`라, 중복이 실린 페이로드는 빠진 작업을
+    // 채우는 순간 길이가 5가 되어 그 회차가 영영 현장으로 넘어가지 못한다(반쯤 로드하지 않는다).
+    cleanupPicks: z
+      .array(z.enum(CLEANUP_TASK_IDS))
+      .max(CLEANUP_TASK_IDS.length)
+      .refine((picks) => new Set(picks).size === picks.length, "중복된 뒷정리 작업"),
+    pendingChain: z.array(chainStepId),
+    chainStep: chainStepId.nullable(),
+    terminal: endingId.nullable(),
+    dispatchTaesan: z.boolean(),
+    broadcast: z.boolean(),
+    documents: z.boolean(),
+    coord: z.boolean(),
+    gunLocked: z.boolean(),
+    clue: z.boolean(),
+    relic: z.boolean(),
+    banjangSeed: z.boolean(),
+    reviews: z.number().int().min(0).max(REVIEW_LIMIT),
+    chances: z.number().int().min(0).max(RECHANCE_LIMIT),
+    contact: z.boolean(),
+    log: z.array(logEntry),
+  })
+  .refine(
+    (run) =>
+      // 아침 조회 하위 상태(화면·면담 명단·열린 면담)는 office 단계 밖에서 비어 있어야 한다.
+      // 남아 있으면 어떤 액션도 받지 못하는 잠긴 화면이 된다 — 손상 페이로드는 여기서 버린다.
+      run.jobStep === "office" ||
+      (run.officeStage === "scene" && run.talks.length === 0 && run.interview === null),
+    "사무실 밖에 남은 아침 조회 상태",
+  );
 
 /** `MetaState`의 저장 형태. 회차 간 기록: 종결별 도달 수와 시작한 회차 수. */
 export type MetaState = {

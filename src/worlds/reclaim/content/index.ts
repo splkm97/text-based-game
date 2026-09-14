@@ -15,6 +15,7 @@ import { ACTIONS_TEXT } from "./actions";
 import { CHAINS } from "./chains";
 import { CHARACTERS } from "./characters";
 import { ENDINGS } from "./endings";
+import { INTERVIEWS } from "./interviews";
 import { JOBS } from "./jobs";
 
 /** 지침서가 정한 순서의 작업 넷 — 이름에는 차례를 흘리지 않는다. */
@@ -32,4 +33,5 @@ export const CONTENT: Content = {
   endings: ENDINGS,
   characters: CHARACTERS,
   cleanupTasks: CLEANUP_TASKS,
+  interviews: INTERVIEWS,
 };

@@ -2,7 +2,8 @@
 // 실제 CONTENT를 훑어 ① (일감 × 순서)·체인·액션·종결·인물·뒷정리 작업의 존재와 id 정합
 // ② 빈 문면 0 ③ 목록 내·전역 중복 문면 0 ④ 액션 집합 일치(ids.ts ↔ content)를 단언한다.
 // 여기에 둘을 더한다 — ⑤ 뒷정리: 지침서(site.document)가 작업 넷을 지침 순서대로 싣고
-// 작업 이름은 차례를 흘리지 않는다(지침서가 유일한 단서다) ⑥ 장면 묘사의 문단 하한.
+// 작업 이름은 차례를 흘리지 않는다(지침서가 유일한 단서다) ⑥ 장면 묘사의 문단 하한
+// ⑦ 면담 16편(일감 × 인물)의 존재·문단·응답 셋 — 응답 셋은 서로 다른 결이어야 한다.
 // 단언값은 콘텐츠에서 읽는다 — 수치 하드코딩 금지. 종결 도달·배치별 무대·막다른 상태 같은
 // 열거 기반 검사는 별도 태스크(rules/enumerate 계열)가 담당한다 — 여기서 중복 구현하지 않는다.
 import { describe, expect, test } from "vitest";
@@ -20,6 +21,7 @@ import {
   JOB_IDS,
   JOB_STEP_IDS,
   type JobId,
+  TALK_CHOICE_IDS,
 } from "../ids";
 import type { StageDocument, TalkLine } from "../types";
 import { CONTENT } from "./index";
@@ -105,6 +107,20 @@ const characterProbes = (id: CharacterId): Probe[] => {
   ];
 };
 
+/**
+ * 면담 한 편 — 그 사람이 먼저 하는 말(opening)과 응답 셋의 답(replies).
+ * replies는 **한 목록**으로 묶는다: 응답 셋이 같은 문면이면 화면에서 무엇을 골라도 같은 말이
+ * 나오므로, 목록 내 중복 검사가 그 결함을 잡는다.
+ */
+const interviewProbes = (job: JobId, id: CharacterId): Probe[] => {
+  const card = CONTENT.interviews[job][id];
+  const w = `interviews.${job}.${id}`;
+  return [
+    [`${w}.opening`, [card.opening]],
+    [`${w}.replies`, TALK_CHOICE_IDS.map((choice) => card.replies[choice])],
+  ];
+};
+
 /** 뒷정리 작업 이름 — 세계 공통 절차라 일감이 아니라 세계가 소유한다. */
 const cleanupTaskProbes = (id: CleanupTaskId): Probe[] => [
   [`cleanupTasks.${id}`, [CONTENT.cleanupTasks[id]]],
@@ -118,6 +134,7 @@ const allProbes = (): Probe[] => [
   ...ENDING_IDS.flatMap(endingProbes),
   ...CHARACTER_IDS.flatMap(characterProbes),
   ...CLEANUP_TASK_IDS.flatMap(cleanupTaskProbes),
+  ...JOB_IDS.flatMap((job) => CHARACTER_IDS.flatMap((id) => interviewProbes(job, id))),
 ];
 
 /**
@@ -148,6 +165,12 @@ describe("카드 존재 — (일감 × 순서)와 체인", () => {
     expect(Object.keys(CONTENT.endings).sort()).toEqual([...ENDING_IDS].sort());
     expect(Object.keys(CONTENT.characters).sort()).toEqual([...CHARACTER_IDS].sort());
     expect(Object.keys(CONTENT.cleanupTasks).sort()).toEqual([...CLEANUP_TASK_IDS].sort());
+    expect(Object.keys(CONTENT.interviews).sort()).toEqual([...JOB_IDS].sort());
+    for (const job of JOB_IDS) {
+      expect(Object.keys(CONTENT.interviews[job]).sort(), `interviews.${job}`).toEqual(
+        [...CHARACTER_IDS].sort(),
+      );
+    }
   });
 
   test("모든 카드의 id 필드가 키와 같다", () => {
@@ -338,6 +361,24 @@ const paragraphDefects = (where: string, text: string): readonly string[] => {
   return defects;
 };
 
+/** 면담 문면 전부 — opening과 응답 셋의 답. */
+const interviewScenes = (): readonly { readonly where: string; readonly text: string }[] => [
+  ...JOB_IDS.flatMap((job) =>
+    CHARACTER_IDS.map((id) => ({
+      where: `interviews.${job}.${id}.opening`,
+      text: CONTENT.interviews[job][id].opening,
+    })),
+  ),
+  ...JOB_IDS.flatMap((job) =>
+    CHARACTER_IDS.flatMap((id) =>
+      TALK_CHOICE_IDS.map((choice) => ({
+        where: `interviews.${job}.${id}.replies.${choice}`,
+        text: CONTENT.interviews[job][id].replies[choice],
+      })),
+    ),
+  ),
+];
+
 /** 장면 묘사 전부 — 일감 네 단계와 체인 절차. */
 const scenes = (): readonly { readonly where: string; readonly text: string }[] => [
   ...JOB_IDS.flatMap((job) =>
@@ -371,7 +412,103 @@ describe("장면 묘사 — 문단", () => {
   });
 
   test("문단을 가르는 것은 빈 줄뿐이다 — 한 줄바꿈·빈 문단·앞뒤 공백 0", () => {
-    const defects = scenes().flatMap((scene) => paragraphDefects(scene.where, scene.text));
+    const defects = [...scenes(), ...interviewScenes()].flatMap((scene) =>
+      paragraphDefects(scene.where, scene.text),
+    );
     expect(defects, `문단 분할 결함: ${defects.join(", ") || "없음"}`).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 8. 면담 — 그 사람이 먼저 말하고, 응답 셋은 서로 다른 결이다.
+// 하루 한 번 열리는 문이므로 분량이 곧 보상이다: opening은 장면(3문단 이상), 응답의 답은
+// 최소 한 문단이며, 셋이 같은 말이면 고를 이유가 사라진다.
+// ---------------------------------------------------------------------------
+
+/** 면담 opening의 문단 하한 — 장면 지시(3~4문단)의 아래끝. */
+const INTERVIEW_FLOOR = 3;
+
+describe("면담 — 사람이 먼저 말하고 응답 셋이 갈린다", () => {
+  test.each(JOB_IDS.flatMap((job) => CHARACTER_IDS.map((id) => ({ job, id }))))(
+    "$job × $id — 면담 opening이 문단으로 나뉘어 있다",
+    ({ job, id }) => {
+      const count = paragraphCount(CONTENT.interviews[job][id].opening);
+      expect(count, `interviews.${job}.${id}.opening 문단 수: ${count}`).toBeGreaterThanOrEqual(
+        INTERVIEW_FLOOR,
+      );
+    },
+  );
+
+  test.each(JOB_IDS.flatMap((job) => CHARACTER_IDS.map((id) => ({ job, id }))))(
+    "$job × $id — 응답 셋의 답이 각각 한 문단 이상이고 서로 다르다",
+    ({ job, id }) => {
+      const card = CONTENT.interviews[job][id];
+      const replies = TALK_CHOICE_IDS.map((choice) => card.replies[choice]);
+      const thin = TALK_CHOICE_IDS.filter((choice) => paragraphCount(card.replies[choice]) < 1).map(
+        (choice) => `${job}.${id}.${choice} 문단 없음`,
+      );
+      const dupes =
+        new Set(replies).size === replies.length ? [] : [`${job}.${id} 응답 셋이 겹친다`];
+      expect([...thin, ...dupes]).toEqual([]);
+    },
+  );
+});
+
+// ---------------------------------------------------------------------------
+// 9. 쿠션 — 첫 일감(관악)만 읽어도 세계와 진행이 소개된다(사용자 지시, 2026-09-14).
+// 튜토리얼 화면이 없는 대신 첫날의 본문이 그 일을 한다: 괴수·히어로·잔해 정리·협회가 나오고,
+// 후반의 개념(잔당)이나 비밀 게이트 어휘는 아직 나오지 않는다. 테스트가 없으면 다음 산문
+// 수정에서 조용히 빠진다 — 그래서 낱말 자체를 계약으로 못박는다.
+// ---------------------------------------------------------------------------
+
+/** 관악(첫 일감) 범위의 문면 전부 — 일감 카드와 그 일감의 면담 네 편. */
+const firstJobTexts = (): readonly string[] => {
+  const job = CONTENT.jobs.gwanak;
+  return [
+    job.title,
+    job.office.prompt,
+    job.office.news,
+    job.office.printer,
+    ...talkTexts(job.office.chatter),
+    job.briefing.prompt,
+    job.briefing.document.heading,
+    ...job.briefing.document.meta,
+    ...job.briefing.document.items,
+    job.briefing.document.tail,
+    ...talkTexts(job.briefing.talk),
+    job.party.prompt,
+    ...talkTexts(job.party.notes),
+    job.cleanup.prompt,
+    job.site.title,
+    job.site.prompt,
+    ...job.site.document.items,
+    ...talkTexts(job.site.partyLines),
+    ...CHARACTER_IDS.flatMap((id) => {
+      const card = CONTENT.interviews.gwanak[id];
+      return [card.opening, ...TALK_CHOICE_IDS.map((choice) => card.replies[choice])];
+    }),
+  ];
+};
+
+/** 첫날에 반드시 나와야 하는 세계의 기본 낱말. */
+const CUSHION_WORDS = ["괴수", "히어로", "잔해", "협회"] as const;
+/** 첫날에는 아직 나오면 안 되는 낱말 — 후반 개념과 비밀 게이트. */
+const GATE_WORDS = ["잔당", "시퍼", "루시퍼", "소환", "유착", "실세"] as const;
+
+describe("쿠션 — 첫 일감이 세계와 진행을 소개한다", () => {
+  test("관악 범위에 세계의 기본 낱말이 모두 나온다", () => {
+    const texts = firstJobTexts();
+    const missing = CUSHION_WORDS.filter((word) => !texts.some((text) => text.includes(word)));
+    expect(missing, `첫 일감에 없는 낱말: ${missing.join(", ") || "없음"}`).toEqual([]);
+  });
+
+  test("관악 범위에는 후반 개념·게이트 어휘가 없다", () => {
+    const hits = firstJobTexts().flatMap((text) =>
+      GATE_WORDS.filter((word) => text.includes(word)).map((word) => word),
+    );
+    expect(
+      [...new Set(hits)],
+      `첫 일감에 새어 나온 게이트 어휘: ${hits.join(", ") || "없음"}`,
+    ).toEqual([]);
   });
 });

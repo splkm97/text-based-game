@@ -9,7 +9,7 @@ import type { ActionId, EndingId } from "../ids";
 import { createPersistence } from "./persistence";
 import { createRunStore } from "./runStore";
 
-const RUN_KEY = "lia.reclaim.run.v3";
+const RUN_KEY = "lia.reclaim.run.v5";
 
 test("실제 규칙으로: 시작 → 저장 → 거부(문면) → 종결 → 세이브 비움 + onEnding", () => {
   const storage = memoryStorage();
@@ -25,6 +25,7 @@ test("실제 규칙으로: 시작 → 저장 → 거부(문면) → 종결 → �
   expect(store.getState().run?.jobStep).toBe("office");
   expect(storage.data.has(RUN_KEY)).toBe(true);
 
+  store.getState().act("office_next"); // 산문 화면 → 사람들
   store.getState().act("office_printer");
   expect(store.getState().run?.jobStep).toBe("briefing");
   expect(createPersistence(storage).load()?.jobStep).toBe("briefing");
@@ -47,6 +48,7 @@ test("실제 규칙으로: 시작 → 저장 → 거부(문면) → 종결 → �
     "cleanup_pick_photo",
     "cleanup_finish",
     "call_respond", // 관악구 완료
+    "office_next", // 산문 화면을 덮고 사람들 쪽으로
     "office_printer",
     "briefing_ack",
     "party_pick_dusik",
@@ -58,6 +60,7 @@ test("실제 규칙으로: 시작 → 저장 → 거부(문면) → 종결 → �
     "cleanup_pick_photo",
     "cleanup_finish",
     "obs_boss_joins", // 관측소 완료(단서 없음)
+    "office_next", // 산문 화면을 덮고 사람들 쪽으로
     "radio_business_only", // 본부 사무실 — 라디오를 업무로만 처리한다
     "briefing_ack",
     "party_pick_banjang",

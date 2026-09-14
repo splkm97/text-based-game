@@ -6,6 +6,7 @@
 // 않는다 — 상실은 그 순간의 결과·거부 문면이 말하고, 남은 절차는 열린 행동 목록이 말한다.
 
 import type { RunState } from "../../types";
+import { INNER_GAP, META } from "../density";
 
 type StatePanelProps = {
   readonly run: RunState;
@@ -20,13 +21,11 @@ export function StatePanel({ run }: StatePanelProps) {
   if (recent.length === 0 && !run.gunLocked) {
     return null;
   }
+  // 상자가 아니라 **위쪽 헤어라인**이다: 기록은 읽는 문면이고 만질 수 있는 대상이 아니다.
   return (
-    <section
-      aria-label="현황"
-      className="flex flex-col gap-2 border-2 border-slate bg-ink-deep p-3"
-    >
+    <section aria-label="현황" className={`flex flex-col ${INNER_GAP} border-t border-slate pt-2`}>
       {recent.length === 0 ? null : (
-        <ol aria-label="회차 기록" className="flex flex-col gap-1 text-xs leading-prose text-ash">
+        <ol aria-label="회차 기록" className={`flex flex-col ${INNER_GAP} ${META}`}>
           {recent.map((entry, index) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: 기록은 append-only 고정 순서이고 항목에 자식 상태가 없다. 반복 행동은 같은 result 문면을 남기므로 문면 키는 충돌한다.
             <li key={index}>{entry.text}</li>
@@ -34,7 +33,7 @@ export function StatePanel({ run }: StatePanelProps) {
         </ol>
       )}
       {run.gunLocked ? (
-        <p className="text-xs text-ember">군 경로가 잠겼다. 다른 창구로 가야 한다.</p>
+        <p className="text-xs leading-prose text-ember">군 경로가 잠겼다. 다른 창구로 가야 한다.</p>
       ) : null}
     </section>
   );

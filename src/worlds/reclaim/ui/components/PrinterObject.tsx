@@ -2,10 +2,13 @@
 // 뱉는 물건으로 그린다: office.printer 문면이 물건의 얼굴이고, 누르면 규칙이 공문을 당긴다
 // (`office_printer`). 재질은 문서(BriefingPanel)와 같다 — 종이 톤 바탕에 2px 테두리,
 // radius 0·그림자 없음. 누를 수 있는 대상이므로 컨트롤 최소 높이(44px)를 지킨다.
+// 물건의 얼굴과 그 동작 이름은 붙어 있어야 하므로 구역 안쪽 간격(INNER_GAP)으로 묶는다.
+
+import { INNER_GAP } from "../density";
 
 const PRINTER =
-  "flex min-h-11 w-full flex-col gap-1 border-2 border-ash bg-parchment px-3 py-2 text-left " +
-  "text-ink transition-[background-color,border-color] duration-120 ease-ink " +
+  `flex min-h-11 w-full flex-col ${INNER_GAP} border-2 border-ash bg-parchment px-3 py-2 ` +
+  "text-left text-ink transition-[background-color,border-color] duration-120 ease-ink " +
   "disabled:pointer-events-none disabled:text-dusk";
 
 type PrinterObjectProps = {

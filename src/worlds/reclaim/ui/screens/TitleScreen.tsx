@@ -6,6 +6,7 @@ import { PixelSprite } from "../../../../shared/art/PixelSprite";
 import { Button } from "../../../../shared/ui/Button";
 import { META } from "../../meta";
 import { COVER } from "../../sprites/cover";
+import { INNER_GAP, MUTED } from "../density";
 import { useRunStore } from "../runStoreContext";
 import { useScreenStore } from "../screenStore";
 
@@ -29,8 +30,8 @@ export function TitleScreen() {
     <section className="safe-bottom flex flex-1 flex-col items-center px-4 pt-8 text-center">
       <PixelSprite sprite={COVER} title={META.title} scale={4} />
       <h1 className="mt-6 text-display">{META.title}</h1>
-      <p className="mt-2 text-sm text-ash">{META.tagline}</p>
-      <nav aria-label="시작 메뉴" className="mt-auto flex w-full flex-col gap-2 pt-8">
+      <p className={`mt-2 ${MUTED}`}>{META.tagline}</p>
+      <nav aria-label="시작 메뉴" className={`mt-auto flex w-full flex-col ${INNER_GAP} pt-8`}>
         <Button variant="primary" block onClick={beginRun}>
           새 회차
         </Button>

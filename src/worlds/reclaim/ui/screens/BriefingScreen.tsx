@@ -14,6 +14,8 @@ import type { JobCard } from "../../types";
 import { ActionList } from "../components/ActionList";
 import { BriefingPanel } from "../components/BriefingPanel";
 import { PartyRow } from "../components/PartyRow";
+import { Prose } from "../components/Prose";
+import { INNER_GAP, SCREEN_PAD, SECTION_GAP } from "../density";
 import { useRunStore } from "../runStoreContext";
 
 type BriefingScreenProps = {
@@ -26,12 +28,12 @@ export function BriefingScreen({ job }: BriefingScreenProps) {
   const act = useRunStore((state) => state.act);
   const lead = job.briefing.prompt;
   return (
-    <section aria-label="공문" className="flex flex-1 flex-col gap-3 p-3">
+    <section aria-label="공문" className={`flex flex-1 flex-col ${SECTION_GAP} ${SCREEN_PAD}`}>
       <h2 className="text-base text-parchment">{job.title}</h2>
-      {lead && <p className="whitespace-pre-line text-sm leading-prose text-parchment">{lead}</p>}
+      {lead && <Prose text={lead} />}
       <BriefingPanel document={job.briefing.document} fill />
       {job.briefing.talk.length > 0 && (
-        <ul aria-label="공문 대사" className="flex flex-col gap-2">
+        <ul aria-label="공문 대사" className={`flex flex-col ${INNER_GAP}`}>
           {job.briefing.talk.map((line) => (
             <PartyRow key={line.character} character={line.character} text={line.text} />
           ))}

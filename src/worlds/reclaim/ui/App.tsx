@@ -6,6 +6,8 @@
 import type { ReactElement } from "react";
 import type { WorldRootProps } from "../../../host/world";
 import { Button } from "../../../shared/ui/Button";
+import { DENSITY_STYLE } from "./density";
+import { REVEAL_CSS } from "./reveal";
 import { useRunStore } from "./runStoreContext";
 import { useScreenStore } from "./screenStore";
 import { EndingScreen } from "./screens/EndingScreen";
@@ -36,11 +38,18 @@ export function App({ onExit }: WorldRootProps) {
   }
 
   return (
-    <main className="safe-area mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-ink-deep text-parchment">
-      <header className="flex items-center justify-end border-b-2 border-slate px-4 py-2">
-        <Button onClick={exit}>나가기</Button>
-      </header>
-      {body}
-    </main>
+    <>
+      {/* 등장 애니메이션 키프레임 한 벌 — 세계 래퍼가 한 번만 깐다(reveal.ts). */}
+      <style>{REVEAL_CSS}</style>
+      <main
+        className="safe-area mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-ink-deep text-parchment"
+        style={DENSITY_STYLE}
+      >
+        <header className="flex items-center justify-end border-b-2 border-slate px-4 py-2">
+          <Button onClick={exit}>나가기</Button>
+        </header>
+        {body}
+      </main>
+    </>
   );
 }

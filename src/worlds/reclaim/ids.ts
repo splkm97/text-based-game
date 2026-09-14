@@ -1,10 +1,32 @@
-// Fixed id catalog of 복구 기록. Rules never hard-code an id: flow and guards live in rules/.
+// Fixed id catalog of (주) 재해복구 DR. Rules never hard-code an id: flow and guards live in rules/.
 // The trailing comment on each id is its Korean display name — the demo's own wording
 // (prototype/route-combined-demo.html) is the anchor for each place's meaning, so keep
 // them aligned. 화면 단계는 JobStepId | ChainStepId로 표현된다(2026-09-14 일감 재편).
 
+/** 면담에서 고를 수 있는 응답 셋 — 아침 조회의 유일한 선택이다. */
+export const TALK_CHOICE_IDS = [
+  "work", // 일을 묻는다
+  "comfort", // 사정을 묻는다
+  "joke", // 농담으로 넘긴다
+] as const;
+export type TalkChoice = (typeof TALK_CHOICE_IDS)[number];
+
+/** 아침 조회의 두 화면 — 산문(장면)을 읽고 나서 사람들 쪽으로 간다. */
+export const OFFICE_STAGE_IDS = ["scene", "people"] as const;
+export type OfficeStage = (typeof OFFICE_STAGE_IDS)[number];
+
 export const ACTION_IDS = [
+  "office_next", // 아침 지문을 덮고 사람들 쪽으로 (장면 → 사람들)
   "office_printer", // 프린터에서 공문을 뽑는다 (사무실 → 공문)
+
+  "talk_dusik", // 강두식에게 말을 건다 (사람들 → 면담)
+  "talk_ru", // 루에게 말을 건다
+  "talk_banjang", // 최 반장에게 말을 건다
+  "talk_taesan", // 배태산에게 말을 건다
+  "interview_reply_work", // 면담: 일을 묻는다
+  "interview_reply_comfort", // 면담: 사정을 묻는다
+  "interview_reply_joke", // 면담: 농담으로 넘긴다
+  "interview_close", // 면담을 닫는다 (면담 → 사람들)
   "briefing_ack", // 공문을 접어 챙긴다 (공문 → 인원 선택)
 
   "party_pick_dusik", // 동행: 강두식

@@ -10,8 +10,10 @@ import { CHARACTER_IDS } from "../../ids";
 import type { JobCard, RunState } from "../../types";
 import { ActionList } from "../components/ActionList";
 import { PARTY_PICK_ACTIONS, PARTY_PICK_IDS, PartyPick } from "../components/PartyPick";
+import { Prose } from "../components/Prose";
 import { StatePanel } from "../components/StatePanel";
 import { useContent } from "../contentContext";
+import { INNER_GAP, META, SCREEN_PAD, SECTION_GAP } from "../density";
 import { useRunStore } from "../runStoreContext";
 
 type PartyScreenProps = {
@@ -26,10 +28,10 @@ export function PartyScreen({ run, job }: PartyScreenProps) {
   const act = useRunStore((state) => state.act);
   const decisions = available.filter((id) => !PARTY_PICK_IDS.includes(id));
   return (
-    <section aria-label="인원 선택" className="flex flex-1 flex-col gap-3 p-3">
+    <section aria-label="인원 선택" className={`flex flex-1 flex-col ${SECTION_GAP} ${SCREEN_PAD}`}>
       <h2 className="text-base text-parchment">{job.title}</h2>
-      <p className="whitespace-pre-line text-sm leading-prose text-parchment">{job.party.prompt}</p>
-      <ul aria-label="인물" className="flex flex-col gap-2">
+      <Prose text={job.party.prompt} />
+      <ul aria-label="인물" className={`flex flex-col ${INNER_GAP}`}>
         {CHARACTER_IDS.map((character) => (
           <PartyPick
             key={character}
@@ -47,11 +49,14 @@ export function PartyScreen({ run, job }: PartyScreenProps) {
         ))}
       </ul>
       {run.party.length > 0 && (
-        <section aria-label="선택한 인원" className="border-2 border-slate bg-ink-deep p-2">
-          <h3 className="text-xs text-ash">배차표</h3>
-          <ul className="flex flex-col gap-1">
+        <section
+          aria-label="선택한 인원"
+          className={`flex flex-col ${INNER_GAP} border-t border-slate pt-2`}
+        >
+          <h3 className={META}>배차표</h3>
+          <ul className={`flex flex-col ${INNER_GAP}`}>
             {run.party.map((character) => (
-              <li key={character} className="text-sm text-parchment">
+              <li key={character} className="text-sm leading-prose text-ember">
                 {content.characters[character].name}
               </li>
             ))}

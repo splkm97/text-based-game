@@ -3,6 +3,7 @@
 // 문면을 골랐는지 문자열 비교로 검증된다. Record 키는 리터럴이라 union total이 컴파일로 강제된다.
 
 import type { ActionId, ChainStepId, CharacterId, EndingId, JobId } from "../ids";
+import { CHARACTER_IDS, JOB_IDS } from "../ids";
 import type {
   ActionText,
   ChainCard,
@@ -10,6 +11,7 @@ import type {
   CharacterState,
   Content,
   EndingCard,
+  InterviewCard,
   JobCard,
   RunState,
   StageDocument,
@@ -26,7 +28,13 @@ const documentOf = (id: string): StageDocument => ({
 const jobCard = (id: JobId): JobCard => ({
   id,
   title: `제목 ${id}`,
-  office: { prompt: `지문 ${id}`, news: `뉴스 ${id}`, printer: `프린터 ${id}`, chatter: [] },
+  office: {
+    prompt: `지문 ${id} 첫 문단\n\n지문 ${id} 둘째 문단`,
+    pageBreak: 1, // 픽스처는 두 문단 지문을 한 문단씩 가른다
+    news: `뉴스 ${id}`,
+    printer: `프린터 ${id}`,
+    chatter: [],
+  },
   briefing: { prompt: `지문 ${id}`, document: documentOf(id), talk: [] },
   party: { prompt: `인원 ${id}`, notes: [] },
   cleanup: { prompt: `지침 ${id}` },
@@ -63,6 +71,24 @@ const characterCard = (id: CharacterId): CharacterCard => ({
   card: `카드 ${id}`,
 });
 
+const interviewCard = (job: JobId, id: CharacterId): InterviewCard => ({
+  opening: `면담 ${job} ${id}`,
+  replies: {
+    work: `일 ${job} ${id}`,
+    comfort: `사정 ${job} ${id}`,
+    joke: `농담 ${job} ${id}`,
+  },
+});
+
+/** 일감 × 인물 16편 — 실제 콘텐츠처럼 일감 축으로 뒤집어 조립한다(editor가 본보기다). */
+const interviewsByJob = (): Readonly<Record<JobId, Readonly<Record<CharacterId, InterviewCard>>>> =>
+  Object.fromEntries(
+    JOB_IDS.map((job) => [
+      job,
+      Object.fromEntries(CHARACTER_IDS.map((id) => [id, interviewCard(job, id)])),
+    ]),
+  ) as Readonly<Record<JobId, Readonly<Record<CharacterId, InterviewCard>>>>;
+
 export const TEST_CONTENT: Content = {
   jobs: {
     gwanak: jobCard("gwanak"),
@@ -79,7 +105,16 @@ export const TEST_CONTENT: Content = {
     submit: chainCard("submit"),
   },
   actions: {
+    office_next: actionText("office_next"),
     office_printer: actionText("office_printer"),
+    talk_dusik: actionText("talk_dusik"),
+    talk_ru: actionText("talk_ru"),
+    talk_banjang: actionText("talk_banjang"),
+    talk_taesan: actionText("talk_taesan"),
+    interview_reply_work: actionText("interview_reply_work"),
+    interview_reply_comfort: actionText("interview_reply_comfort"),
+    interview_reply_joke: actionText("interview_reply_joke"),
+    interview_close: actionText("interview_close"),
     briefing_ack: actionText("briefing_ack"),
     party_pick_dusik: actionText("party_pick_dusik"),
     party_pick_ru: actionText("party_pick_ru"),
@@ -149,6 +184,7 @@ export const TEST_CONTENT: Content = {
     search: "작업 search",
     photo: "작업 photo",
   },
+  interviews: interviewsByJob(),
 };
 
 /** 4명 균일 초기 인물 상태(0/0/false) — startRun과 같은 기본값이다. */
@@ -164,6 +200,10 @@ export const makeRun = (overrides: Partial<RunState> = {}): RunState => ({
   placement: "ru_first",
   jobIndex: 0,
   jobStep: "office",
+  officeStage: "scene",
+  talks: [],
+  interview: null,
+  cutLines: [],
   party: [],
   cleanupPicks: [],
   characters: zeroCharacters(),

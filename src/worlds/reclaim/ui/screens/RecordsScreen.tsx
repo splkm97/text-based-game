@@ -9,6 +9,7 @@
 import { Button } from "../../../../shared/ui/Button";
 import { ENDING_IDS } from "../../ids";
 import { useContent } from "../contentContext";
+import { META, MUTED, SCREEN_PAD, SECTION_GAP } from "../density";
 import { useMetaStore } from "../metaStoreContext";
 import { useScreenStore } from "../screenStore";
 
@@ -22,10 +23,10 @@ export function RecordsScreen() {
   const content = useContent();
 
   return (
-    <section aria-label="복구 기록" className="flex flex-1 flex-col gap-3 p-4">
+    <section aria-label="회차 기록" className={`flex flex-1 flex-col ${SECTION_GAP} ${SCREEN_PAD}`}>
       <h2 className="text-base text-parchment">기록</h2>
-      <p className="text-sm text-ash">시작한 회차 {runs}회</p>
-      <ul aria-label="종결 기록" className="flex flex-col gap-2">
+      <p className={MUTED}>시작한 회차 {runs}회</p>
+      <ul aria-label="종결 기록" className="flex flex-col">
         {ENDING_IDS.map((id) => {
           const seen = endingsSeen[id];
           const achieved = seen > 0;
@@ -34,9 +35,9 @@ export function RecordsScreen() {
             <li
               key={id}
               aria-label={achieved ? title : "미달성 종결"}
-              className="flex min-h-11 items-center justify-between gap-3 border-2 border-slate px-3"
+              className="flex min-h-11 items-center justify-between gap-3 border-b border-slate last:border-b-0"
             >
-              <span className={achieved ? "text-xs text-ash" : "text-xs text-slate"}>
+              <span className={achieved ? META : "text-xs leading-prose text-slate"}>
                 {achieved ? title : UNSEEN}
               </span>
               <span className="tabular-nums text-sm text-parchment">

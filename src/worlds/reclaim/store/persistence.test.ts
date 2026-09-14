@@ -1,13 +1,13 @@
 // 슬롯 계약: 없으면 null, 있으면 파싱해 돌려주고, clear는 키를 지운다. 스토리지가
 // 없으면(null) 전부 no-op다. 검증은 schemas.ts가 이미 하므로 여기서는 키 이름과
-// 왕복·강등 동작만 본다. run 키는 v3다 — 구 v1·v2 키는 다른 세이브 슬롯처럼 무시된다.
+// 왕복·강등 동작만 본다. run 키는 v5다 — 구 v1·v2·v3·v4 키는 다른 세이브 슬롯처럼 무시된다.
 
 import { describe, expect, test } from "vitest";
 import { memoryStorage } from "../../../shared/storage";
 import { makeRun } from "../rules/testContent";
 import { createMetaPersistence, createPersistence } from "./persistence";
 
-const RUN_KEY = "lia.reclaim.run.v3";
+const RUN_KEY = "lia.reclaim.run.v5";
 const META_KEY = "lia.reclaim.meta.v1";
 
 describe("run slot", () => {
@@ -40,19 +40,15 @@ describe("run slot", () => {
     expect(slot.load()).toBeNull();
   });
 
-  test("구 v1 키의 세이브는 읽지 않는다 — 마이그레이션 없이 버린다", () => {
-    const storage = memoryStorage();
-    storage.setItem("lia.reclaim.run.v1", "{}");
+  test.each(["v1", "v2", "v3", "v4"])(
+    "구 %s 키의 세이브는 읽지 않는다 — 반쯤 로드하지 않는다",
+    (old) => {
+      const storage = memoryStorage();
+      storage.setItem(`lia.reclaim.run.${old}`, "{}");
 
-    expect(createPersistence(storage).load()).toBeNull();
-  });
-
-  test("구 v2 키의 세이브도 읽지 않는다 — 뒷정리 상태가 없는 페이로드는 반쯤 로드하지 않는다", () => {
-    const storage = memoryStorage();
-    storage.setItem("lia.reclaim.run.v2", "{}");
-
-    expect(createPersistence(storage).load()).toBeNull();
-  });
+      expect(createPersistence(storage).load()).toBeNull();
+    },
+  );
 
   test("스토리지가 없으면 저장도 읽기도 조용히 무시된다", () => {
     const slot = createPersistence(null);

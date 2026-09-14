@@ -91,6 +91,9 @@ describe("parseRun", () => {
       { ...midRun, cleanupPicks: ["sign", "power", "search", "search"] }, // 길이는 4지만 중복 — 교착 회차
       { ...midRun, cleanupPicks: ["sign", "power", "search", "photo", "sign"] }, // 상한 초과
       { ...midRun, chainStep: "church" },
+      { ...midRun, officeStage: "people" }, // 사무실 밖에 남은 아침 화면
+      { ...midRun, talks: ["ru"] }, // 사무실 밖에 남은 면담 명단
+      { ...midRun, interview: { character: "ru", choice: null } }, // 열린 면담이 단계 밖
       { ...midRun, terminal: "bankruptcy" }, // 미구현 종결
       { ...midRun, terminal: 0 },
       { ...midRun, documents: "yes" },

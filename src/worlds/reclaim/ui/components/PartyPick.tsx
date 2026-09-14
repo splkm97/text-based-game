@@ -8,11 +8,17 @@
 //
 // 카드의 읽는 순서는 이름 → 결장 사유 → 대사 → 선택 버튼이다(장면 묘사 → 문서 → 대사 순서의
 // 카드판): 누가 서 있고, 서지 못하는 까닭은 무엇이고, 그 사람이 무슨 말을 했고, 그다음에 고른다.
+//
+// 카드는 상자가 아니라 **헤어라인으로 갈린 줄**이다: 이 카드에서 만질 수 있는 대상은 안의
+// 선택 버튼 하나이고, 카드에까지 2px 상자를 두르면 상자 안 상자가 되어 위계가 사라진다
+// (density.ts의 테두리 위계). 대사는 MUTED(14px), 사유·선택 표시는 META(12px)다.
 
 import { useId } from "react";
 import { Button } from "../../../../shared/ui/Button";
 import type { ActionId, CharacterId } from "../../ids";
 import { useContent } from "../contentContext";
+import { INNER_GAP, META } from "../density";
+import { VoicedLine } from "./VoicedLine";
 
 /** 인물 → 동행 선택 액션. id 카탈로그의 이름이 화면과 만나는 유일한 자리다. */
 export const PARTY_PICK_ACTIONS: Readonly<Record<CharacterId, ActionId>> = {
@@ -45,16 +51,18 @@ export function PartyPick({ character, note, selected, reason, onPick }: PartyPi
   const reasonId = useId();
   const pickId = PARTY_PICK_ACTIONS[character];
   return (
-    <li className="flex flex-col gap-2 border-2 border-slate bg-ink-deep p-2">
-      <p className="text-sm text-ember">{content.characters[character].name}</p>
+    <li
+      className={`flex flex-col ${INNER_GAP} border-b border-slate pb-2 last:border-b-0 last:pb-0`}
+    >
+      <p className="text-sm leading-prose text-ember">{content.characters[character].name}</p>
       {reason !== null && (
         <p id={reasonId} className="text-xs leading-prose text-dusk">
           {reason}
         </p>
       )}
-      {note !== null && <p className="text-sm leading-prose text-parchment">{note}</p>}
+      {note !== null && <VoicedLine character={character} text={note} />}
       {selected ? (
-        <p className="text-xs text-ash">배차표에 올랐다</p>
+        <p className={META}>배차표에 올랐다</p>
       ) : (
         <Button
           block

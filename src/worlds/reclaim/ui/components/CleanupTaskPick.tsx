@@ -9,6 +9,7 @@
 import { Button } from "../../../../shared/ui/Button";
 import type { ActionId, CleanupTaskId } from "../../ids";
 import { useContent } from "../contentContext";
+import { INNER_GAP, META } from "../density";
 
 /** 뒷정리 작업 → 선택 액션. id 카탈로그의 이름이 화면과 만나는 유일한 자리다. */
 export const CLEANUP_PICK_ACTIONS: Readonly<Record<CleanupTaskId, ActionId>> = {
@@ -45,11 +46,11 @@ export function CleanupTaskPick({ task, order, onPick }: CleanupTaskPickProps) {
   const content = useContent();
   const pickId = CLEANUP_PICK_ACTIONS[task];
   return (
-    <li className="flex flex-col gap-1">
+    <li className={`flex flex-col ${INNER_GAP}`}>
       <Button block disabled={order !== null} onClick={() => onPick(pickId)}>
         {content.cleanupTasks[task]}
       </Button>
-      {order !== null && <p className="text-xs text-ash">{order}번째로 골랐다</p>}
+      {order !== null && <p className={META}>{order}번째로 골랐다</p>}
     </li>
   );
 }

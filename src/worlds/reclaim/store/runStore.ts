@@ -29,6 +29,9 @@ export type RunStore = {
   /** 진행 중인 회차를 갈아치운다. */
   readonly start: (placement?: Placement) => void;
   readonly act: (id: ActionId) => void;
+
+  /** 루의 말을 끊는다 — 그때까지 보인 단어 수를 적고, 뒷말은 회차에 남겨 두지 않는다. */
+  readonly cutLine: (key: string, words: number) => void;
   /** 저장된 회차가 있는지 — 타이틀 화면의 이어하기 조건. */
   readonly hasSave: () => boolean;
   /** 세이브를 복원한다. 저장된 것이 없으면 false. */
@@ -72,6 +75,14 @@ export const createRunStore = (deps: RunStoreDeps): StoreApi<RunStore> =>
           return;
         }
         commit(outcome.run);
+      },
+
+      cutLine: (key, words) => {
+        const { run } = get();
+        if (run === null || run.cutLines.some((line) => line.key === key)) {
+          return;
+        }
+        commit({ ...run, cutLines: [...run.cutLines, { key, words }] });
       },
 
       hasSave: () => deps.persistence.load() !== null,

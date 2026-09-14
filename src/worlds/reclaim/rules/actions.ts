@@ -5,10 +5,18 @@
 //
 // 라디오 두 행(radio_morning_on·radio_business_only)은 hq의 사무실 아침이다 — jobIndex 2에서는
 // office_printer가 열리지 않고 라디오 두 갈래가 그 자리를 대신한다("듣지 않음"이 명시된 선택).
+// 사무실의 모든 출구는 아침 조회의 사람들 화면에서만 열린다(위 「아침 조회」 절).
 // 배태산이 파견 중일 때만 좌표를 받아 적을 손이 있다(broadcast = dispatchTaesan). gate_to_venue는
 // A(ru_first)의 관문에서 단서 없이 수신자 무대로 넘어가는 안전 밸브다.
 
-import type { ActionId, ChainStepId, CharacterId, CleanupGrade, JobStepId } from "../ids";
+import type {
+  ActionId,
+  ChainStepId,
+  CharacterId,
+  CleanupGrade,
+  JobStepId,
+  TalkChoice,
+} from "../ids";
 import { CHARACTER_IDS, CLEANUP_TASK_IDS, JOB_IDS } from "../ids";
 import type { CharacterState, RunState } from "../types";
 
@@ -148,6 +156,54 @@ export const completeJob = (run: RunState): Partial<RunState> => {
 };
 
 // ---------------------------------------------------------------------------
+// 아침 조회(면회실) — 사무실 단계의 하위 기계. 산문 화면(장면)을 덮고 사람들 쪽으로 건너간 뒤,
+// 그 자리에서 말을 걸어 면담(응답 셋)을 열고 프린터로 나간다. 세 축(officeStage·talks·
+// interview)은 office 단계 밖에서 뜻이 없다 — 사무실을 떠나는 apply는 셋을 초기값으로
+// 되돌리고, 하루가 바뀌면 talks는 빈 목록에서 다시 시작한다(일감이 곧 하루다).
+// ---------------------------------------------------------------------------
+
+/** 사무실을 떠날 때의 되돌림 — office 밖에서는 장면·오늘 한 면담 없음·면담 없음으로 고정된다. */
+const OFFICE_RESET: Partial<RunState> = { officeStage: "scene", talks: [], interview: null };
+
+/** 사람들 화면 — 아침 조회의 둘째 화면. 면담이 열려 있으면 그 화면이 이 위에 덮인다. */
+const atPeopleStage = (run: RunState): boolean =>
+  atStep(run, "office") && run.officeStage === "people";
+
+/** 사무실 밖으로 나가는 문 — 면담 중에는 닫힌다: 대화를 끊지 않고 프린터로 걸어갈 수 없다. */
+const canLeaveOffice = (run: RunState): boolean => atPeopleStage(run) && run.interview === null;
+
+/** 말 걸기 — 오늘 아직 이야기하지 않은 사람에게만 성사된다(하루 한 번). 버튼은 사람들 화면에
+ * 남아 있고, 이미 이야기한 사람을 두드리면 그 카드의 거부 문면이 사유를 답한다. */
+const talk = (id: CharacterId): ActionSpec => ({
+  // 면담 중에는 다른 사람의 문도 닫는다 — 열려 있으면 면담 상대를 갈아 끼워 앞 대화를
+  // 응답 없이 버릴 수 있다(화면이 덮여 보이지 않을 뿐, 상태 기계는 그 길을 열어 두면 안 된다).
+  when: (run) => atPeopleStage(run) && run.interview === null,
+  require: (run) => !run.talks.includes(id),
+  apply: () => ({ interview: { character: id, choice: null } }),
+});
+
+/** 면담 응답 — 고른 응답은 그 상대에게만 남는다(0 하한). 가드는 만들지 않는다:
+ * 이 세 축(fatigue·suspicion·trust)을 읽는 가드는 어디에도 없고, 여기서는 델타뿐이다. */
+const reply = (choice: TalkChoice): ActionSpec => ({
+  when: (run) => atStep(run, "office") && run.interview !== null && run.interview.choice === null,
+  apply: (run) => {
+    const interview = run.interview;
+    if (interview === null) return {}; // when이 이미 막는다 — apply는 총체로 남긴다
+    const c = run.characters[interview.character];
+    const next: CharacterState =
+      choice === "work"
+        ? { ...c, suspicion: Math.max(0, c.suspicion - 1) }
+        : choice === "comfort"
+          ? { ...c, trust: c.trust + 1 }
+          : { ...c, fatigue: Math.max(0, c.fatigue - 1) };
+    return {
+      interview: { character: interview.character, choice },
+      characters: { ...run.characters, [interview.character]: next },
+    };
+  },
+});
+
+// ---------------------------------------------------------------------------
 // ACTION_SPECS — actions.md 표 그대로. when은 목록에 올릴지, require는 클릭 뒤
 // 성사 여부를 가른다.
 // ---------------------------------------------------------------------------
@@ -158,28 +214,49 @@ const hqArchiveOpen = (run: RunState): boolean =>
 const ruinsSite = (run: RunState): boolean => atStep(run, "site") && run.jobIndex === 3;
 
 export const ACTION_SPECS: Readonly<Record<ActionId, ActionSpec>> = {
-  // 사무실 office
-  office_printer: {
-    when: (run) => atStep(run, "office") && run.jobIndex !== 2,
-    apply: () => ({ jobStep: "briefing" }),
+  // 사무실 office — 아침 조회: 장면(산문) → 사람들 → 면담 → 프린터.
+  office_next: {
+    when: (run) => atStep(run, "office") && run.officeStage === "scene",
+    apply: () => ({ officeStage: "people" }),
   },
+  office_printer: {
+    when: (run) => canLeaveOffice(run) && run.jobIndex !== 2,
+    apply: () => ({ jobStep: "briefing", ...OFFICE_RESET }),
+  },
+  talk_dusik: talk("dusik"),
+  talk_ru: talk("ru"),
+  talk_banjang: talk("banjang"),
+  talk_taesan: talk("taesan"),
+  interview_reply_work: reply("work"),
+  interview_reply_comfort: reply("comfort"),
+  interview_reply_joke: reply("joke"),
+  interview_close: {
+    when: (run) => atStep(run, "office") && run.interview !== null && run.interview.choice !== null,
+    apply: (run) => {
+      const interview = run.interview;
+      if (interview === null) return {}; // when이 이미 막는다 — apply는 총체로 남긴다
+      return { interview: null, talks: [...run.talks, interview.character] };
+    },
+  },
+
+  // 파견 결정 — 관측소 일감의 사무실은 프린터 대신 사람을 지방으로 보내는 두 갈래다.
   dispatch_send_taesan: {
-    when: (run) => atStep(run, "office") && run.jobIndex === 1,
-    apply: () => ({ dispatchTaesan: true, jobStep: "briefing" }),
+    when: (run) => canLeaveOffice(run) && run.jobIndex === 1,
+    apply: () => ({ dispatchTaesan: true, jobStep: "briefing", ...OFFICE_RESET }),
   },
   dispatch_send_other: {
-    when: (run) => atStep(run, "office") && run.jobIndex === 1,
-    apply: () => ({ dispatchTaesan: false, jobStep: "briefing" }),
+    when: (run) => canLeaveOffice(run) && run.jobIndex === 1,
+    apply: () => ({ dispatchTaesan: false, jobStep: "briefing", ...OFFICE_RESET }),
   },
 
   // hq의 사무실 아침 — 프린터 대신 라디오 두 갈래가 공문을 당긴다(표 사무실 절).
   radio_morning_on: {
-    when: (run) => atStep(run, "office") && run.jobIndex === 2,
-    apply: (run) => ({ broadcast: run.dispatchTaesan, jobStep: "briefing" }),
+    when: (run) => canLeaveOffice(run) && run.jobIndex === 2,
+    apply: (run) => ({ broadcast: run.dispatchTaesan, jobStep: "briefing", ...OFFICE_RESET }),
   },
   radio_business_only: {
-    when: (run) => atStep(run, "office") && run.jobIndex === 2,
-    apply: () => ({ jobStep: "briefing" }),
+    when: (run) => canLeaveOffice(run) && run.jobIndex === 2,
+    apply: () => ({ jobStep: "briefing", ...OFFICE_RESET }),
   },
 
   // 공문 briefing

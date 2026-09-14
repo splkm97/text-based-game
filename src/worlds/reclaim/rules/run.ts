@@ -16,11 +16,16 @@ export { cleanupGrade, RECHANCE_LIMIT, REVIEW_LIMIT };
 
 const TERMINAL_GUIDE = "회차가 이미 종결되었다";
 
-/** 새 회차 — 첫 일감(gwanak)의 사무실(표 「공통」 초기값). 배치 기본값은 ru_first(계획 §3.2). */
+/** 새 회차 — 첫 일감(gwanak)의 사무실(표 「공통」 초기값). 아침 조회는 장면에서 열리고
+ * (officeStage scene·오늘 한 면담 없음·면담 밖), 배치 기본값은 ru_first(계획 §3.2). */
 export const startRun = (_content: Content, placement: Placement = "ru_first"): RunState => ({
   placement,
   jobIndex: 0,
   jobStep: "office",
+  officeStage: "scene",
+  talks: [],
+  interview: null,
+  cutLines: [],
   party: [],
   cleanupPicks: [],
   characters: {

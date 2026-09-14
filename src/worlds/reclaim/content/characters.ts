@@ -1,4 +1,4 @@
-// The four employees of 복구 기록. Names and voice rules are fixed in `prototype/remains.json`;
+// The four employees of (주) 재해복구 DR. Names and voice rules are fixed in `prototype/remains.json`;
 // cards show only what the boss publicly knows at game start.
 
 import type { CharacterId } from "../ids";
