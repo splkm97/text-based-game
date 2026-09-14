@@ -113,6 +113,19 @@ const expectPreLine = (text: string, where: string): void => {
   );
 };
 
+/** 장면 화면을 넘긴다 — 지문이 두 장이면 `계속`이 선다(쪽 넘김은 화면 로컬 상태다). */
+const advanceScene = async (): Promise<void> => {
+  if (screen.queryByRole("button", { name: "계속" }) !== null) await click("계속");
+};
+
+/** 지문을 콘텐츠가 정한 자리에서 가른 두 장(화면과 같은 계산). */
+const sceneTexts = (job: (typeof CONTENT.jobs)[keyof typeof CONTENT.jobs]): readonly string[] => {
+  const paragraphs = job.office.prompt.split("\n\n");
+  const at = job.office.pageBreak;
+  if (at <= 0 || at >= paragraphs.length) return [job.office.prompt];
+  return [paragraphs.slice(0, at).join("\n\n"), paragraphs.slice(at).join("\n\n")];
+};
+
 /** 뒷정리 작업을 차례대로 고른다 — 작업 버튼의 이름은 세계 공통의 작업 문면이다. */
 const pickTasks = async (tasks: readonly CleanupTaskId[]): Promise<void> => {
   for (const task of tasks) await click(CONTENT.cleanupTasks[task]);
@@ -162,7 +175,12 @@ test("사무실 → 공문 → 인원 선택 → 뒷정리 → 현장 — 프린
   expect(store.getState().run?.jobStep).toBe("office");
   expect(store.getState().run?.officeStage).toBe("scene");
   expect(screen.getByRole("heading", { name: job.title })).toBeDefined();
-  expect(paragraph(job.office.prompt)).toBeDefined();
+  const pages = sceneTexts(job);
+  expect(paragraph(pages[0] ?? "")).toBeDefined();
+  // 첫 장에는 뉴스도 행동도 없다 — 일러스트·풍경, 그리고 `계속`뿐이다. 둘째 장에서야 나머지가 선다.
+  expect(screen.queryByText(job.office.news)).toBeNull();
+  await advanceScene();
+  expect(paragraph(pages[1] ?? "")).toBeDefined();
   expect(screen.getByText(job.office.news)).toBeDefined();
   expect(button(CONTENT.actions.office_next.label)).toBeDefined();
 
@@ -302,7 +320,10 @@ test("장면 지문은 빈 줄을 문단 나눔으로 살려 렌더된다 — wh
   mount(store);
   const job = CONTENT.jobs[JOB_IDS[0] ?? "gwanak"];
 
-  expectPreLine(job.office.prompt, "사무실(장면)");
+  expectPreLine(sceneTexts(job)[0] ?? "", "사무실(장면) 첫 장");
+  await advanceScene();
+  expectPreLine(sceneTexts(job)[1] ?? "", "사무실(장면) 둘째 장");
+  await advanceScene();
   await click(CONTENT.actions.office_next.label);
   await click(CONTENT.actions.office_printer.label);
   expectPreLine(job.briefing.prompt, "공문");
@@ -397,6 +418,7 @@ test("어느 화면에도 상태 수치는 숫자·게이지·미터로 오르�
   mount(store);
 
   expectNoMeters("사무실(장면)");
+  await advanceScene();
   await click(CONTENT.actions.office_next.label);
   expectNoMeters("사무실(사람들)");
   await click(CONTENT.actions.office_printer.label);
@@ -436,6 +458,7 @@ test("회차가 도는 동안 종결의 이름은 어디에도 없다 — 기록
   const store = makeStore();
   store.getState().start();
   mount(store);
+  await advanceScene();
   await click(CONTENT.actions.office_next.label);
   await click(CONTENT.actions.office_printer.label);
 
@@ -471,12 +494,21 @@ test("모든 단계 화면이 장면 묘사 → 문서/뉴스 → 인물 대사 
   mount(store);
   const job = CONTENT.jobs[JOB_IDS[0] ?? "gwanak"];
 
-  // 사무실(산문 화면): 첫 문단이 아침 지문이고, 뉴스와 둘러보기가 그 뒤에 온다. 대사는 없다.
+  // 사무실(산문 화면): 첫 장은 일러스트와 풍경, 둘째 장에 남은 지문·뉴스·둘러보기가 온다.
+  // 대사는 어느 장에도 없다.
   const scene = screen.getByRole("region", { name: "사무실" });
   expect(scene.firstElementChild?.tagName).toBe("H2");
-  const prompt = paragraph(job.office.prompt);
+  const prompt = paragraph(sceneTexts(job)[0] ?? "");
+  // 첫 장: 제목 → (일러스트) → 지문 → 계속. 뉴스와 행동은 여기 없다.
+  expect(scene.querySelector("svg[role='img']")).not.toBeNull();
+  expect(isBefore(prompt, button("계속"))).toBe(true);
+  expect(screen.queryByText(job.office.news)).toBeNull();
+  await advanceScene();
+  // 둘째 장: 지문 나머지 → 뉴스 → 둘러보기. 일러스트는 첫 장에만 걸린다.
+  const rest = paragraph(sceneTexts(job)[1] ?? "");
   const news = screen.getByText(job.office.news);
-  expect(isBefore(prompt, news)).toBe(true);
+  expect(scene.querySelector("svg[role='img']")).toBeNull();
+  expect(isBefore(rest, news)).toBe(true);
   expect(isBefore(news, button(CONTENT.actions.office_next.label))).toBe(true);
   for (const line of job.office.chatter) {
     expect(document.body.textContent?.includes(line.text)).toBe(false);
@@ -671,9 +703,11 @@ test("아침 조회: 장면 → 사람들 → 말 걸기 → 응답 → 닫기 �
   const job = CONTENT.jobs[JOB_IDS[0] ?? "gwanak"];
 
   // 장면(산문) — 읽는 화면이고 행동은 둘러보기 하나뿐이다.
+  await advanceScene();
   expect(button(CONTENT.actions.office_next.label)).toBeDefined();
   expect(screen.queryByText(job.office.printer)).toBeNull();
 
+  await advanceScene();
   await click(CONTENT.actions.office_next.label);
   expect(store.getState().run?.officeStage).toBe("people");
 
@@ -732,7 +766,8 @@ test("장면 화면에는 산문만 있다 — 사람들·프린터·현황은 �
   const job = CONTENT.jobs[JOB_IDS[0] ?? "gwanak"];
 
   const scene = screen.getByRole("region", { name: "사무실" });
-  expect(paragraph(job.office.prompt)).toBeDefined();
+  expect(paragraph(sceneTexts(job)[0] ?? "")).toBeDefined();
+  await advanceScene();
   expect(screen.getByText(job.office.news)).toBeDefined();
   expect(actionLabels(scene)).toEqual([CONTENT.actions.office_next.label]);
   for (const line of job.office.chatter) {
@@ -741,6 +776,7 @@ test("장면 화면에는 산문만 있다 — 사람들·프린터·현황은 �
   expect(screen.queryByText(job.office.printer)).toBeNull();
   expect(screen.queryByLabelText("현황")).toBeNull();
 
+  await advanceScene();
   await click(CONTENT.actions.office_next.label);
 
   // 사람들 화면: 제목 아래에 네 사람의 창문이 격자로 서고, 지문과 뉴스는 여기 다시 오지
@@ -764,6 +800,7 @@ test("사람들 화면은 네 사람을 田자 창문 격자로 세운다 — �
   store.getState().start();
   mount(store);
   const job = CONTENT.jobs[JOB_IDS[0] ?? "gwanak"];
+  await advanceScene();
   await click(CONTENT.actions.office_next.label);
 
   // 田자 = 2열 격자. 창문 넷이 좌상·우상·좌하·우하(CHARACTER_IDS 순서)로 앉는다.

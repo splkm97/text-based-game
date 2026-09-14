@@ -71,11 +71,14 @@ test("타이틀에서 새 회차를 시작하면 첫 일감의 사무실 화면�
   expect(stores.run.getState().run?.officeStage).toBe("scene");
   expect(screen.getByRole("heading", { name: CONTENT.jobs.gwanak.title })).toBeDefined();
   // 산문 화면은 그 아침의 지문을 한 요소에 문단째로 내보낸다(문단 나눔은 pre-line이 살린다).
-  expect(
-    screen.getByText(
-      (_text, element) => element?.textContent === CONTENT.jobs.gwanak.office.prompt,
-    ),
-  ).toBeDefined();
+  const firstScene = CONTENT.jobs.gwanak.office.prompt
+    .split("\n\n")
+    .slice(0, CONTENT.jobs.gwanak.office.pageBreak)
+    .join("\n\n");
+  expect(screen.getByText((_text, element) => element?.textContent === firstScene)).toBeDefined();
+  // 지문이 두 장이면 마지막 장에서야 행동이 선다 — 첫 장은 산문과 일러스트뿐이다.
+  const 계속 = screen.queryByRole("button", { name: "계속" });
+  if (계속 !== null) await userEvent.click(계속);
   expect(button(CONTENT.actions.office_next.label)).toBeDefined();
 });
 
