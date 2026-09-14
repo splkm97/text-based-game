@@ -59,7 +59,7 @@ export const LEDGER_FACTS: readonly LedgerFact[] = [
   {
     id: "association-secret-covert-action",
     source: "settings.association.secretCovertAction",
-    keywords: ["제3자", "안다는 사실"],
+    keywords: ["제3자", "안다는 사실", "스스로 나서지 않는다", "직접 나서지"],
     secret: true,
   },
   // --- settings.company ---
