@@ -15,7 +15,9 @@
 // 있는지는 전부 규칙의 목록이 정한다: 화면은 가드를 다시 보지 않고 availableActions·talks만 읽는다.
 //
 // 잡담은 창문마다 시차를 두고 떠오르고(ROLL_CALL_STEP_MS), 루의 줄만 느린 박자·다른 서체다 —
-// 아침 조회는 한 사람씩 말한다. 읽는 순서는 제목 → 사람들 격자 → 프린터 → 현황 → 나머지 행동.
+// 아침 조회는 한 사람씩 말한다. 다만 이 자리에서는 글자를 한 단계 줄이고(META 12px) **끊기를 두지
+// 않는다**: 네 줄이 나란한 화면에서 한 줄만 끊을 수 있으면 격자가 아니라 그 줄이 특별해진다.
+// 끊기는 루와 마주 앉는 자리(면담)에서만 있다. 읽는 순서는 제목 → 사람들 격자 → 프린터 → 현황.
 
 import { PixelSprite } from "../../../../shared/art/PixelSprite";
 import { Button } from "../../../../shared/ui/Button";
@@ -85,7 +87,13 @@ function WindowFace({
           scale={2}
         />
         {chatter !== null && (
-          <VoicedLine character={character} text={chatter} startDelay={order * ROLL_CALL_STEP_MS} />
+          <VoicedLine
+            character={character}
+            text={chatter}
+            mode="meta"
+            cut={false}
+            startDelay={order * ROLL_CALL_STEP_MS}
+          />
         )}
       </span>
     </>

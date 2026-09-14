@@ -838,7 +838,7 @@ test("사람들 화면은 네 사람을 田자 창문 격자로 세운다 — �
     // 창문 안에서 만질 수 있는 것은 말 걸기 버튼 하나뿐이다 — 컨트롤 최소 높이(44px)를 지킨다.
     const talk = within(pane).getByRole("button", { name: label });
     expect(talk.className).toContain("min-h-11");
-    // 루의 창문에는 문면 조작(`말을 끊는다`)이 함께 설 수 있다 — 세는 것은 말 걸기뿐이다.
+    // 창문에는 문면 조작이 서지 않는다(끊기는 면담의 일이다) — 세는 것은 말 걸기뿐이다.
     expect(actionLabels(pane)).toEqual([label]);
     expect(isBefore(paragraph(chatterOf(job, character)), talk)).toBe(true);
   }
@@ -872,6 +872,15 @@ test("사람들 화면은 네 사람을 田자 창문 격자로 세운다 — �
       "reclaim-voice-ru",
     );
   }
+  // 이 자리의 잡담은 한 단계 작다(META 12px) — 네 줄이 나란한 격자에서는 글자가 조용해야 한다.
+  for (const character of CHARACTER_IDS) {
+    expect(paragraph(chatterOf(job, character)).className, `${character}의 잡담 크기`).toContain(
+      "text-xs",
+    );
+  }
+  // 그리고 여기서는 끊을 수 없다 — 끊기는 루와 마주 앉는 자리(면담)의 일이다.
+  expect(screen.queryByRole("button", { name: "말을 끊는다" })).toBeNull();
+
   // 차례 시차 — 첫 창문은 0ms, 다음 창문들은 그만큼 늦게 시작한다.
   const starts = CHARACTER_IDS.map((character) => {
     const span = paragraph(chatterOf(job, character)).querySelector<HTMLElement>(
@@ -956,6 +965,27 @@ test("pageBreak가 0이면 장면은 한 장이다 — 계속 없이 곧바로 �
   expect(paragraph(CONTENT.jobs.gwanak.office.prompt)).toBeDefined();
   expect(screen.queryByRole("button", { name: "계속" })).toBeNull();
   expect(button(CONTENT.actions.office_next.label)).toBeDefined();
+});
+
+test("루의 면담에서는 말을 끊을 수 있다 — 끊기는 루와 마주 앉은 자리의 일이다", async () => {
+  const store = makeStore();
+  inject(store, makeRun({ jobStep: "office", officeStage: "people" }));
+  mount(store);
+
+  await click(CONTENT.actions.talk_ru.label);
+  const cut = screen.getByRole("button", { name: "말을 끊는다" });
+  expect(cut.className).toContain("min-h-11");
+  // 누르면 그때까지 보인 앞부분만 남고, 뒷말은 회차에 남아 다시 오지 않는다.
+  await userEvent.click(cut);
+  expect(screen.getByText(/뒷말은 듣지 못했다/)).toBeDefined();
+  // 끊긴 뒤의 줄은 원문의 **앞부분**이다 — 그 접두가 화면에 남고 나머지는 오지 않는다.
+  const opening = CONTENT.interviews.gwanak.ru.opening;
+  const line = [...document.querySelectorAll("p")].find(
+    (element) =>
+      (element.textContent ?? "").length > 0 && opening.startsWith(element.textContent ?? ""),
+  );
+  expect(line, "끊긴 줄의 앞부분").toBeDefined();
+  expect(line?.textContent).not.toBe(opening);
 });
 
 test("면담은 루가 아니어도 지문처럼 뜬다 — 연출(느린 박자·끊기)만 루의 것이다", async () => {

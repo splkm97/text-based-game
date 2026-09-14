@@ -172,11 +172,11 @@ export const REVEAL_CSS = `
   .reclaim-grow { transition: none; }
 }
 
-/* 루의 목소리 — 다른 픽셀 격자(Galmuri9)로 앉고, 한 단계 크게 읽는다(9px 격자는 정수배에서 또렷하다). */
-.reclaim-voice-ru {
-  font-family: "Galmuri9", var(--font-pixel);
-  font-size: 1.125rem;
-}
+/* 루의 목소리 — 다른 픽셀 격자(Galmuri9)로 앉는다. 크기는 자리가 정한다: 지문 자리에서만
+   한 단계 크게(9px 격자는 정수배에서 또렷하다), 대사 줄·격자처럼 작은 자리에서는 그 자리의
+   크기를 그대로 쓴다(서체만 다르고 크기는 이웃과 같다 — 작은 자리에서 혼자 커지면 튄다). */
+.reclaim-voice-ru { font-family: "Galmuri9", var(--font-pixel); }
+.reclaim-voice-ru.reclaim-voice-lg { font-size: 1.125rem; }
 @media (prefers-reduced-motion: reduce) {
   .reclaim-reveal-word { animation: none; }
 }

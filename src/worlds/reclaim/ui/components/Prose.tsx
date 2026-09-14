@@ -44,7 +44,10 @@ export function Prose({ text, voice, className, cut, startDelay = 0 }: ProseProp
   const [grown, setGrown] = useState(false);
   const [settled, setSettled] = useState(false);
   const total = startDelay + (delays.at(-1)?.at(-1) ?? 0) + cadence.wordMs;
-  const block = `${className ?? PROSE}${voice === "ru" ? " reclaim-voice-ru" : ""}`;
+  // 서체는 목소리의 것, 크기는 자리의 것 — 기본 지문 자리에서만 한 단계 크게 앉는다.
+  const voiceClass =
+    voice === "ru" ? ` reclaim-voice-ru${className === undefined ? " reclaim-voice-lg" : ""}` : "";
+  const block = `${className ?? PROSE}${voiceClass}`;
 
   // 자라는 것은 마운트 뒤 한 번 뒤집어야 CSS 전환이 걸린다(첫 프레임은 0fr로 그린다).
   useEffect(() => {
