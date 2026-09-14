@@ -8,33 +8,33 @@
 
 | Gate | 제목 | 호출 상황 | 핵심 질문 | 산출 파일 |
 |---|---|---|---|---|
-| `G01` | 첫 회차 경험 | 전체 첫 회차 구조가 안정된 후 | Hook·중반 긴장·절정 축적이 작동하는가? | `.outline/sdd/reviews/specialists/G01.md` |
-| `G02` | 재플레이 가치 | 여러 route와 결과가 실행된 후 | 첫 엔딩 뒤 다시 할 실제 이유가 남는가? | `.outline/sdd/reviews/specialists/G02.md` |
-| `G03` | 진엔딩 의미 | 진엔딩·일반 엔딩이 모두 작성된 후 | 진엔딩이 단순 행복 보상이 아닌가? | `.outline/sdd/reviews/specialists/G03.md` |
-| `G04` | 선택의 실제 대가 | 주요 선택과 후속 state가 구현된 후 | 선택이 장기 결과와 대가를 만드는가? | `.outline/sdd/reviews/specialists/G04.md` |
-| `G05` | 분기와 교차 인과 | 전체 선택 tree가 존재한 후 | 분기와 합류가 실제 사건 차이를 만드는가? | `.outline/sdd/reviews/specialists/G05.md` |
-| `G06` | 인물 욕망과 변화 | 주요 인물 장면과 route가 작성된 후 | 인물이 욕망·약점·변화·독립 행동을 갖는가? | `.outline/sdd/reviews/specialists/G06.md` |
-| `G07` | 행위 주도권과 대안 | 대안 해결·실패 route가 구현된 후 | 플레이어가 작가의 정답만 찾는가? | `.outline/sdd/reviews/specialists/G07.md` |
-| `G08` | 사건 발생 원인 | 전체 사건 graph가 안정된 후 | 각 주요 사건에 실제 원인이 있는가? | `.outline/sdd/reviews/specialists/G08.md` |
-| `G09` | 복선과 회수 | 본문·엔딩 회수 장면이 모두 준비된 후 | 복선이 자연스럽게 회수되는가? | `.outline/sdd/reviews/specialists/G09.md` |
-| `G10` | 반전과 예상 가능성 | 공개 정보와 반전이 고정된 후 | 반전이 이전 장면을 재해석하는가? | `.outline/sdd/reviews/specialists/G10.md` |
-| `G11` | 애착과 감정 보상 | 인물별 climax와 ending이 완성된 후 | 애착·충돌·손실·보상이 축적되는가? | `.outline/sdd/reviews/specialists/G11.md` |
-| `G12` | 악역과 제도 압력 | 조직·제도 압력의 결과가 구현된 후 | 제도/악역이 실제로 선택을 압박하는가? | `.outline/sdd/reviews/specialists/G12.md` |
-| `G13` | 세계 반응과 독립성 | 미개입·다른 route 결과가 준비된 후 | 세계와 NPC가 플레이어 없이도 움직이는가? | `.outline/sdd/reviews/specialists/G13.md` |
-| `G14` | 모든 엔딩의 종결 | 모든 채택 엔딩이 완성된 후 | 모든 엔딩이 6축 종결을 갖는가? | `.outline/sdd/reviews/specialists/G14.md` |
-| `G15` | 실패 이후의 이야기 | 실패 route와 후속 결과가 준비된 후 | 실패가 Game Over가 아니라 의미 있는 이야기를 만드는가? | `.outline/sdd/reviews/specialists/G15.md` |
-| `G16` | 다중 엔딩 균형 | 다중 엔딩 result set이 실행된 후 | 진엔딩만 정답이거나 한 route가 모두 소비하지 않는가? | `.outline/sdd/reviews/specialists/G16.md` |
-| `G17` | 재플레이 동기 채점 | G02·G16 근거와 실제 route set이 준비된 후 | A~G 재플레이 점수가 근거 있는가? | `.outline/sdd/reviews/specialists/G17.md` |
-| `G18` | 후회와 책임 귀속 | 주요 선택의 전후 결과가 확인된 후 | 합리적인 후회와 공정한 정보가 있는가? | `.outline/sdd/reviews/specialists/G18.md` |
-| `G19` | 정보 공정성과 다회차 지식 | route별 발견 정보와 진실이 고정된 후 | Layer 1/2/3가 공정하게 연결되는가? | `.outline/sdd/reviews/specialists/G19.md` |
-| `G20` | 긴장과 장면 호흡 | 전체 장·노드 순서가 고정된 후 | 확인 반복과 절정 분산이 없는가? | `.outline/sdd/reviews/specialists/G20.md` |
-| `G21` | 주제와 가치 충돌 | 선택·인물·엔딩이 모두 작성된 후 | 핵심 명제가 행동으로 시험되는가? | `.outline/sdd/reviews/specialists/G21.md` |
-| `G22` | 세계관과 CEO 직업 | 세계관·CEO 직업 선택이 구현된 후 | 세계 조건과 직업 판타지가 실제 선택을 바꾸는가? | `.outline/sdd/reviews/specialists/G22.md` |
-| `G23` | 경영과 현장 위기 | 경영 결정과 현장 위기가 연결된 후 | 관리 시스템과 드라마가 서로 원인이 되는가? | `.outline/sdd/reviews/specialists/G23.md` |
-| `G24` | 분기와 지식 모순 | 전체 상태·본문·엔딩이 안정된 후 | 설정·지식·상태·시간축 모순이 없는가? | `.outline/sdd/reviews/specialists/G24.md` |
-| `G25` | 몰입과 플레이 언어 | 실제 표시 문구와 선택지가 고정된 후 | 검증용 언어가 플레이 몰입을 깨지 않는가? | `.outline/sdd/reviews/specialists/G25.md` |
-| `G26` | 작가 개입과 플롯 보호 | 위험·실패·생존 결과가 모두 정의된 후 | 특정 인물이 설명 없이 보호되는가? | `.outline/sdd/reviews/specialists/G26.md` |
-| `G27` | 독자적 실행 | 전체 작품의 실행이 안정된 후 | 고유한 세계·직업·선택 결합이 남는가? | `.outline/sdd/reviews/specialists/G27.md` |
+| `G01` | 첫 회차 경험 | 전체 첫 회차 구조가 안정된 후 | Hook·중반 긴장·절정 축적이 작동하는가? | `RUN_DIR/outputs/G01.md` |
+| `G02` | 재플레이 가치 | 여러 route와 결과가 실행된 후 | 첫 엔딩 뒤 다시 할 실제 이유가 남는가? | `RUN_DIR/outputs/G02.md` |
+| `G03` | 진엔딩 의미 | 진엔딩·일반 엔딩이 모두 작성된 후 | 진엔딩이 단순 행복 보상이 아닌가? | `RUN_DIR/outputs/G03.md` |
+| `G04` | 선택의 실제 대가 | 주요 선택과 후속 state가 구현된 후 | 선택이 장기 결과와 대가를 만드는가? | `RUN_DIR/outputs/G04.md` |
+| `G05` | 분기와 교차 인과 | 전체 선택 tree가 존재한 후 | 분기와 합류가 실제 사건 차이를 만드는가? | `RUN_DIR/outputs/G05.md` |
+| `G06` | 인물 욕망과 변화 | 주요 인물 장면과 route가 작성된 후 | 인물이 욕망·약점·변화·독립 행동을 갖는가? | `RUN_DIR/outputs/G06.md` |
+| `G07` | 행위 주도권과 대안 | 대안 해결·실패 route가 구현된 후 | 플레이어가 작가의 정답만 찾는가? | `RUN_DIR/outputs/G07.md` |
+| `G08` | 사건 발생 원인 | 전체 사건 graph가 안정된 후 | 각 주요 사건에 실제 원인이 있는가? | `RUN_DIR/outputs/G08.md` |
+| `G09` | 복선과 회수 | 본문·엔딩 회수 장면이 모두 준비된 후 | 복선이 자연스럽게 회수되는가? | `RUN_DIR/outputs/G09.md` |
+| `G10` | 반전과 예상 가능성 | 공개 정보와 반전이 고정된 후 | 반전이 이전 장면을 재해석하는가? | `RUN_DIR/outputs/G10.md` |
+| `G11` | 애착과 감정 보상 | 인물별 climax와 ending이 완성된 후 | 애착·충돌·손실·보상이 축적되는가? | `RUN_DIR/outputs/G11.md` |
+| `G12` | 악역과 제도 압력 | 조직·제도 압력의 결과가 구현된 후 | 제도/악역이 실제로 선택을 압박하는가? | `RUN_DIR/outputs/G12.md` |
+| `G13` | 세계 반응과 독립성 | 미개입·다른 route 결과가 준비된 후 | 세계와 NPC가 플레이어 없이도 움직이는가? | `RUN_DIR/outputs/G13.md` |
+| `G14` | 모든 엔딩의 종결 | 모든 채택 엔딩이 완성된 후 | 모든 엔딩이 6축 종결을 갖는가? | `RUN_DIR/outputs/G14.md` |
+| `G15` | 실패 이후의 이야기 | 실패 route와 후속 결과가 준비된 후 | 실패가 Game Over가 아니라 의미 있는 이야기를 만드는가? | `RUN_DIR/outputs/G15.md` |
+| `G16` | 다중 엔딩 균형 | 다중 엔딩 result set이 실행된 후 | 진엔딩만 정답이거나 한 route가 모두 소비하지 않는가? | `RUN_DIR/outputs/G16.md` |
+| `G17` | 재플레이 동기 채점 | G02·G16 근거와 실제 route set이 준비된 후 | A~G 재플레이 점수가 근거 있는가? | `RUN_DIR/outputs/G17.md` |
+| `G18` | 후회와 책임 귀속 | 주요 선택의 전후 결과가 확인된 후 | 합리적인 후회와 공정한 정보가 있는가? | `RUN_DIR/outputs/G18.md` |
+| `G19` | 정보 공정성과 다회차 지식 | route별 발견 정보와 진실이 고정된 후 | Layer 1/2/3가 공정하게 연결되는가? | `RUN_DIR/outputs/G19.md` |
+| `G20` | 긴장과 장면 호흡 | 전체 장·노드 순서가 고정된 후 | 확인 반복과 절정 분산이 없는가? | `RUN_DIR/outputs/G20.md` |
+| `G21` | 주제와 가치 충돌 | 선택·인물·엔딩이 모두 작성된 후 | 핵심 명제가 행동으로 시험되는가? | `RUN_DIR/outputs/G21.md` |
+| `G22` | 세계관과 CEO 직업 | 세계관·CEO 직업 선택이 구현된 후 | 세계 조건과 직업 판타지가 실제 선택을 바꾸는가? | `RUN_DIR/outputs/G22.md` |
+| `G23` | 경영과 현장 위기 | 경영 결정과 현장 위기가 연결된 후 | 관리 시스템과 드라마가 서로 원인이 되는가? | `RUN_DIR/outputs/G23.md` |
+| `G24` | 분기와 지식 모순 | 전체 상태·본문·엔딩이 안정된 후 | 설정·지식·상태·시간축 모순이 없는가? | `RUN_DIR/outputs/G24.md` |
+| `G25` | 몰입과 플레이 언어 | 실제 표시 문구와 선택지가 고정된 후 | 검증용 언어가 플레이 몰입을 깨지 않는가? | `RUN_DIR/outputs/G25.md` |
+| `G26` | 작가 개입과 플롯 보호 | 위험·실패·생존 결과가 모두 정의된 후 | 특정 인물이 설명 없이 보호되는가? | `RUN_DIR/outputs/G26.md` |
+| `G27` | 독자적 실행 | 전체 작품의 실행이 안정된 후 | 고유한 세계·직업·선택 결합이 남는가? | `RUN_DIR/outputs/G27.md` |
 
 ## 게이트별 루브릭
 
@@ -44,7 +44,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 도입→중반→절정→종결의 동기 변화 표. 가장 먼저 이탈할 위험이 있는 실제 장면과 이유.
 
-- Output: `.outline/sdd/reviews/specialists/G01.md`
+- Output: `RUN_DIR/outputs/G01.md`
 
 ### `G02` — 재플레이 가치
 
@@ -52,7 +52,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 검증된 경로별 결과 집합, 동시 진엔딩, 이후 남는 경험 표. 재플레이 이유 한 문장. 표본 최대를 이론적 최대로 부르지 않는다.
 
-- Output: `.outline/sdd/reviews/specialists/G02.md`
+- Output: `RUN_DIR/outputs/G02.md`
 
 ### `G03` — 진엔딩 의미
 
@@ -60,7 +60,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 진엔딩별 질문→사건 사슬→결론 표, 일반/좋은/비밀 결말과의 차이, 미회수 기대.
 
-- Output: `.outline/sdd/reviews/specialists/G03.md`
+- Output: `RUN_DIR/outputs/G03.md`
 
 ### `G04` — 선택의 실제 대가
 
@@ -68,7 +68,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 선택→즉시 결과→상태→중기→교차 사건→장기→엔딩 사슬. 단계별 근거와 단절 위치.
 
-- Output: `.outline/sdd/reviews/specialists/G04.md`
+- Output: `RUN_DIR/outputs/G04.md`
 
 ### `G05` — 분기와 교차 인과
 
@@ -76,7 +76,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 의미 있는 교차/체크리스트 잠금/차이 소멸 표와 주요 분기 지도.
 
-- Output: `.outline/sdd/reviews/specialists/G05.md`
+- Output: `RUN_DIR/outputs/G05.md`
 
 ### `G06` — 인물 욕망과 변화
 
@@ -84,7 +84,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 전 주요 인물 비교표와 각 인물의 결정적 행동·관계 변화 근거.
 
-- Output: `.outline/sdd/reviews/specialists/G06.md`
+- Output: `RUN_DIR/outputs/G06.md`
 
 ### `G07` — 행위 주도권과 대안
 
@@ -92,7 +92,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 대안 행동 수용/차단과 후속 이야기 표. 플레이어가 친구에게 말할 인과적 경험을 사실과 예상으로 분리.
 
-- Output: `.outline/sdd/reviews/specialists/G07.md`
+- Output: `RUN_DIR/outputs/G07.md`
 
 ### `G08` — 사건 발생 원인
 
@@ -100,7 +100,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 사건→원인→선행 증거→대안 설명 표. 인과 부족과 실제 모순을 분리.
 
-- Output: `.outline/sdd/reviews/specialists/G08.md`
+- Output: `RUN_DIR/outputs/G08.md`
 
 ### `G09` — 복선과 회수
 
@@ -108,7 +108,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 주요 복선 표와 처음/이후 의미, 실제 회수 장면.
 
-- Output: `.outline/sdd/reviews/specialists/G09.md`
+- Output: `RUN_DIR/outputs/G09.md`
 
 ### `G10` — 반전과 예상 가능성
 
@@ -116,7 +116,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 사건 기준점별 예측과 공개 후 새 선택, 논리적 단서 표.
 
-- Output: `.outline/sdd/reviews/specialists/G10.md`
+- Output: `RUN_DIR/outputs/G10.md`
 
 ### `G11` — 애착과 감정 보상
 
@@ -124,7 +124,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 감정 장면별 축적·선택 연관성·후속 변화·예상 잔상 표.
 
-- Output: `.outline/sdd/reviews/specialists/G11.md`
+- Output: `RUN_DIR/outputs/G11.md`
 
 ### `G12` — 악역과 제도 압력
 
@@ -132,7 +132,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 압력의 원인→행동→회사/인물 영향, 선택별 압력 변화 표.
 
-- Output: `.outline/sdd/reviews/specialists/G12.md`
+- Output: `RUN_DIR/outputs/G12.md`
 
 ### `G13` — 세계 반응과 독립성
 
@@ -140,7 +140,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 행동 반응 표, 미개입 결과 표, NPC 간 독립 관계 변화와 범위 한계.
 
-- Output: `.outline/sdd/reviews/specialists/G13.md`
+- Output: `RUN_DIR/outputs/G13.md`
 
 ### `G14` — 모든 엔딩의 종결
 
@@ -148,7 +148,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 모든 엔딩의 narrativeClosure/characterClosure/thematicClosure/emotionalClosure/consequence/memorability/evidence 표. 누락 엔딩은 자료 부족으로 명시.
 
-- Output: `.outline/sdd/reviews/specialists/G14.md`
+- Output: `RUN_DIR/outputs/G14.md`
 
 ### `G15` — 실패 이후의 이야기
 
@@ -156,7 +156,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 실제 실패별 이후 선택과 이야기가 계속되는지 표. 좋은 후회와 부당한 처벌을 분리.
 
-- Output: `.outline/sdd/reviews/specialists/G15.md`
+- Output: `RUN_DIR/outputs/G15.md`
 
 ### `G16` — 다중 엔딩 균형
 
@@ -164,7 +164,7 @@ Hook·주인공 행동 동기·다음 사건의 궁금증·중반 긴장·절정
 
 - Required output: 경로-결과 공존표, 가치관별 성취와 손실, 한 회차 소비 후 남는 경험.
 
-- Output: `.outline/sdd/reviews/specialists/G16.md`
+- Output: `RUN_DIR/outputs/G16.md`
 
 ### `G17` — 재플레이 동기 채점
 
@@ -172,7 +172,7 @@ A 다른 엔딩 B 선택 결과 C 인물 관계·삶 D 숨은 진실 E 다른 �
 
 - Required output: A~G 점수·개별 근거·total·reason. 실측 아님과 동시 달성 반영을 명시.
 
-- Output: `.outline/sdd/reviews/specialists/G17.md`
+- Output: `RUN_DIR/outputs/G17.md`
 
 ### `G18` — 후회와 책임 귀속
 
@@ -180,7 +180,7 @@ A 다른 엔딩 B 선택 결과 C 인물 관계·삶 D 숨은 진실 E 다른 �
 
 - Required output: 선택 전 지식/후회 원인/대안/공정성 표.
 
-- Output: `.outline/sdd/reviews/specialists/G18.md`
+- Output: `RUN_DIR/outputs/G18.md`
 
 ### `G19` — 정보 공정성과 다회차 지식
 
@@ -188,7 +188,7 @@ Layer1 기본 정보/Layer2 조건부 정보와 획득 조건/Layer3 연결·재
 
 - Required output: 정보별 계층·획득 조건·지식 주체·한 회차 접근·미래 선택 영향.
 
-- Output: `.outline/sdd/reviews/specialists/G19.md`
+- Output: `RUN_DIR/outputs/G19.md`
 
 ### `G20` — 긴장과 장면 호흡
 
@@ -196,7 +196,7 @@ Intro→Act1→Act2→Midpoint→Act3→Climax→Ending의 정보·갈등·선�
 
 - Required output: 구간별 긴장·새 경험 표, 합칠/유지할 장면과 이유.
 
-- Output: `.outline/sdd/reviews/specialists/G20.md`
+- Output: `RUN_DIR/outputs/G20.md`
 
 ### `G21` — 주제와 가치 충돌
 
@@ -204,7 +204,7 @@ Intro→Act1→Act2→Midpoint→Act3→Climax→Ending의 정보·갈등·선�
 
 - Required output: 주제 한 문장, 인물/선택/직업/결말이 제시하는 서로 다른 답.
 
-- Output: `.outline/sdd/reviews/specialists/G21.md`
+- Output: `RUN_DIR/outputs/G21.md`
 
 ### `G22` — 세계관과 CEO 직업
 
@@ -217,7 +217,7 @@ Provide evidence about `Management–Story Integration` and `Field / Crisis Qual
 
 - Required output: 세계 조건 제거 사고실험, 직업적 결정 표, 가장 자주 하는 흥미로운 결정, Detroit 관점 근거. 소유한 supplemental score 두 개를 출력하고, 다른 두 차원은 advisory evidence로만 제시한다.
 
-- Output: `.outline/sdd/reviews/specialists/G22.md`
+- Output: `RUN_DIR/outputs/G22.md`
 
 ### `G23` — 경영과 현장 위기
 
@@ -230,7 +230,7 @@ Provide evidence about `World Integration` and `Professional Fantasy` only as na
 
 - Required output: 시스템/결정→현장 사건→인물/조직→엔딩 표와 BG식 대안 수용. 소유한 supplemental score 두 개를 출력하고, 다른 두 차원은 advisory evidence로만 제시한다.
 
-- Output: `.outline/sdd/reviews/specialists/G23.md`
+- Output: `RUN_DIR/outputs/G23.md`
 
 ### `G24` — 분기와 지식 모순
 
@@ -238,7 +238,7 @@ Provide evidence about `World Integration` and `Professional Fantasy` only as na
 
 - Required output: 문제·장면/경로·충돌 사실 양쪽·심각도·제약을 지키는 수정 방향 표.
 
-- Output: `.outline/sdd/reviews/specialists/G24.md`
+- Output: `RUN_DIR/outputs/G24.md`
 
 ### `G25` — 몰입과 플레이 언어
 
@@ -246,7 +246,7 @@ Provide evidence about `World Integration` and `Professional Fantasy` only as na
 
 - Required output: 문장/행동 증거와 플레이어 관점의 문제, 정보 보존 수정 방향.
 
-- Output: `.outline/sdd/reviews/specialists/G25.md`
+- Output: `RUN_DIR/outputs/G25.md`
 
 ### `G26` — 작가 개입과 플롯 보호
 
@@ -254,7 +254,7 @@ Provide evidence about `World Integration` and `Professional Fantasy` only as na
 
 - Required output: 사건의 위협→대응→결과, 세계 규칙 예외와 대체 설계. 사망 부재 자체는 감점하지 않는다.
 
-- Output: `.outline/sdd/reviews/specialists/G26.md`
+- Output: `RUN_DIR/outputs/G26.md`
 
 ### `G27` — 독자적 실행
 
@@ -262,4 +262,4 @@ Provide evidence about `World Integration` and `Professional Fantasy` only as na
 
 - Required output: 고유한 실행과 근거, 익숙한 요소의 변형, 유지해야 할 차별점.
 
-- Output: `.outline/sdd/reviews/specialists/G27.md`
+- Output: `RUN_DIR/outputs/G27.md`

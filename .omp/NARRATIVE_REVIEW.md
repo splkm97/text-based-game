@@ -10,7 +10,7 @@
 | `SCENE` | 장면·노드 생성 또는 의미 있는 수정 직후 | 현재 장면, 직전/직후 노드, guard/effect, 정보 경계, 장면 인과 | `RUN_DIR/outputs/scenes/<SCENE_ID>.md` |
 | `ENDING_ROUTE` | 하나의 엔딩과 하나의 시작→종결 route 완성 직후 | 실제 route replay evidence, 엔딩 6축, route anchor, 비용·실패·후속 책임 | `RUN_DIR/outputs/endings/<ENDING_ID>/<ROUTE_ID>.md` |
 | `MULTI_ENDING` | 채택된 모든 엔딩·route·manifest·anchor 완성 후 | 엔딩 간 균형, 동시 달성, 재플레이, 정보 계층, 배타 상태, 전체 result set | `RUN_DIR/outputs/multi-ending-complete.md` |
-| `GATE_SPECIALIST` | 전체 narrative gate에 대한 독립 단일 관점 리뷰 | `narrative-gate-specialist` (`GATE=<NN>`) | `.outline/sdd/reviews/specialists/<GATE>.md` |
+| `GATE_SPECIALIST` | 전체 narrative gate에 대한 독립 단일 관점 리뷰 | `narrative-gate-specialist` (`GATE=<NN>`) | `RUN_DIR/outputs/<GATE>.md` |
 | `SYNTHESIS` | G01~G27 specialist memo가 모두 준비된 후 | 점수 병합·최종 판정·보고서 조립 | project skills로 실행 |
 
 ### 공통 실행 계약
