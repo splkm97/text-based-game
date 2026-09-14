@@ -1,6 +1,6 @@
-// 지문의 등장 애니메이션 — 단어가 아래에서 떠오르며 흐림이 걷히고, **문단은 위에서부터 차례로**
-// 시작한다(사용자 결정, 2026-09-14). 문단 p는 문단 p−1이 완전히 끝난 뒤에 시작한다 — 겹치지
-// 않는다. 한 화면이 한꺼번에 차오르지 않고 읽는 순서대로 채워진다.
+// 지문의 등장 애니메이션 — 단어가 아래에서 떠오르고, 문단이 시작할 때 그 문단의 흐림이 걷히며,
+// **문단은 위에서부터 차례로** 시작한다(사용자 결정, 2026-09-14). 문단 p는 문단 p−1이 완전히
+// 끝난 뒤에 시작한다 — 겹치지 않는다. 한 화면이 한꺼번에 차오르지 않고 읽는 순서대로 채워진다.
 //
 // 목소리마다 박자가 다르다(cadence): 지문은 기본 박자, **루는 유난히 느리고 말줄임표 조각 뒤에
 // 멈춘다** — 그녀의 말더듬이 화면에서 실제로 들리게. **문단이 길면 더 느리게** 흐른다: 단어
@@ -149,20 +149,40 @@ export const REVEAL_CSS = `
   font-display: swap;
 }
 @keyframes reclaim-reveal {
-  from { opacity: 0; transform: translateY(6px); filter: blur(6px); }
-  to   { opacity: 1; transform: none; filter: none; }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
 }
 .reclaim-reveal-word {
   display: inline-block;
   animation: reclaim-reveal var(--reclaim-word-ms, 380ms) var(--ease-ink) both;
 }
 /*
- * 단어는 제 차례가 오기 전에 **보이지 않아야 한다**. animation-fill-mode: both가 그 일을 하지만,
- * filter가 든 from 프레임의 역방향 채움(backwards fill)을 적용하지 않는 Safari 빌드가 있어
- * 지연 중인 단어가 원래 투명도로 먼저 그려졌다 — 애니메이션이 시작되기도 전에 텍스트가 노출되는
- * 결함이다. 그래서 시작 상태를 규칙에도 함께 못 박는다: 키프레임이 늦게 붙어도 단어는 투명하게
- * 시작한다. 애니메이션을 쓸 수 있고 모션을 줄이지 않은 환경으로만 좁혀서, reduced-motion과
- * 애니메이션 미지원 환경(테스트 포함)에서는 원문이 그대로 보이게 남긴다.
+ * 문단 — 시작할 때 한 번 초점이 맞는다(흐림이 걷힌다). 흐림은 **문단 하나에만** 건다: 단어마다
+ * filter를 걸면 한 화면에 백여 개의 흐린 상자가 매 프레임 다시 래스터되어 모바일에서 가장 비싼
+ * 지점이 된다(문장 하나가 아니라 화면 전체가 그 값을 치른다). 문단 단위로 내리면 같은 "흐림이
+ * 걷히는" 인상을 필터 개수 1/28로 낸다.
+ *
+ * fill-mode를 쓰지 않는다(기본 none). forwards를 주면 애니메이션이 끝난 뒤에도 계산된 filter가
+ * none으로 돌아오지 않고 blur(0px)로 남아, 지문이 다 앉은 뒤에도 문단마다 합성 레이어가 하나씩
+ * 영구히 남는다. 채움 없이 두면 시작 전에는 기저 상태(흐림 없음)이고 끝난 뒤에도 그리로 돌아간다
+ * — 시작 전이 흐리지 않아도 되는 이유는 그때 그 문단의 단어가 아직 투명하기 때문이다.
+ */
+@keyframes reclaim-focus {
+  from { filter: blur(6px); }
+  to   { filter: none; }
+}
+.reclaim-focus {
+  display: block;
+  animation: reclaim-focus var(--reclaim-focus-ms, 320ms) var(--ease-ink);
+}
+/*
+ * 단어는 제 차례가 오기 전에 **보이지 않아야 한다**. 그 상태를 animation-fill-mode: both의
+ * 역방향 채움에만 맡기지 않고 규칙에도 함께 못 박는다 — 그 채움을 빠뜨리는 렌더러가 있어
+ * 지연 중인 단어가 원래 투명도로 먼저 그려진다는 보고가 있었다(애니메이션이 시작되기도 전에
+ * 텍스트가 노출되는 결함). 규칙으로 선언하면 키프레임이 늦게 붙어도 단어는 투명하게 시작한다.
+ * 범위는 애니메이션을 쓸 수 있고 모션을 줄이지 않은 환경으로만 좁힌다: 가시성이 애니메이션
+ * 실행에 의존하면 안 되므로, reduced-motion과 애니메이션 미지원 환경(테스트 포함)에서는
+ * 이 규칙이 아예 적용되지 않고 원문이 그대로 보인다.
  */
 @supports (animation-name: reclaim-reveal) {
   @media (prefers-reduced-motion: no-preference) {
@@ -177,5 +197,6 @@ export const REVEAL_CSS = `
 .reclaim-voice-ru.reclaim-voice-lg { font-size: 1.125rem; }
 @media (prefers-reduced-motion: reduce) {
   .reclaim-reveal-word { animation: none; }
+  .reclaim-focus { animation: none; }
 }
 `;

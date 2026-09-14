@@ -30,8 +30,15 @@ export function BriefingScreen({ job }: BriefingScreenProps) {
   return (
     <section aria-label="공문" className={`flex flex-1 flex-col ${SECTION_GAP} ${SCREEN_PAD}`}>
       <h2 className="text-base text-parchment">{job.title}</h2>
-      {lead && <Prose text={lead} />}
-      <BriefingPanel document={job.briefing.document} fill />
+      {lead && (
+        // 장면 묘사는 화면 높이의 일부만 쓰고 그 안에서 스크롤한다. 길이만큼 자리를 차지하게
+        // 두면 아래의 공문이 첫 화면 밖으로 밀려난다 — 이 화면의 목적은 공문이므로 문서 자리는
+        // 지키고 묘사가 양보한다. 읽는 순서(묘사 → 문서 → 대사)는 그대로다.
+        <div className="max-h-[38dvh] overflow-y-auto">
+          <Prose text={lead} />
+        </div>
+      )}
+      <BriefingPanel document={job.briefing.document} />
       {job.briefing.talk.length > 0 && (
         <ul aria-label="공문 대사" className={`flex flex-col ${INNER_GAP}`}>
           {job.briefing.talk.map((line) => (

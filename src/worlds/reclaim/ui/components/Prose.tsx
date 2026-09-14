@@ -13,7 +13,7 @@
 // 아래에 남는 것은 글과 다음 행동뿐이게. 끊으면 그때까지 보인 앞부분만 남고 뒷말은 회차에
 // 기록되어 다시 오지 않는다. 건너뛰기 버튼은 두지 않는다: 지문을 대하는 방법은 읽거나 끊거나 둘뿐이다.
 
-import { type CSSProperties, Fragment, type ReactNode, useEffect, useRef, useState } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
 import type { CharacterId } from "../../ids";
 import { META, PROSE } from "../density";
 import { cadenceFor, schedule, settledWords, visiblePrefix } from "../reveal";
@@ -85,9 +85,11 @@ export function Prose({ text, voice, className, cut, startDelay = 0 }: ProseProp
         style={{ "--reclaim-word-ms": `${cadence.wordMs}ms` } as CSSProperties}
       >
         {paragraphs.map((paragraph, index) => (
-          <Fragment
+          <span
             // biome-ignore lint/suspicious/noArrayIndexKey: 문단 위치가 곧 서열이다(문면은 불변).
             key={index}
+            className="reclaim-focus"
+            style={{ animationDelay: `${startDelay + (delays[index]?.[0] ?? 0)}ms` }}
           >
             {index > 0 && "\n\n"}
             {paragraph.split(" ").flatMap((word, wordIndex) => {
@@ -103,7 +105,7 @@ export function Prose({ text, voice, className, cut, startDelay = 0 }: ProseProp
               );
               return wordIndex === 0 ? [revealed] : [" ", revealed];
             })}
-          </Fragment>
+          </span>
         ))}
       </p>
     </>

@@ -5,23 +5,20 @@
 // 렌더하지 않는다. 몸체는 세계 공통의 고정폭 픽셀 문서체를 상속하고, 종이 톤 바탕에
 // 2px 테두리(radius 0, 그림자 없음)로 종이 한 장을 낸다.
 //
-// `fill`은 전체화면 공문 단계에서만 쓴다 — 종이가 남는 자리를 다 차지해 화면이 곧 문서가 된다.
+// 종이는 제 내용만큼만 차지한다. 남는 자리를 채우게 두면(예전 `fill`) 그 자리를 누가
+// 가져가느냐에 따라 문서가 밀려나거나 늘어나서, 화면마다 종이의 크기가 달라졌다.
 
 import type { StageDocument } from "../../types";
 
 type BriefingPanelProps = {
   readonly document: StageDocument;
-  /** 종이가 화면의 남는 자리를 채운다(전체화면 공문). */
-  readonly fill?: boolean;
 };
 
-export function BriefingPanel({ document, fill = false }: BriefingPanelProps) {
+export function BriefingPanel({ document }: BriefingPanelProps) {
   return (
     <section
       aria-label="문서"
-      className={`flex flex-col gap-2 border-2 border-ash bg-parchment px-3 py-2 text-ink ${
-        fill ? "flex-1" : ""
-      }`}
+      className="flex flex-col gap-2 border-2 border-ash bg-parchment px-3 py-2 text-ink"
     >
       <h3 className="text-center text-base leading-prose underline underline-offset-4">
         {document.heading}
