@@ -512,3 +512,21 @@ describe("쿠션 — 첫 일감이 세계와 진행을 소개한다", () => {
     ).toEqual([]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// 10. 장면 분할 — 쪽 나눔은 콘텐츠가 정하고, 그 값은 문단 안에 있다.
+// `pageBreak`가 0이면 한 장, 문단 수 이상이면 두 장이 되지 않는다(화면이 그렇게 지킨다).
+// 값이 문단 밖으로 나가면 화면이 조용히 한 장으로 접어 버리므로, 계약을 여기서 잡는다.
+// ---------------------------------------------------------------------------
+
+describe("장면 분할 — pageBreak는 문단 수 안에 있다", () => {
+  test.each(JOB_IDS)("%s — 0 이상, 문단 수 미만", (job) => {
+    const paragraphs = CONTENT.jobs[job].office.prompt
+      .split("\n\n")
+      .filter((p) => p.trim() !== "").length;
+    const at = CONTENT.jobs[job].office.pageBreak;
+    expect(Number.isInteger(at), `${job}.office.pageBreak가 정수가 아니다`).toBe(true);
+    expect(at, `${job}.office.pageBreak=${at} (문단 ${paragraphs}개)`).toBeGreaterThanOrEqual(0);
+    expect(at, `${job}.office.pageBreak=${at} (문단 ${paragraphs}개)`).toBeLessThan(paragraphs);
+  });
+});

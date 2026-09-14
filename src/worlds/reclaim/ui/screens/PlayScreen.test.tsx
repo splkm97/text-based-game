@@ -916,3 +916,39 @@ test("면담 화면은 대사로 시작하지 않는다 — 면담 중에는 사
   expect(screen.queryByRole("button", { name: CONTENT.actions.interview_close.label })).toBeNull();
   expect(screen.queryByRole("button", { name: CONTENT.actions.office_printer.label })).toBeNull();
 });
+
+test("pageBreak가 0이면 장면은 한 장이다 — 계속 없이 곧바로 행동이 선다", () => {
+  const store = makeStore();
+  const job = CONTENT.jobs.gwanak;
+  const content: Content = {
+    ...CONTENT,
+    jobs: { ...CONTENT.jobs, gwanak: { ...job, office: { ...job.office, pageBreak: 0 } } },
+  };
+  store.getState().start();
+  render(
+    <RunStoreContext value={store}>
+      <ContentContext value={content}>
+        <PlayScreen />
+      </ContentContext>
+    </RunStoreContext>,
+  );
+
+  expect(paragraph(CONTENT.jobs.gwanak.office.prompt)).toBeDefined();
+  expect(screen.queryByRole("button", { name: "계속" })).toBeNull();
+  expect(button(CONTENT.actions.office_next.label)).toBeDefined();
+});
+
+test("면담은 루가 아니어도 지문처럼 뜬다 — 연출(느린 박자·끊기)만 루의 것이다", async () => {
+  const store = makeStore();
+  inject(store, makeRun({ jobStep: "office", officeStage: "people" }));
+  mount(store);
+
+  await click(CONTENT.actions.talk_taesan.label);
+  const opening = paragraph(CONTENT.interviews.gwanak.taesan.opening);
+  // 지문 자리이므로 단어 span으로 뜨고, 문단 나눔을 살린다.
+  expect(opening.querySelectorAll(".reclaim-reveal-word").length).toBeGreaterThan(0);
+  expect(opening.className).toContain("whitespace-pre-line");
+  expect(opening.className).not.toContain("reclaim-voice-ru");
+  // 끊기는 루에게만 있다 — 배태산의 면담에는 그 버튼이 서지 않는다.
+  expect(screen.queryByRole("button", { name: "말을 끊는다" })).toBeNull();
+});
