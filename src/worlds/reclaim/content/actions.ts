@@ -233,7 +233,7 @@ export const ACTIONS_TEXT: Readonly<Record<ActionId, ActionText>> = {
     id: "xcheck_compare",
     label: "좌표와 실험 기록을 대조한다",
     deny: "방송 좌표와 문서가 모두 있어야 대조가 선다",
-    result: "두 좌표가 같은 지점이었다. 예측이 아니라 소환이었다.",
+    result: "두 좌표가 같은 지점이었다. 예측은 없었다 — 협회가 소환했다.",
   },
   xcheck_skip: {
     id: "xcheck_skip",

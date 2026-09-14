@@ -23,6 +23,7 @@ import {
   type JobId,
   TALK_CHOICE_IDS,
 } from "../ids";
+import { CLEANUP_FORBIDDEN, CLEANUP_KINDS, CLEANUP_REQUIRED } from "../rules/cleanupKinds";
 import type { StageDocument, TalkLine } from "../types";
 import { CONTENT } from "./index";
 
@@ -300,13 +301,15 @@ describe("종결의 잠금 서술 — 형식 단언(길이 진단)", () => {
 
 // ---------------------------------------------------------------------------
 // 6. 뒷정리 — 지침서가 유일한 단서다.
-// 작업 이름(버튼 문면)은 차례를 흘리지 않고, 순서 교리는 일감의 지침서(site.document)에만
-// 산다. 지침서는 작업 이름을 지침 순서(안전 → 차단 → 확인 → 기록)대로 싣는다 — 화면이
-// 버튼을 섞어 그려도 그 단서가 남는다.
+// 작업 이름(버튼 문면)은 차례를 흘리지 않고, 규칙은 일감의 지침서(site.document)에만 산다.
+// 종류는 일감마다 다르다(rules/cleanupKinds.ts): 관악은 네 작업을 지침 순서 그대로(order),
+// 관측소·문서고·폐허는 필수 집합만 갖추면 되고(subset·exclude·count), 문서고는 금지 작업
+// 하나를 더 진다(exclude). 지침서는 그 현장의 규칙을 문면으로 드러내야 하고, 화면이 버튼을
+// 섞어 그려도 그 단서가 남는다.
 // ---------------------------------------------------------------------------
 
 describe("뒷정리 — 지침서가 유일한 단서다", () => {
-  /** 지침서가 작업 이름을 실은 차례. 없는 작업은 빼고 센다. */
+  /** 지침서가 작업 이름을 실은 차례. 없는 작업은 빼고 센다(order 종류에서만 순서가 뜻을 갖는다). */
   const sheetOrder = (job: JobId): readonly CleanupTaskId[] =>
     CLEANUP_TASK_IDS.map((task) => ({
       task,
@@ -318,6 +321,10 @@ describe("뒷정리 — 지침서가 유일한 단서다", () => {
       .sort((a, b) => a.at - b.at)
       .map((entry) => entry.task);
 
+  /** 지침서에 그 작업의 정확한 문면이 실려 있는가(순서 무관, 존재만 확인). */
+  const sheetMentions = (job: JobId, task: CleanupTaskId): boolean =>
+    CONTENT.jobs[job].site.document.items.some((line) => line.includes(CONTENT.cleanupTasks[task]));
+
   test("작업 이름이 넷이고 서로 다르며, 차례를 흘리는 낱말이 없다", () => {
     expect(Object.keys(CONTENT.cleanupTasks).sort()).toEqual([...CLEANUP_TASK_IDS].sort());
     const names = CLEANUP_TASK_IDS.map((id) => CONTENT.cleanupTasks[id]);
@@ -328,10 +335,48 @@ describe("뒷정리 — 지침서가 유일한 단서다", () => {
     expect(leaking, `차례를 흘리는 작업 이름: ${leaking.join(", ") || "없음"}`).toEqual([]);
   });
 
-  test.each(JOB_IDS)("%s — 지침서가 작업 넷을 지침 순서대로 싣는다", (job) => {
+  test("네 일감의 뒷정리 규칙 종류가 서로 다르다", () => {
+    const kinds = JOB_IDS.map((job) => CLEANUP_KINDS[job]);
+    expect(
+      new Set(kinds).size,
+      `종류가 겹친다: ${JOB_IDS.map((j) => `${j}=${CLEANUP_KINDS[j]}`).join(", ")}`,
+    ).toBe(JOB_IDS.length);
+  });
+
+  test("order 종류(관악) — 지침서가 작업 넷을 지침 순서대로 싣는다", () => {
+    const job = JOB_IDS.find((j) => CLEANUP_KINDS[j] === "order");
+    expect(job, "order 종류인 일감이 없다").toBeDefined();
+    if (job === undefined) return;
     expect(sheetOrder(job), `jobs.${job}.site.document가 지침 순서를 담지 않는다`).toEqual([
       ...CLEANUP_TASK_IDS,
     ]);
+  });
+
+  test.each(JOB_IDS.filter((job) => CLEANUP_KINDS[job] !== "order"))(
+    "%s — 지침서가 필수 작업을 모두 문면으로 싣는다",
+    (job) => {
+      const required = CLEANUP_REQUIRED[job];
+      expect(required, `${job}의 CLEANUP_REQUIRED가 없다`).toBeDefined();
+      if (required === undefined) return;
+      const missing = required.filter((task) => !sheetMentions(job, task));
+      expect(
+        missing,
+        `jobs.${job}.site.document에 없는 필수 작업: ${missing.join(", ") || "없음"}`,
+      ).toEqual([]);
+    },
+  );
+
+  test("exclude 종류(문서고) — 지침서가 금지 작업의 정확한 문면을 싣지 않는다", () => {
+    const job = JOB_IDS.find((j) => CLEANUP_KINDS[j] === "exclude");
+    expect(job, "exclude 종류인 일감이 없다").toBeDefined();
+    if (job === undefined) return;
+    const forbidden = CLEANUP_FORBIDDEN[job];
+    expect(forbidden, `${job}의 CLEANUP_FORBIDDEN이 없다`).toBeDefined();
+    if (forbidden === undefined) return;
+    expect(
+      sheetMentions(job, forbidden),
+      `jobs.${job}.site.document가 금지 작업(${forbidden})의 정확한 문면을 실어 지침을 흘린다`,
+    ).toBe(false);
   });
 });
 

@@ -643,9 +643,9 @@ describe("상실 신호 — 위험 선택은 동행자 전원에게 소문난다
   });
 
   test("부상은 뒷정리 등급이 가른다 — perfect면 안전 조치가 먼저 서 있어 다치지 않는다", () => {
-    const perfect: readonly CleanupTaskId[] = [...CLEANUP_TASK_IDS];
-    const partial: readonly CleanupTaskId[] = ["sign", "power", "photo", "search"];
-    const poor: readonly CleanupTaskId[] = ["power", "sign", "search", "photo"];
+    // 관측소는 subset 종류다 — sign·search·photo만 필수, power를 얹으면 partial이 된다.
+    const obsPerfect: readonly CleanupTaskId[] = ["sign", "search", "photo"];
+    const obsPartial: readonly CleanupTaskId[] = ["sign", "search", "photo", "power"];
     const atObs = (cleanupPicks: readonly CleanupTaskId[]) =>
       makeRun({
         jobIndex: 1,
@@ -656,25 +656,24 @@ describe("상실 신호 — 위험 선택은 동행자 전원에게 소문난다
       });
 
     // perfect — 상실 신호(의심·신뢰)는 그대로 남고 부상만 면제된다.
-    const safe = act(atObs(perfect), "obs_send_other");
+    const safe = act(atObs(obsPerfect), "obs_send_other");
     expect(safe.characters.dusik).toEqual({ fatigue: 1, injured: false, suspicion: 1, trust: 1 });
     expect(safe.chances).toBe(1);
-    // partial·poor — 같은 위험 선택이 동행의 첫 사람을 다치게 한다.
-    for (const cleanupPicks of [partial, poor]) {
-      const risky = act(atObs(cleanupPicks), "obs_send_other");
-      expect(risky.characters.dusik).toEqual({
-        fatigue: 1,
-        injured: true,
-        suspicion: 1,
-        trust: 1,
-      });
-    }
-    // 본부의 위험 선택도 그 자리의 등급(이 일감의 뒷정리 결과)을 따른다.
+    // partial — 같은 위험 선택이 동행의 첫 사람을 다치게 한다.
+    const risky = act(atObs(obsPartial), "obs_send_other");
+    expect(risky.characters.dusik).toEqual({
+      fatigue: 1,
+      injured: true,
+      suspicion: 1,
+      trust: 1,
+    });
+    // 본부는 exclude 종류다 — search는 금지 작업이라 손대면 그것만으로 poor다(partial은 없다).
+    const hqPerfect: readonly CleanupTaskId[] = ["sign", "power", "photo"];
+    const hqPoor: readonly CleanupTaskId[] = ["sign", "power", "photo", "search"];
     const atArchive = (cleanupPicks: readonly CleanupTaskId[]) =>
       makeRun({ jobIndex: 2, jobStep: "site", party: ["taesan"], cleanupPicks });
-    expect(act(atArchive(perfect), "archive_with_taesan").characters.taesan.injured).toBe(false);
-    expect(act(atArchive(partial), "archive_with_taesan").characters.taesan.injured).toBe(true);
-    expect(act(atArchive(poor), "archive_with_taesan").characters.taesan.injured).toBe(true);
+    expect(act(atArchive(hqPerfect), "archive_with_taesan").characters.taesan.injured).toBe(false);
+    expect(act(atArchive(hqPoor), "archive_with_taesan").characters.taesan.injured).toBe(true);
   });
 });
 

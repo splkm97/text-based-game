@@ -15,6 +15,7 @@
 import type { CleanupTaskId, EndingId } from "../ids";
 import { CLEANUP_TASK_IDS, ENDING_IDS, JOB_IDS } from "../ids";
 import type { Content, Placement, RunState } from "../types";
+import { CLEANUP_KINDS } from "./cleanupKinds";
 import { applyAction, availableActions, cleanupGrade, startRun } from "./run";
 
 export type EnumerationReport = {
@@ -81,34 +82,34 @@ const signature = (run: RunState): string =>
   ].join("|");
 
 /**
- * 서명의 뒷정리 축 — 가드와 **등급 전이**를 보존하는 만큼만 담는다(행동 등가 quotient).
- * - 뒷정리 단계에서 가드가 읽는 것은 **고른 집합**(재선택 금지 = includes, 완료 조건 = length)과
- *   **지침 접두 일치 수**(pfx)다. pfx가 곧 완주 시의 등급을 정한다: pfx < 2면 poor,
- *   pfx == 4면 perfect, 그 밖은 partial. 집합만 담으면 같은 집합의 두 순서
- *   ([sign,power,search] 대 [search,sign,power])가 한 서명으로 접혀, 메모이즈가 대표 하나만
- *   확장해 탐험되는 등급이 ACTION_IDS 반복 순서에 종속된다(리뷰 실측: 48순열 중 44런에서
- *   site 등급이 poor만 발견됨, 2026-09-14). pfx를 더한 뒤에는 48순열 전부가 등급 3종을 덮는다
- *   (실측 ru_first 65,775 · dusik_first 335,052 — 상한 내).
- * - 넷을 다 고른 뒤·현장에서는 **등급**만이 미래를 가른다(위험 선택의 부상).
- * - 그 밖의 단계에서는 어떤 가드도 순서를 읽지 않는다: 다음 뒷정리는 party_go가 비우고 시작한다.
- * 원시 순서 배열을 그대로 넣으면 순서 24가지가 전 단계에 곱해져 열거가 폭발한다
- * (실측 2026-09-14: ru_first 267,321 · dusik_first 1,244,331, 4.1s).
- */
-/**
- * 지침 접두 일치 수 — picks[0..n-1]이 CLEANUP_TASK_IDS와 같고 그다음이 다른 최대 n.
- * 전부 일치하면 길이 자체다. 완주 등급(perfect/partial/poor)이 이 값과 집합만으로 정해진다.
+ * 지침 접두 일치 수 — order 종류에서만 쓴다. picks[0..n-1]이 CLEANUP_TASK_IDS와 같고
+ * 그다음이 다른 최대 n. 전부 일치하면 길이 자체다. 관악(gwanak)의 완주 등급
+ * (perfect/partial/poor)이 이 값과 집합만으로 정해진다 — 집합만 담으면 같은 집합의 두 순서
+ * ([sign,power,search] 대 [search,sign,power])가 한 서명으로 접혀, 메모이즈가 대표 하나만
+ * 확장해 탐험되는 등급이 ACTION_IDS 반복 순서에 종속된다(리뷰 실측: 48순열 중 44런에서
+ * site 등급이 poor만 발견됨, 2026-09-14). pfx를 더한 뒤에는 48순열 전부가 등급 3종을 덮는다.
  */
 const prefixMatches = (picks: readonly CleanupTaskId[]): number => {
   const mismatch = picks.findIndex((task, index) => task !== CLEANUP_TASK_IDS[index]);
   return mismatch === -1 ? picks.length : mismatch;
 };
 
+/**
+ * 서명의 뒷정리 축 — order 종류(관악)만 지침 접두 일치 수(pfx)가 필요하다: 등급이 순서
+ * 자체에 좌우되기 때문이다. 나머지 종류(subset·exclude·count)는 등급과 이후 가능한 액션이
+ * 오직 **고른 집합**에만 좌우된다(가드도 등급도 순서를 읽지 않는다) — 그래서 집합만으로
+ * 충분한 quotient다. 넷을 다 고른 뒤(현장까지)에는 어느 종류든 **등급**만이 미래를 가른다.
+ */
 export const cleanupAxis = (run: RunState): string => {
   if (run.chainStep !== null) return "-";
   if (run.jobStep === "cleanup") {
-    return run.cleanupPicks.length === CLEANUP_TASK_IDS.length
-      ? `grade:${cleanupGrade(run)}`
-      : `set:${[...run.cleanupPicks].sort().join(",")}:pfx${prefixMatches(run.cleanupPicks)}`;
+    if (run.cleanupPicks.length === CLEANUP_TASK_IDS.length) {
+      return `grade:${cleanupGrade(run)}`;
+    }
+    const job = JOB_IDS[run.jobIndex];
+    const kind = job === undefined ? undefined : CLEANUP_KINDS[job];
+    const set = [...run.cleanupPicks].sort().join(",");
+    return kind === "order" ? `set:${set}:pfx${prefixMatches(run.cleanupPicks)}` : `set:${set}`;
   }
   if (run.jobStep === "site") return `grade:${cleanupGrade(run) ?? "none"}`;
   return "-";

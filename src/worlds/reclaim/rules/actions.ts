@@ -19,6 +19,7 @@ import type {
 } from "../ids";
 import { CHARACTER_IDS, CLEANUP_TASK_IDS, JOB_IDS } from "../ids";
 import type { CharacterState, RunState } from "../types";
+import { CLEANUP_FORBIDDEN, CLEANUP_KINDS, CLEANUP_REQUIRED } from "./cleanupKinds";
 
 /** 협회 본부 방문 상한. */
 export const REVIEW_LIMIT = 3;
@@ -95,16 +96,38 @@ const partySuspecting = (run: RunState): Record<CharacterId, CharacterState> => 
 };
 
 /**
- * 뒷정리 등급 — 작업 넷을 다 고른 회차만 등급을 받는다(그 전엔 null: 현장에 설 수 없다).
- * 지침서 순서(안전 → 차단 → 확인 → 기록) 그대로면 perfect, 앞 둘(안전·차단)이 제자리면
- * partial, 그 밖엔 poor. 순서 미니게임의 결과이며 위험 선택의 부상을 가르는 값이다.
+ * 뒷정리 등급 — 일감마다 규칙 종류가 다르다(`CLEANUP_KINDS`).
+ * - order(관악): 네 작업 전부를 지침 순서 그대로 — 첫 둘이 어긋나면 poor, 전부 맞으면 perfect,
+ *   그 사이는 partial.
+ * - subset·count(관측소·폐허): 필수 집합(`CLEANUP_REQUIRED`)이 다 갖춰지지 않으면 아직 등급이
+ *   없다(null). 다 갖추면 그 집합 그대로일 때 perfect, 더 얹었으면(순서 무관) partial —
+ *   벌점은 없다.
+ * - exclude(문서고): 필수 집합이 다 갖춰지지 않으면 null. 갖췄는데 금지 작업(`CLEANUP_FORBIDDEN`)도
+ *   손댔으면 poor, 아니면 perfect — partial은 없다(금지는 이분법이다).
  */
 export const cleanupGrade = (run: RunState): CleanupGrade | null => {
   const picks = run.cleanupPicks;
-  if (picks.length !== CLEANUP_TASK_IDS.length) return null;
-  const [first, second] = CLEANUP_TASK_IDS;
-  if (picks[0] !== first || picks[1] !== second) return "poor";
-  return CLEANUP_TASK_IDS.every((task, index) => picks[index] === task) ? "perfect" : "partial";
+  const job = JOB_IDS[run.jobIndex];
+  if (job === undefined) return null;
+  const kind = CLEANUP_KINDS[job];
+
+  if (kind === "order") {
+    if (picks.length !== CLEANUP_TASK_IDS.length) return null;
+    const [first, second] = CLEANUP_TASK_IDS;
+    if (picks[0] !== first || picks[1] !== second) return "poor";
+    return CLEANUP_TASK_IDS.every((task, index) => picks[index] === task) ? "perfect" : "partial";
+  }
+
+  const required = CLEANUP_REQUIRED[job];
+  if (required === undefined) return null;
+  const pickedSet = new Set(picks);
+  if (!required.every((task) => pickedSet.has(task))) return null;
+
+  if (kind === "exclude") {
+    const forbidden = CLEANUP_FORBIDDEN[job];
+    return forbidden !== undefined && pickedSet.has(forbidden) ? "poor" : "perfect";
+  }
+  return pickedSet.size === required.length ? "perfect" : "partial";
 };
 
 /** 위험 선택의 인물 쪽 — 안전 조치를 먼저 세운 현장(perfect 뒷정리)에서는 다치지 않는다.
@@ -318,7 +341,7 @@ export const ACTION_SPECS: Readonly<Record<ActionId, ActionSpec>> = {
   },
   cleanup_finish: {
     when: (run) => atStep(run, "cleanup"),
-    require: (run) => run.cleanupPicks.length === CLEANUP_TASK_IDS.length,
+    require: (run) => cleanupGrade(run) !== null,
     apply: () => ({ jobStep: "site" }),
   },
 
