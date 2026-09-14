@@ -157,19 +157,17 @@ export const REVEAL_CSS = `
   animation: reclaim-reveal var(--reclaim-word-ms, 380ms) var(--ease-ink) both;
 }
 /*
- * 문단 성장 — 단어는 transform으로 떠오르지만 transform은 자리를 만들지 않는다. 그래서 문단을
- * grid-template-rows 0fr → 1fr로 함께 늘려, 글이 나오는 만큼 **아래 내용이 조금씩 밀려 내려가게**
- * 한다(사용자 지시: 세로 공간이 점점 넓어지는 느낌). 늘어나는 시간은 그 문단의 등장 시간과 같다.
+ * 단어는 제 차례가 오기 전에 **보이지 않아야 한다**. animation-fill-mode: both가 그 일을 하지만,
+ * filter가 든 from 프레임의 역방향 채움(backwards fill)을 적용하지 않는 Safari 빌드가 있어
+ * 지연 중인 단어가 원래 투명도로 먼저 그려졌다 — 애니메이션이 시작되기도 전에 텍스트가 노출되는
+ * 결함이다. 그래서 시작 상태를 규칙에도 함께 못 박는다: 키프레임이 늦게 붙어도 단어는 투명하게
+ * 시작한다. 애니메이션을 쓸 수 있고 모션을 줄이지 않은 환경으로만 좁혀서, reduced-motion과
+ * 애니메이션 미지원 환경(테스트 포함)에서는 원문이 그대로 보이게 남긴다.
  */
-.reclaim-grow {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows var(--reclaim-grow-ms, 600ms) var(--ease-ink);
-}
-.reclaim-grow.reclaim-grown { grid-template-rows: 1fr; }
-.reclaim-grow > * { overflow: hidden; }
-@media (prefers-reduced-motion: reduce) {
-  .reclaim-grow { transition: none; }
+@supports (animation-name: reclaim-reveal) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reclaim-reveal-word { opacity: 0; }
+  }
 }
 
 /* 루의 목소리 — 다른 픽셀 격자(Galmuri9)로 앉는다. 크기는 자리가 정한다: 지문 자리에서만
