@@ -150,6 +150,22 @@ export const REVEAL_CSS = `
   display: inline-block;
   animation: reclaim-reveal var(--reclaim-word-ms, 380ms) var(--ease-ink) both;
 }
+/*
+ * 문단 성장 — 단어는 transform으로 떠오르지만 transform은 자리를 만들지 않는다. 그래서 문단을
+ * grid-template-rows 0fr → 1fr로 함께 늘려, 글이 나오는 만큼 **아래 내용이 조금씩 밀려 내려가게**
+ * 한다(사용자 지시: 세로 공간이 점점 넓어지는 느낌). 늘어나는 시간은 그 문단의 등장 시간과 같다.
+ */
+.reclaim-grow {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--reclaim-grow-ms, 600ms) var(--ease-ink);
+}
+.reclaim-grow.reclaim-grown { grid-template-rows: 1fr; }
+.reclaim-grow > * { overflow: hidden; }
+@media (prefers-reduced-motion: reduce) {
+  .reclaim-grow { transition: none; }
+}
+
 /* 루의 목소리 — 다른 픽셀 격자(Galmuri9)로 앉고, 한 단계 크게 읽는다(9px 격자는 정수배에서 또렷하다). */
 .reclaim-voice-ru {
   font-family: "Galmuri9", var(--font-pixel);
