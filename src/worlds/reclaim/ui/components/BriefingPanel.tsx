@@ -19,7 +19,7 @@ export function BriefingPanel({ document, fill = false }: BriefingPanelProps) {
   return (
     <section
       aria-label="문서"
-      className={`flex flex-col gap-1.5 border-2 border-ash bg-parchment px-3 py-2 text-ink ${
+      className={`flex flex-col gap-2 border-2 border-ash bg-parchment px-3 py-2 text-ink ${
         fill ? "flex-1" : ""
       }`}
     >
@@ -27,7 +27,7 @@ export function BriefingPanel({ document, fill = false }: BriefingPanelProps) {
         {document.heading}
       </h3>
       {document.meta.length > 0 && (
-        <ul aria-label="문서 머리" className="flex flex-col gap-0.5 text-xs text-slate">
+        <ul aria-label="문서 머리" className="flex flex-col gap-1 text-xs text-slate">
           {document.meta.map((line) => (
             <li key={line}>{line}</li>
           ))}
@@ -36,7 +36,7 @@ export function BriefingPanel({ document, fill = false }: BriefingPanelProps) {
       {document.items.length > 0 && (
         <ol
           aria-label="문서 본문"
-          className="flex list-decimal flex-col gap-1 pl-5 text-sm leading-prose"
+          className="flex list-decimal flex-col gap-1 pl-4 text-sm leading-prose"
         >
           {document.items.map((item) => (
             <li key={item}>{item}</li>

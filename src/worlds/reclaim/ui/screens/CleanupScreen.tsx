@@ -48,7 +48,7 @@ export function CleanupScreen({ run, job }: CleanupScreenProps) {
           className={`flex flex-col ${INNER_GAP} border-t border-slate pt-2`}
         >
           <h3 className={META}>고른 순서</h3>
-          <ol className={`flex list-decimal flex-col ${INNER_GAP} pl-5`}>
+          <ol className={`flex list-decimal flex-col ${INNER_GAP} pl-4`}>
             {run.cleanupPicks.map((task) => (
               <li key={task} className={MUTED}>
                 {content.cleanupTasks[task]}
